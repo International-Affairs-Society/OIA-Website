@@ -44,13 +44,20 @@ export default function OtherProgramsPage() {
   const [programs, setPrograms] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [schoolFilter, setSchoolFilter] = useState("");
+  const [programFilter, setProgramFilter] = useState("");
+  const [semFilter, setSemFilter] = useState("");
+  const [courseFilter, setCourseFilter] = useState("");
+
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/programs`);
         if (res.ok) {
           const data = await res.json();
-          setPrograms(data.data.map(mapToProgramData));
+          // Filter out archived programs and only show published ones
+          const activeProgs = (data.data || []).filter((p: any) => !p.is_archived && p.status === 'published');
+          setPrograms(activeProgs.map(mapToProgramData));
         }
       } catch (err) {
         console.error("Failed to fetch programs:", err);
@@ -60,6 +67,35 @@ export default function OtherProgramsPage() {
     };
     fetchPrograms();
   }, []);
+
+  const filteredPrograms = React.useMemo(() => {
+    return programs.filter(prog => {
+      if (schoolFilter) {
+        const schools = prog.schools || [];
+        if (!schools.includes(schoolFilter) && !schools.includes("All")) {
+          return false;
+        }
+      }
+      if (programFilter) {
+        if (prog.programType !== programFilter) {
+          return false;
+        }
+      }
+      if (semFilter) {
+        const sems = prog.semesters || [];
+        if (!sems.includes(semFilter) && !sems.includes("All")) {
+          return false;
+        }
+      }
+      if (courseFilter) {
+        const courses = prog.courses || [];
+        if (!courses.includes(courseFilter) && !courses.includes("All")) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [programs, schoolFilter, programFilter, semFilter, courseFilter]);
 
   const scrollToPrograms = () => {
     const element = document.getElementById("programs-grid");
@@ -98,7 +134,16 @@ export default function OtherProgramsPage() {
             Programs
           </h1>
           <div className="w-full max-w-[1400px] px-[clamp(24px,4vw,64px)] z-20 relative">
-            <ProgramFilters />
+            <ProgramFilters 
+              school={schoolFilter}
+              setSchool={setSchoolFilter}
+              program={programFilter}
+              setProgram={setProgramFilter}
+              semester={semFilter}
+              setSemester={setSemFilter}
+              course={courseFilter}
+              setCourse={setCourseFilter}
+            />
           </div>
         </motion.div>
         
@@ -149,10 +194,10 @@ export default function OtherProgramsPage() {
         >
           {isLoading ? (
             <div className="col-span-full text-center py-20 text-[#6b6b6b]">Loading programs...</div>
-          ) : programs.length === 0 ? (
+          ) : filteredPrograms.length === 0 ? (
             <div className="col-span-full text-center py-20 text-[#6b6b6b]">No programs found.</div>
           ) : (
-            programs.map((program) => (
+            filteredPrograms.map((program) => (
               <ProgramCard key={program.id} program={program} />
             ))
           )}

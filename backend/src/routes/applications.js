@@ -16,8 +16,8 @@ router.get('/', authenticate, requireRole('super_admin', 'admin', 'editor'), get
 router.get('/me', authenticate, getMyApplications)
 router.get('/:id', authenticate, getApplicationById)
 router.post('/', authenticate, createApplication)
+router.patch('/bulk/status', authenticate, requireRole('super_admin', 'admin', 'editor'), bulkUpdateApplicationStage)
 router.patch('/:id/stage', authenticate, requireRole('super_admin', 'admin', 'editor'), updateApplicationStage)
 router.patch('/:id/status', authenticate, requireRole('super_admin', 'admin', 'editor'), updateApplicationStage) // Support both status and stage endpoints
-router.patch('/bulk/status', authenticate, requireRole('super_admin', 'admin', 'editor'), bulkUpdateApplicationStage)
 
 export default router
