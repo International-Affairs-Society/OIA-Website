@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader, FormField, CustomDropdown } from "../../components";
@@ -14,19 +14,133 @@ function countWords(text: string) {
 export default function CreateUpcomingEventPage() {
   const router = useRouter();
   const { role } = useAuth();
-  const [activeTab, setActiveTab] = useState<"details" | "media">("details");
+  
+  const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
+  const [date, setDate] = useState("");
+  const [linkedMouId, setLinkedMouId] = useState("");
+  const [isArchived, setIsArchived] = useState(false);
+  const [posterUrl, setPosterUrl] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [mous, setMous] = useState<{ value: string; label: string }[]>([]);
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const wordCount = countWords(description);
   const isOverLimit = wordCount > MAX_WORDS;
 
+  // Fetch MOUs on mount
+  useEffect(() => {
+    const fetchMous = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+        const res = await fetch(`${API_URL}/api/v1/mous`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (res.ok) {
+          const json = await res.json();
+          const mapped = (json.data || []).map((m: any) => ({
+            value: m.id,
+            label: m.name
+          }));
+          setMous([{ value: "", label: "None" }, ...mapped]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch MOUs:", err);
+      }
+    };
+    fetchMous();
+  }, []);
+
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setDescription(e.target.value);
-    // Auto-resize
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploading(true);
+      const token = localStorage.getItem("access_token");
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch(`${API_URL}/api/v1/media`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setPosterUrl(data.publicUrl || data.url);
+      } else {
+        alert("Upload failed. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error uploading file:", err);
+      alert("Error uploading file.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) {
+      alert("Title is required.");
+      return;
+    }
+    if (!date) {
+      alert("Date is required.");
+      return;
+    }
+    if (isOverLimit) {
+      alert(`Description exceeds the word limit of ${MAX_WORDS} words.`);
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("access_token");
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+      const payload = {
+        title,
+        description,
+        location,
+        date,
+        linkedMouId: linkedMouId || null,
+        isArchived,
+        posterUrl: posterUrl || null,
+        eventType: "upcoming"
+      };
+
+      const res = await fetch(`${API_URL}/api/v1/events`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        router.push("/admin/events");
+      } else {
+        const errorJson = await res.json();
+        alert(`Failed to save event: ${errorJson.error?.message || "Unknown error"}`);
+      }
+    } catch (err) {
+      console.error("Failed to save event:", err);
+      alert("An error occurred while saving the event.");
     }
   };
 
@@ -41,9 +155,9 @@ export default function CreateUpcomingEventPage() {
       <AdminPageHeader title="Create Upcoming Event" />
 
       <div style={{ border: "1px solid #b5bda0", padding: "2rem", backgroundColor: "#f5f0e8", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
-        <form onSubmit={(e) => { e.preventDefault(); router.push("/admin/events"); }}>
+        <form onSubmit={handleSubmit}>
           <FormField label="Title" required>
-            <input type="text" placeholder="Enter here" />
+            <input type="text" placeholder="Enter title" value={title} onChange={(e) => setTitle(e.target.value)} required />
           </FormField>
           <FormField label="Description">
             <textarea
@@ -59,10 +173,9 @@ export default function CreateUpcomingEventPage() {
                 transition: "height 0.1s ease",
               }}
             />
-            {/* Word count disclaimer */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "6px" }}>
               <span style={{ fontSize: "12px", color: "#6b6b6b", lineHeight: 1.5 }}>
-                ⚠ Keep description under <strong>{MAX_WORDS} words</strong> — this text appears alongside the event poster in the upcoming events carousel. Longer descriptions may overflow the display area.
+                ⚠ Keep description under <strong>{MAX_WORDS} words</strong> — this text appears alongside the event poster in the upcoming events carousel.
               </span>
               <span style={{ fontSize: "12px", fontWeight: 600, color: isOverLimit ? "#c0392b" : "#5C6B3F", whiteSpace: "nowrap", marginLeft: "12px" }}>
                 {wordCount} / {MAX_WORDS}
@@ -70,37 +183,54 @@ export default function CreateUpcomingEventPage() {
             </div>
           </FormField>
           <FormField label="Location">
-            <input type="text" placeholder="Enter here" />
+            <input type="text" placeholder="Enter location" value={location} onChange={(e) => setLocation(e.target.value)} />
           </FormField>
-          <FormField label="Date">
-            <input type="date" />
+          <FormField label="Date" required>
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
           </FormField>
 
           <FormField label="Link MOU">
             <CustomDropdown
-              onChange={() => { }}
-              options={[
-                { value: "", label: "None" },
-                { value: "1", label: "UOL MOU" },
-                { value: "2", label: "TII MOU" },
-              ]}
+              value={linkedMouId}
+              onChange={setLinkedMouId}
+              options={mous}
             />
           </FormField>
           <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "1rem" }}>
-            <input type="checkbox" id="archive-event" />
-            <label htmlFor="archive-event" style={{ fontSize: "13px", color: "#6b6b6b" }}>Archive this event</label>
+            <input type="checkbox" id="archive-event" checked={isArchived} onChange={(e) => setIsArchived(e.target.checked)} />
+            <label htmlFor="archive-event" style={{ fontSize: "13px", color: "#6b6b6b", cursor: "pointer" }}>Archive this event</label>
           </div>
 
           {/* ── Media Upload ── */}
           <div style={{ marginTop: "1.5rem" }}>
             <FormField label="Event Poster / Cover Image">
-              <div style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
-                <input type="file" accept="image/png,image/jpeg,image/webp" id="media-upload-upcoming" style={{ display: "none" }} />
-                <label htmlFor="media-upload-upcoming" style={{ cursor: "pointer", color: "#1a1a1a", fontSize: "14px", fontWeight: 500, textDecoration: "underline" }}>
-                  Click to upload cover image
-                </label>
-                <div style={{ fontSize: "12px", color: "#6b6b6b", marginTop: "8px" }}>PNG, JPG, or WebP — only one file allowed</div>
-              </div>
+              {posterUrl ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-start" }}>
+                  <img src={posterUrl} alt="Cover Preview" style={{ maxWidth: "200px", borderRadius: "8px", border: "1px solid #b5bda0" }} />
+                  <button
+                    type="button"
+                    onClick={() => setPosterUrl("")}
+                    style={{ padding: "6px 12px", border: "1px solid #c0392b", color: "#c0392b", background: "transparent", cursor: "pointer", fontSize: "12px", fontWeight: 600 }}
+                  >
+                    Remove Image
+                  </button>
+                </div>
+              ) : (
+                <div style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    id="media-upload-upcoming"
+                    style={{ display: "none" }}
+                    onChange={handleFileUpload}
+                    disabled={isUploading}
+                  />
+                  <label htmlFor="media-upload-upcoming" style={{ cursor: isUploading ? "not-allowed" : "pointer", color: "#1a1a1a", fontSize: "14px", fontWeight: 500, textDecoration: "underline" }}>
+                    {isUploading ? "Uploading..." : "Click to upload cover image"}
+                  </label>
+                  <div style={{ fontSize: "12px", color: "#6b6b6b", marginTop: "8px" }}>PNG, JPG, or WebP — only one file allowed</div>
+                </div>
+              )}
               <div
                 style={{
                   marginTop: "10px",
@@ -112,14 +242,10 @@ export default function CreateUpcomingEventPage() {
                   color: "#5C6B3F",
                 }}
               >
-                <strong>⚠ Image Resolution Guide:</strong> For the upcoming events section, the card displays images at a <strong>3:4 portrait aspect ratio</strong>. 
-                For best results, upload an image with a resolution of <strong>600 × 800 px</strong> (or any resolution maintaining a 3:4 ratio, e.g. 900 × 1200 px). 
-                Images that do not match this ratio will be center-cropped automatically.
+                <strong>⚠ Image Resolution Guide:</strong> For the upcoming events section, the card displays images at a <strong>3:4 portrait aspect ratio</strong>. For best results, upload an image with a resolution of <strong>600 × 800 px</strong>.
               </div>
             </FormField>
           </div>
-
-
 
           {/* ── Submit / Cancel ── */}
           <div style={{ marginTop: "2rem", display: "flex", gap: "1rem" }}>

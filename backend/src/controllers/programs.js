@@ -26,6 +26,7 @@ const programBaseSchema = z.object({
   living_cost_details: z.string().optional().nullable(),
   use_default_form: z.boolean().optional(),
   custom_fields: z.any().optional(),
+  is_archived: z.boolean().optional(),
   status: z.enum(['draft', 'pending_approval', 'published', 'archived']).optional()
 })
 

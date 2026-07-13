@@ -1,3 +1,4 @@
+import jwt from 'jsonwebtoken'
 import prisma from '../lib/prisma.js'
 import supabaseSingleton from '../lib/supabase.js'
 
@@ -19,13 +20,24 @@ export async function authenticate(req, res, next) {
       })
     }
 
-    // Verify token with Supabase API
-    const { data: { user: authUser }, error } = await supabaseSingleton.auth.getUser(token)
-
-    if (error || !authUser) {
-      return res.status(401).json({
-        error: { code: 'UNAUTHORIZED', message: 'Invalid or expired session token' }
-      })
+    // Verify token locally first (zero network roundtrips)
+    let authUser
+    try {
+      const decodedToken = jwt.verify(token, process.env.SUPABASE_JWT_SECRET)
+      authUser = {
+        id: decodedToken.sub,
+        email: decodedToken.email,
+        user_metadata: decodedToken.user_metadata || {}
+      }
+    } catch (err) {
+      // Fallback: verification with Supabase API if local fails
+      const { data: { user: supabaseUser }, error: supabaseError } = await supabaseSingleton.auth.getUser(token)
+      if (supabaseError || !supabaseUser) {
+        return res.status(401).json({
+          error: { code: 'UNAUTHORIZED', message: 'Invalid or expired session token' }
+        })
+      }
+      authUser = supabaseUser
     }
 
     // Domain check — defence in depth

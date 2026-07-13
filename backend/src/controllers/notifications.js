@@ -48,11 +48,14 @@ export const getMyNotifications = asyncHandler(async (req, res) => {
 
 // GET /notifications (STAFF, LEADERSHIP only - List all sent notifications)
 export const getNotifications = asyncHandler(async (req, res) => {
-  const { type } = req.query
+  const { type, recipientFilter } = req.query
 
   const where = {}
   if (type) {
     where.type = type.toUpperCase()
+  }
+  if (recipientFilter) {
+    where.recipient_filter = recipientFilter
   }
 
   const paginatedResult = await paginate(prisma.notifications, req.query, {

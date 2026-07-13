@@ -71,8 +71,10 @@ const mapToProgramData = (prog: any) => {
     title: prog.title || prog.name,
     category: prog.program_type,
     date: formatDate(prog.start_date),
-    image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=1000&auto=format&fit=crop", // Placeholder
-    images: ["https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=1000&auto=format&fit=crop"],
+    image: prog.custom_fields?.posterUrl || "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=1000&auto=format&fit=crop",
+    images: (prog.custom_fields?.galleryUrls && prog.custom_fields.galleryUrls.length > 0) 
+      ? prog.custom_fields.galleryUrls 
+      : ["https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=1000&auto=format&fit=crop"],
     schools: prog.schools_eligible || [],
     programType: prog.program_type,
     semesters: prog.semesters_eligible || [],
@@ -81,7 +83,7 @@ const mapToProgramData = (prog: any) => {
     highlights: prog.highlights || [],
     programFee: prog.fee_summary || "",
     feeBreakdownHtml: prog.fee_breakdown || "",
-    livingCosts: [], // Not supported as array in DB, handled separately if needed
+    livingCosts: prog.custom_fields?.livingCosts || [],
     estimatedStayCost: prog.estimated_stay_cost || "",
     lastDate: formatDate(prog.last_date_to_apply),
     ourPOCs: prog.poc ? [prog.poc] : [],

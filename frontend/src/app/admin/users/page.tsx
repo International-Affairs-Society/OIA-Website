@@ -9,59 +9,6 @@ export default function UsersPage() {
   const { role } = useAuth();
   const [users, setUsers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const token = localStorage.getItem("access_token");
-        const res = await fetch(`${API_URL}/api/v1/users`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setUsers((data.data || []).map((u: any) => ({
-            id: u.id,
-            name: u.display_name || u.email,
-            email: u.email,
-            role: u.role || "viewer",
-            phoneNumber: u.phone_number || "",
-            department: u.course || u.school || "",
-          })));
-        }
-      } catch (err) {
-        console.error("Failed to fetch users:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchUsers();
-  }, []);
-
-  const columns = [
-    { key: "name", label: "Name", width: "20%" },
-    { key: "phoneNumber", label: "Phone Number", width: "20%" },
-    { key: "department", label: "Department", width: "15%" },
-    { key: "email", label: "Email", width: "25%" },
-    { key: "role", label: "Role", width: "20%" },
-  ];
-
-  const handleDelete = (id: string) => {
-    if (id === "1") {
-      alert("You cannot delete your own account.");
-      return;
-    }
-    setUsers(users.filter(u => u.id !== id));
-  };
-
-  const data = users.map(user => ({
-    id: user.id,
-    name: user.name,
-    phoneNumber: (user as any).phoneNumber || "+91 9876543210",
-    department: (user as any).department || "Computer Science",
-    email: user.email,
-    role: user.role.charAt(0).toUpperCase() + user.role.slice(1),
-  }));
-
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   // Modal State
@@ -75,13 +22,74 @@ export default function UsersPage() {
     phoneNumber: "",
     department: "",
     email: "",
-    role: "Admin"
+    role: "admin"
   });
+
+  const fetchUsers = async () => {
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(`${API_URL}/api/v1/users`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUsers((data.data || []).map((u: any) => ({
+          id: u.id,
+          name: u.display_name || u.email,
+          email: u.email,
+          role: u.role || "viewer",
+          phoneNumber: u.phone_number || "",
+          department: u.course || u.school || "",
+        })));
+      }
+    } catch (err) {
+      console.error("Failed to fetch users:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const columns = [
+    { key: "name", label: "Name", width: "20%" },
+    { key: "phoneNumber", label: "Phone Number", width: "20%" },
+    { key: "department", label: "Department", width: "15%" },
+    { key: "email", label: "Email", width: "25%" },
+    { key: "role", label: "Role", width: "20%" },
+  ];
+
+  const handleDelete = async (id: string) => {
+    if (id === "1") {
+      alert("You cannot delete your own account.");
+      return;
+    }
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(`${API_URL}/api/v1/users/${id}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        setUsers(users.filter(u => u.id !== id));
+      } else {
+        const errorJson = await res.json();
+        alert(`Failed to delete user: ${errorJson.error?.message || "Unknown error"}`);
+      }
+    } catch (err) {
+      console.error("Failed to delete user:", err);
+    } finally {
+      setConfirmingId(null);
+    }
+  };
 
   const handleOpenAddModal = () => {
     setModalMode("add");
     setIsModalOpen(true);
-    setNewRoleData({ id: "", name: "", phoneNumber: "", department: "", email: "", role: "Admin" });
+    setNewRoleData({ id: "", name: "", phoneNumber: "", department: "", email: "", role: "admin" });
     setIsConfirmingAdd(false);
   };
 
@@ -91,47 +99,59 @@ export default function UsersPage() {
     setNewRoleData({ 
       id: user.id, 
       name: user.name, 
-      phoneNumber: user.phoneNumber || "+91 9876543210", 
-      department: user.department || "Computer Science",
+      phoneNumber: user.phoneNumber || "", 
+      department: user.department || "",
       email: user.email, 
-      role: user.role 
+      role: user.role.toLowerCase().replace(" ", "_") 
     });
     setIsConfirmingAdd(false);
   };
 
   const handleAddRoleClick = () => {
-    if (!newRoleData.name || !newRoleData.email || !newRoleData.role || !newRoleData.phoneNumber || !newRoleData.department) {
-      alert("Please fill all required fields.");
+    if (!newRoleData.name || !newRoleData.email || !newRoleData.role) {
+      alert("Please fill all required fields (Name, Email, Role).");
       return;
     }
     setIsConfirmingAdd(true);
   };
 
-  const handleConfirmAdd = () => {
-    if (modalMode === "add") {
-      // Add to list
-      const newUser = {
-        id: Date.now().toString(),
-        name: newRoleData.name,
-        phoneNumber: newRoleData.phoneNumber,
-        department: newRoleData.department,
+  const handleConfirmAdd = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const url = modalMode === "add" 
+        ? `${API_URL}/api/v1/users` 
+        : `${API_URL}/api/v1/users/${newRoleData.id}`;
+      const method = modalMode === "add" ? "POST" : "PATCH";
+
+      const payload = {
         email: newRoleData.email,
-        role: newRoleData.role.toLowerCase()
+        role: newRoleData.role,
+        displayName: newRoleData.name,
+        phoneNumber: newRoleData.phoneNumber
       };
-      setUsers([...users, newUser as any]);
-    } else {
-      // Update existing
-      setUsers(users.map(u => u.id === newRoleData.id ? {
-        ...u,
-        name: newRoleData.name,
-        phoneNumber: newRoleData.phoneNumber,
-        department: newRoleData.department,
-        email: newRoleData.email,
-        role: newRoleData.role.toLowerCase()
-      } : u));
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        setIsModalOpen(false);
+        fetchUsers();
+      } else {
+        const errorJson = await res.json();
+        alert(`Failed to save user: ${errorJson.error?.message || "Unknown error"}`);
+      }
+    } catch (err) {
+      console.error("Error saving user:", err);
+      alert("Error saving user.");
+    } finally {
+      setIsConfirmingAdd(false);
     }
-    setIsConfirmingAdd(false);
-    setIsModalOpen(false);
   };
 
   const handleCancelAdd = () => {
@@ -139,56 +159,73 @@ export default function UsersPage() {
     setIsModalOpen(false);
   };
 
+  const data = users.map(user => ({
+    id: user.id,
+    name: user.name,
+    phoneNumber: user.phoneNumber || "N/A",
+    department: user.department || "N/A",
+    email: user.email,
+    role: user.role === "super_admin" ? "Super Admin" : (user.role.charAt(0).toUpperCase() + user.role.slice(1)),
+  }));
+
   return (
     <div style={{ width: "100%", maxWidth: "100%", transition: "width 0.3s ease" }}>
       <AdminPageHeader title="Users" />
 
       <FilterBar
         searchPlaceholder="Search by name or email..."
-        filters={[{ key: "role", label: "All Roles", options: [{ label: "Admin", value: "admin" }, { label: "Super Admin", value: "super admin" }, { label: "Viewer", value: "viewer" }, { label: "Editor", value: "editor" }] }]}
+        filters={[{ key: "role", label: "All Roles", options: [{ label: "Admin", value: "admin" }, { label: "Super Admin", value: "super_admin" }, { label: "Viewer", value: "viewer" }, { label: "Editor", value: "editor" }] }]}
         sortOptions={[{ label: "Name (A-Z)", value: "name_asc" }, { label: "Email", value: "email_asc" }]}
         extraRightNode={
-          <button
-            onClick={handleOpenAddModal}
-            style={{
-              padding: "10px 24px",
-              backgroundColor: "#b5bda0",
-              color: "#1a1a1a",
-              border: "1px solid #9ca386",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontSize: "14px",
-              fontWeight: 600,
-              whiteSpace: "nowrap",
-              transition: "all 0.2s ease"
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#9ca386";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "#b5bda0";
-            }}
-          >
-            Add Role
-          </button>
+          role === 'super_admin' && (
+            <button
+              onClick={handleOpenAddModal}
+              style={{
+                padding: "10px 24px",
+                backgroundColor: "#b5bda0",
+                color: "#1a1a1a",
+                border: "1px solid #9ca386",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontSize: "14px",
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+                transition: "all 0.2s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#9ca386";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#b5bda0";
+              }}
+            >
+              Add Role
+            </button>
+          )
         }
       />
 
       <div style={{ border: "1px solid #b5bda0", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
-        <AdminTable
-          columns={columns}
-          data={data}
-          actions={(row: any) => (
-            <ActionButtons
-              rowId={row.id}
-              confirmingDeleteId={confirmingId}
-              setConfirmingDeleteId={role === 'super_admin' ? setConfirmingId : undefined}
-              onUpdateRole={() => handleOpenEditModal(row)}
-              onConfirmDelete={role === 'super_admin' ? handleDelete : undefined}
-              onCancelDelete={role === 'super_admin' ? () => setConfirmingId(null) : undefined}
-            />
-          )}
-        />
+        {isLoading ? (
+          <div style={{ padding: "40px", textAlign: "center", color: "#6b6b6b" }}>Loading users...</div>
+        ) : data.length === 0 ? (
+          <div style={{ padding: "40px", textAlign: "center", color: "#6b6b6b" }}>No users found.</div>
+        ) : (
+          <AdminTable
+            columns={columns}
+            data={data}
+            actions={(row: any) => (
+              <ActionButtons
+                rowId={row.id}
+                confirmingDeleteId={confirmingId}
+                setConfirmingDeleteId={role === 'super_admin' ? setConfirmingId : undefined}
+                onUpdateRole={role === 'super_admin' ? () => handleOpenEditModal(row) : undefined}
+                onConfirmDelete={role === 'super_admin' ? () => handleDelete(row.id) : undefined}
+                onCancelDelete={role === 'super_admin' ? () => setConfirmingId(null) : undefined}
+              />
+            )}
+          />
+        )}
       </div>
 
       {/* Centered Horizontal Modal */}
@@ -205,14 +242,13 @@ export default function UsersPage() {
           <div style={{
             width: "50%",
             minWidth: "600px",
-            backgroundColor: "#f5f0e8", // beige
+            backgroundColor: "#f5f0e8",
             boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
             padding: "40px",
             display: "flex",
             flexDirection: "column",
-            borderTop: "8px solid #b5bda0", // olive accent
-            borderRadius: "8px",
-            animation: "fadeIn 0.2s ease-out forwards"
+            borderTop: "8px solid #b5bda0",
+            borderRadius: "8px"
           }}>
             <h2 style={{ color: "#1a1a1a", fontSize: "24px", fontWeight: 600, margin: "0 0 24px 0", borderBottom: "1px solid #b5bda0", paddingBottom: "12px" }}>
               {modalMode === "add" ? "Add a new role" : "Update user role"}
@@ -231,7 +267,7 @@ export default function UsersPage() {
                 </div>
                 
                 <div>
-                  <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#6b6b6b", marginBottom: "6px" }}>PHONE NUMBER (WITH COUNTRY CODE)</label>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#6b6b6b", marginBottom: "6px" }}>PHONE NUMBER</label>
                   <input 
                     type="text" 
                     placeholder="+91 9876543210"
@@ -257,8 +293,9 @@ export default function UsersPage() {
                   <input 
                     type="email" 
                     value={newRoleData.email}
+                    disabled={modalMode === "edit"}
                     onChange={(e) => setNewRoleData({...newRoleData, email: e.target.value})}
-                    style={{ width: "100%", padding: "10px", border: "1px solid #b5bda0", backgroundColor: "#fff", outline: "none", borderRadius: "4px" }} 
+                    style={{ width: "100%", padding: "10px", border: "1px solid #b5bda0", backgroundColor: modalMode === "edit" ? "#e0dcd3" : "#fff", outline: "none", borderRadius: "4px" }} 
                   />
                 </div>
 
@@ -269,10 +306,10 @@ export default function UsersPage() {
                     onChange={(e) => setNewRoleData({...newRoleData, role: e.target.value})}
                     style={{ width: "100%", padding: "10px", border: "1px solid #b5bda0", backgroundColor: "#fff", outline: "none", cursor: "pointer", borderRadius: "4px" }}
                   >
-                    <option value="Admin">Admin</option>
-                    <option value="Super Admin">Super Admin</option>
-                    <option value="Viewer">Viewer</option>
-                    <option value="Editor">Editor</option>
+                    <option value="admin">Admin</option>
+                    <option value="super_admin">Super Admin</option>
+                    <option value="viewer">Viewer</option>
+                    <option value="editor">Editor</option>
                   </select>
                 </div>
               </div>
@@ -308,7 +345,7 @@ export default function UsersPage() {
           display: "flex", alignItems: "center", justifyContent: "center"
         }}>
           <div style={{
-            backgroundColor: "#f5f0e8", border: "2px solid #b5bda0", padding: "32px", maxWidth: "400px", textAlign: "center", boxShadow: "0 8px 32px rgba(0,0,0,0.15)"
+            backgroundColor: "#f5f0e8", border: "2px solid #b5bda0", padding: "32px", maxWidth: "400px", textAlign: "center", boxShadow: "0 8px 32px rgba(0,0,0,0.15)", margin: "auto"
           }}>
             <h3 style={{ margin: "0 0 16px 0", color: "#1a1a1a", fontSize: "18px" }}>
               {modalMode === "add" ? "Are you sure you wanna add this role?" : "Are you sure you want to change this user's role?"}
@@ -330,13 +367,6 @@ export default function UsersPage() {
           </div>
         </div>
       )}
-
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes slideIn {
-          from { transform: translateX(100%); }
-          to { transform: translateX(0); }
-        }
-      `}} />
     </div>
   );
 }

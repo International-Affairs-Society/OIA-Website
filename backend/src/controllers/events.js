@@ -87,12 +87,12 @@ function isStaffFromToken(req) {
 
 // GET /events (Public / Authenticated)
 export const getEvents = asyncHandler(async (req, res) => {
-  const { eventType, mouId, status, is_archived } = req.query
+  const { eventType, mouId, status, is_archived, addToHomepage } = req.query
   const isStaffOrLeadership = isStaffFromToken(req)
 
   // Serve cached response for public requests (cache busted on write mutations)
   if (!isStaffOrLeadership) {
-    const cacheKey = `events:public:${JSON.stringify({ eventType, mouId })}`
+    const cacheKey = `events:public:${JSON.stringify({ eventType, mouId, addToHomepage })}`
     const cached = getCached(cacheKey)
     if (cached) {
       return res.json(cached)
@@ -104,6 +104,9 @@ export const getEvents = asyncHandler(async (req, res) => {
     }
     if (eventType) where.event_type = eventType
     if (mouId && mouId !== 'None' && mouId !== '') where.linked_mou_id = mouId
+    if (addToHomepage !== undefined) {
+      where.add_to_homepage = addToHomepage === 'true'
+    }
 
     const paginatedResult = await paginate(prisma.events, req.query, {
       where,
@@ -128,6 +131,9 @@ export const getEvents = asyncHandler(async (req, res) => {
   if (is_archived !== undefined) where.is_archived = is_archived === 'true'
   if (eventType) where.event_type = eventType
   if (mouId && mouId !== 'None' && mouId !== '') where.linked_mou_id = mouId
+  if (addToHomepage !== undefined) {
+    where.add_to_homepage = addToHomepage === 'true'
+  }
 
   const paginatedResult = await paginate(prisma.events, req.query, {
     where,
