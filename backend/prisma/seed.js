@@ -6,16 +6,21 @@ async function main() {
   console.log('Starting seed...');
 
   // Clean up existing data in reverse order of dependencies
-  await prisma.stage_history.deleteMany();
-  await prisma.documents.deleteMany();
+  await prisma.visit_delegations.deleteMany();
+  await prisma.visit_our_pocs.deleteMany();
+  await prisma.visit_reports.deleteMany();
+  await prisma.visits.deleteMany();
+  await prisma.notifications.deleteMany();
+  await prisma.program_leads.deleteMany();
   await prisma.applications.deleteMany();
   await prisma.programs.deleteMany();
   await prisma.events.deleteMany();
+  await prisma.mou_partner_pocs.deleteMany();
+  await prisma.mou_our_pocs.deleteMany();
+  await prisma.mou_documents.deleteMany();
   await prisma.mous.deleteMany();
-  await prisma.universities.deleteMany();
-  await prisma.student_records.deleteMany();
-  await prisma.change_requests.deleteMany();
-  await prisma.notifications.deleteMany();
+  await prisma.students.deleteMany();
+  await prisma.reviews.deleteMany();
   await prisma.users.deleteMany();
 
   console.log('Cleaned up existing data.');
@@ -24,176 +29,205 @@ async function main() {
   const superAdmin = await prisma.users.create({
     data: {
       email: 'superadmin@bennett.edu.in',
-      display_name: 'Super Admin User',
-      role: 'SUPER_ADMIN',
+      name: 'Super Admin User',
+      role: 'super_admin',
     },
   });
 
   const admin = await prisma.users.create({
     data: {
       email: 'admin@bennett.edu.in',
-      display_name: 'Admin User',
-      role: 'ADMIN',
+      name: 'Admin User',
+      role: 'admin',
     },
   });
 
   const editor = await prisma.users.create({
     data: {
       email: 'editor@bennett.edu.in',
-      display_name: 'Editor User',
-      role: 'EDITOR',
+      name: 'Editor User',
+      role: 'editor',
     },
   });
 
-  const student1 = await prisma.users.create({
+  const student1User = await prisma.users.create({
     data: {
       email: 'student1@bennett.edu.in',
-      display_name: 'Alice Student',
-      role: 'STUDENT',
+      name: 'Alice Student',
+      role: 'student',
     },
   });
 
-  const student2 = await prisma.users.create({
+  const student2User = await prisma.users.create({
     data: {
       email: 'student2@bennett.edu.in',
-      display_name: 'Bob Student',
-      role: 'STUDENT',
+      name: 'Bob Student',
+      role: 'student',
     },
   });
 
   console.log('Users created.');
 
   // 2. Create Student Records
-  await prisma.student_records.create({
+  const student1 = await prisma.students.create({
     data: {
-      user_id: student1.id,
-      enrollment_id: 'E1001',
-      department: 'Computer Science',
-      batch_year: 2024,
-      program_type: 'B.Tech',
+      user_id: student1User.id,
+      enrollment_no: 'E1001',
+      course: 'Computer Science',
+      school: 'SCSET',
     },
   });
 
-  await prisma.student_records.create({
+  const student2 = await prisma.students.create({
     data: {
-      user_id: student2.id,
-      enrollment_id: 'E1002',
-      department: 'Mechanical Engineering',
-      batch_year: 2024,
-      program_type: 'B.Tech',
+      user_id: student2User.id,
+      enrollment_no: 'E1002',
+      course: 'Mechanical Engineering',
+      school: 'SCSET',
     },
   });
 
   console.log('Student records created.');
 
-  // 3. Create Universities
-  const uni1 = await prisma.universities.create({
-    data: {
-      name: 'Global Tech University',
-      country: 'USA',
-    },
-  });
-
-  const uni2 = await prisma.universities.create({
-    data: {
-      name: 'London School of Sciences',
-      country: 'UK',
-    },
-  });
-
-  console.log('Universities created.');
-
-  // 4. Create MOUs
+  // 3. Create MOUs
   const mou1 = await prisma.mous.create({
     data: {
-      partner_university_id: uni1.id,
-      signed_date: new Date('2023-01-01'),
+      name: 'Global Tech University MOU',
+      partner_university: 'Global Tech University',
+      country: 'USA',
+      type: 'Semester_Exchange',
+      status: 'Active',
+      start_date: new Date('2023-01-01'),
       expiry_date: new Date('2028-01-01'),
-      status: 'ACTIVE',
+      created_by: superAdmin.id
     },
   });
 
   const mou2 = await prisma.mous.create({
     data: {
-      partner_university_id: uni2.id,
-      signed_date: new Date('2022-05-15'),
+      name: 'London School of Sciences MOU',
+      partner_university: 'London School of Sciences',
+      country: 'UK',
+      type: 'Global_Immersion',
+      status: 'Active',
+      start_date: new Date('2022-05-15'),
       expiry_date: new Date('2025-05-15'),
-      status: 'ACTIVE',
+      created_by: superAdmin.id
     },
   });
 
   console.log('MOUs created.');
 
-  // 5. Create Programs
+  // 4. Create Programs
   const prog1 = await prisma.programs.create({
     data: {
-      mou_id: mou1.id,
-      title: 'Summer Exchange in Silicon Valley',
-      country: 'USA',
+      name: 'Summer Exchange in Silicon Valley',
       duration: '3 Months',
-      fee: 1500.00,
-      seats_total: 20,
-      seats_remaining: 20,
-      status: 'OPEN',
-      apply_open_date: new Date('2024-01-01'),
-      apply_close_date: new Date('2024-05-31'),
-      type: 'SUMMER_EXCHANGE',
+      partner: 'Global Tech University',
+      mou: mou1.name,
+      program_type: 'Semester Exchange',
+      country: 'USA',
+      start_date: new Date('2024-06-01'),
+      last_date_to_apply: new Date('2024-05-31'),
+      schools_eligible: ['SCSET', 'SEAS'],
+      semesters_eligible: ['Semester 5', 'Semester 6'],
+      courses_eligible: ['B.Tech', 'BCA'],
+      overview: 'Learn everything about the summer exchange program.',
+      highlights: ['Fully funded by partner', 'Industry mentors'],
+      fee_summary: '₹15,000 approx.',
+      fee_breakdown: 'Tuition Fee: ₹15,000',
+      show_living_cost: false,
+      use_default_form: true,
+      status: 'published',
+      created_by: superAdmin.id
     },
   });
 
   const prog2 = await prisma.programs.create({
     data: {
-      mou_id: mou2.id,
-      title: 'Semester Abroad in London',
-      country: 'UK',
+      name: 'Semester Abroad in London',
       duration: '6 Months',
-      fee: 2500.00,
-      seats_total: 10,
-      seats_remaining: 10,
-      status: 'OPEN',
-      apply_open_date: new Date('2024-02-01'),
-      apply_close_date: new Date('2024-06-30'),
-      type: 'SEMESTER_EXCHANGE',
+      partner: 'London School of Sciences',
+      mou: mou2.name,
+      program_type: 'Global Immersion',
+      country: 'UK',
+      start_date: new Date('2024-09-01'),
+      last_date_to_apply: new Date('2024-06-30'),
+      schools_eligible: ['SCSET', 'SOM'],
+      semesters_eligible: ['Semester 5', 'Semester 6', 'Semester 7'],
+      courses_eligible: ['B.Tech', 'BBA'],
+      overview: 'Experience academic life in London.',
+      highlights: ['Central London campus', 'Cultural tours'],
+      fee_summary: '₹25,000 approx.',
+      fee_breakdown: 'Tuition Fee: ₹25,000',
+      show_living_cost: false,
+      use_default_form: true,
+      status: 'published',
+      created_by: superAdmin.id
     },
   });
 
   console.log('Programs created.');
 
-  // 6. Create Events
+  // 5. Create Events
   await prisma.events.create({
     data: {
-      mou_id: mou1.id,
       title: 'Info Session: Silicon Valley Exchange',
-      event_date: new Date('2024-03-15T10:00:00Z'),
-      type: 'WEBINAR',
+      event_type: 'upcoming',
       description: 'Learn everything about the summer exchange program.',
-      visibility: 'PUBLIC',
+      location: 'Seminar Hall, SCSET',
+      date: new Date('2026-08-15'),
+      linked_mou_id: mou1.id,
+      is_archived: false,
+      add_to_homepage: false,
+      status: 'published',
+      created_by: superAdmin.id
+    },
+  });
+
+  await prisma.events.create({
+    data: {
+      title: 'Global Village 2024',
+      event_type: 'past',
+      description: 'Relive the highlights of our biggest international event.',
+      location: 'Bennett University Campus',
+      date: new Date('2024-03-20'),
+      linked_mou_id: mou1.id,
+      is_archived: false,
+      add_to_homepage: true,
+      poster_url: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=1000&auto=format&fit=crop',
+      gallery_urls: [
+        'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=1000&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1000&auto=format&fit=crop'
+      ],
+      status: 'published',
+      created_by: superAdmin.id
     },
   });
 
   console.log('Events created.');
 
-  // 7. Create Applications
-  const app1 = await prisma.applications.create({
+  // 6. Create Applications
+  await prisma.applications.create({
     data: {
-      user_id: student1.id,
+      student_id: student1.id,
       program_id: prog1.id,
-      stage: 'RECEIVED',
+      status: 'Application Submitted',
+      current_stage: 'Submitted',
     },
   });
 
-  // 8. Create Stage History for Application
-  await prisma.stage_history.create({
+  // 7. Create Program Leads
+  await prisma.program_leads.create({
     data: {
-      application_id: app1.id,
-      to_stage: 'RECEIVED',
-      changed_by_id: student1.id,
-      note: 'Initial application submitted',
-    },
+      name: 'Charlie Student',
+      phone: '+91 9999999999',
+      email: 'charlie@bennett.edu.in',
+      source_page: 'Silicon Valley Summer School',
+    }
   });
 
-  console.log('Applications created.');
-
+  console.log('Applications and Leads created.');
   console.log('Seed completed successfully!');
 }
 

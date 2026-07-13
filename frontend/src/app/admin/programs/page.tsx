@@ -13,32 +13,76 @@ export default function ProgramsPage() {
   const [programs, setPrograms] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchPrograms = async () => {
-      try {
-        const token = localStorage.getItem("access_token");
-        const res = await fetch(`${API_URL}/api/v1/programs`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setPrograms((data.data || []).map((p: any) => ({
-            id: p.id,
-            name: p.title || p.name,
-            duration: p.duration || "N/A",
-            partner: p.partner_university || "N/A",
-            mou: p.mou_id || "None",
-            is_archived: p.is_archived || false,
-          })));
-        }
-      } catch (err) {
-        console.error("Failed to fetch programs:", err);
-      } finally {
-        setIsLoading(false);
+  const fetchPrograms = async () => {
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(`${API_URL}/api/v1/programs`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPrograms((data.data || []).map((p: any) => ({
+          id: p.id,
+          name: p.title || p.name,
+          duration: p.duration || "N/A",
+          partner: p.partner || "N/A",
+          mou: p.mou || "None",
+          is_archived: p.is_archived || false,
+        })));
       }
-    };
+    } catch (err) {
+      console.error("Failed to fetch programs:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchPrograms();
   }, []);
+
+  const handleDelete = async (id: string) => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(`${API_URL}/api/v1/programs/${id}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        setPrograms(programs.filter((p) => p.id !== id));
+      } else {
+        const errorJson = await res.json();
+        alert(`Failed to delete program: ${errorJson.error?.message || "Unknown error"}`);
+      }
+    } catch (err) {
+      console.error("Failed to delete program:", err);
+    } finally {
+      setConfirmingId(null);
+    }
+  };
+
+  const handleToggleArchive = async (row: any) => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(`${API_URL}/api/v1/programs/${row.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ is_archived: !row.is_archived }),
+      });
+      if (res.ok) {
+        setPrograms(programs.map((p) => p.id === row.id ? { ...p, is_archived: !p.is_archived } : p));
+      } else {
+        const errorJson = await res.json();
+        alert(`Failed to update program archive status: ${errorJson.error?.message || "Unknown error"}`);
+      }
+    } catch (err) {
+      console.error("Failed to archive/unarchive program:", err);
+    }
+  };
 
   const columns = [
     { key: "name", label: "Name", width: "25%" },
@@ -71,10 +115,10 @@ export default function ProgramsPage() {
                 rowId={row.id}
                 confirmingDeleteId={confirmingId}
                 setConfirmingDeleteId={role === 'super_admin' ? setConfirmingId : undefined}
-                onConfirmDelete={role === 'super_admin' ? (id: string) => { setConfirmingId(null); alert(`Deleted program ${id}`); } : undefined}
+                onConfirmDelete={role === 'super_admin' ? () => handleDelete(row.id) : undefined}
                 onCancelDelete={role === 'super_admin' ? () => setConfirmingId(null) : undefined}
                 onEdit={() => router.push(`/admin/programs/edit/${row.id}`)}
-                onArchive={() => alert("Toggled archive")}
+                onArchive={() => handleToggleArchive(row)}
                 isArchived={row.is_archived}
               />
             )}

@@ -8,9 +8,9 @@ import { paginate } from '../utils/paginate.js'
 const studentRecordCreateSchema = z.object({
   userId: z.string().uuid(),
   enrollmentId: z.string().min(1),
-  department: z.string().min(1),
-  batchYear: z.number().int().min(1900),
-  programType: z.string().min(1)
+  department: z.string().min(1).optional().nullable(),
+  batchYear: z.number().int().min(1900).optional().nullable(),
+  programType: z.string().min(1).optional().nullable()
 })
 
 const studentRecordUpdateSchema = studentRecordCreateSchema.partial()
@@ -21,34 +21,42 @@ function formatStudentRecord(rec) {
   return {
     id: rec.id,
     userId: rec.user_id,
-    studentName: rec.users?.display_name || null,
-    email: rec.users?.email || null,
-    mobile: rec.users?.mobile || null,
-    enrollmentNumber: rec.enrollment_id,
-    department: rec.department,
-    batch: rec.batch_year,
-    programType: rec.program_type,
-    createdAt: rec.created_at,
-    updatedAt: rec.updated_at
+    studentName: rec.user?.name || null,
+    email: rec.user?.email || null,
+    mobile: rec.user?.phone_number || null,
+    enrollmentNumber: rec.enrollment_no,
+    department: rec.course || '',
+    batch: null,
+    programType: rec.school || '',
+    createdAt: rec.user?.created_at || null,
+    updatedAt: rec.user?.updated_at || null,
+    applications: rec.applications?.map(app => ({
+      id: app.id,
+      status: app.status,
+      programName: app.program?.name || 'Unknown',
+      documents: app.documents?.map(doc => ({
+        id: doc.id,
+        name: doc.name,
+        url: doc.url,
+        type: doc.type
+      })) || []
+    })) || []
   }
 }
 
 // GET /student-records (STAFF, LEADERSHIP only)
 export const getStudentRecords = asyncHandler(async (req, res) => {
-  const { department, batchYear } = req.query
+  const { department } = req.query
 
   const where = {}
   if (department) {
-    where.department = { contains: department, mode: 'insensitive' }
-  }
-  if (batchYear) {
-    where.batch_year = parseInt(batchYear)
+    where.course = { contains: department, mode: 'insensitive' }
   }
 
-  const paginatedResult = await paginate(prisma.student_records, req.query, {
+  const paginatedResult = await paginate(prisma.students, req.query, {
     where,
-    include: { users: true },
-    orderBy: { created_at: 'desc' }
+    include: { user: true },
+    orderBy: { user_id: 'desc' }
   })
 
   res.json({
@@ -63,9 +71,9 @@ export const getStudentRecords = asyncHandler(async (req, res) => {
 export const getStudentRecordById = asyncHandler(async (req, res) => {
   const { id } = req.params
 
-  const record = await prisma.student_records.findUnique({
+  const record = await prisma.students.findUnique({
     where: { id },
-    include: { users: true }
+    include: { user: true, applications: { include: { program: true, documents: true } } }
   })
 
   if (!record) {
@@ -74,8 +82,10 @@ export const getStudentRecordById = asyncHandler(async (req, res) => {
     })
   }
 
+  const userRole = (req.user.role || '').toLowerCase();
+
   // Permission check: must be SUPER_ADMIN, ADMIN, EDITOR, or self
-  if (req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN' && req.user.role !== 'EDITOR' && req.user.id !== record.user_id) {
+  if (userRole !== 'admin' && userRole !== 'super_admin' && userRole !== 'editor' && req.user.id !== record.user_id) {
     return res.status(403).json({
       error: { code: 'FORBIDDEN', message: 'Access denied' }
     })
@@ -100,7 +110,7 @@ export const createStudentRecord = asyncHandler(async (req, res) => {
   }
 
   // Verify user does not already have a student record (1-to-1)
-  const existingRecord = await prisma.student_records.findUnique({
+  const existingRecord = await prisma.students.findUnique({
     where: { user_id: filtered.userId }
   })
   if (existingRecord) {
@@ -110,8 +120,8 @@ export const createStudentRecord = asyncHandler(async (req, res) => {
   }
 
   // Verify enrollmentId is unique
-  const existingEnrollment = await prisma.student_records.findUnique({
-    where: { enrollment_id: filtered.enrollmentId }
+  const existingEnrollment = await prisma.students.findUnique({
+    where: { enrollment_no: filtered.enrollmentId }
   })
   if (existingEnrollment) {
     return res.status(409).json({
@@ -121,15 +131,14 @@ export const createStudentRecord = asyncHandler(async (req, res) => {
 
   const dbData = {
     user_id: filtered.userId,
-    enrollment_id: filtered.enrollmentId,
-    department: filtered.department,
-    batch_year: filtered.batchYear,
-    program_type: filtered.programType
+    enrollment_no: filtered.enrollmentId,
+    course: filtered.department || null,
+    school: filtered.programType || null
   }
 
-  const created = await prisma.student_records.create({
+  const created = await prisma.students.create({
     data: dbData,
-    include: { users: true }
+    include: { user: true }
   })
 
   res.status(201).json(formatStudentRecord(created))
@@ -139,7 +148,7 @@ export const createStudentRecord = asyncHandler(async (req, res) => {
 export const updateStudentRecord = asyncHandler(async (req, res) => {
   const { id } = req.params
 
-  const record = await prisma.student_records.findUnique({ where: { id } })
+  const record = await prisma.students.findUnique({ where: { id } })
   if (!record) {
     return res.status(404).json({
       error: { code: 'NOT_FOUND', message: 'Student record not found' }
@@ -152,7 +161,7 @@ export const updateStudentRecord = asyncHandler(async (req, res) => {
 
   if (filtered.userId && filtered.userId !== record.user_id) {
     // Check 1-to-1 unique user constraint
-    const existing = await prisma.student_records.findUnique({ where: { user_id: filtered.userId } })
+    const existing = await prisma.students.findUnique({ where: { user_id: filtered.userId } })
     if (existing) {
       return res.status(409).json({
         error: { code: 'RECORD_ALREADY_EXISTS', message: 'A student record already exists for this user' }
@@ -160,9 +169,9 @@ export const updateStudentRecord = asyncHandler(async (req, res) => {
     }
   }
 
-  if (filtered.enrollmentId && filtered.enrollmentId !== record.enrollment_id) {
+  if (filtered.enrollmentId && filtered.enrollmentId !== record.enrollment_no) {
     // Check enrollment unique constraint
-    const existing = await prisma.student_records.findUnique({ where: { enrollment_id: filtered.enrollmentId } })
+    const existing = await prisma.students.findUnique({ where: { enrollment_no: filtered.enrollmentId } })
     if (existing) {
       return res.status(409).json({
         error: { code: 'ENROLLMENT_ALREADY_EXISTS', message: 'Enrollment ID is already registered' }
@@ -172,17 +181,14 @@ export const updateStudentRecord = asyncHandler(async (req, res) => {
 
   const dbData = {}
   if (filtered.userId !== undefined) dbData.user_id = filtered.userId
-  if (filtered.enrollmentId !== undefined) dbData.enrollment_id = filtered.enrollmentId
-  if (filtered.department !== undefined) dbData.department = filtered.department
-  if (filtered.batchYear !== undefined) dbData.batch_year = filtered.batchYear
-  if (filtered.programType !== undefined) dbData.program_type = filtered.programType
+  if (filtered.enrollmentId !== undefined) dbData.enrollment_no = filtered.enrollmentId
+  if (filtered.department !== undefined) dbData.course = filtered.department
+  if (filtered.programType !== undefined) dbData.school = filtered.programType
 
-  dbData.updated_at = new Date()
-
-  const updated = await prisma.student_records.update({
+  const updated = await prisma.students.update({
     where: { id },
     data: dbData,
-    include: { users: true }
+    include: { user: true }
   })
 
   res.json(formatStudentRecord(updated))

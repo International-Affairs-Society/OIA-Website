@@ -1,40 +1,33 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader, FormField, CustomDropdown } from "../../components";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { Plus, Trash2 } from "lucide-react";
-import { MOCK_USERS_LIST } from "@/app/admin/data/mockData";
 
 const SCHOOL_OPTIONS = ["SCSET", "SOAI", "SEAS", "SOM", "SOL", "TSOM", "SOLA", "SOD", "All"];
 const SEMESTER_OPTIONS = ["Semester 1", "Semester 2", "Semester 3", "Semester 4", "Semester 5", "Semester 6", "Semester 7", "Semester 8", "Semester 9", "Semester 10", "All"];
 const COURSE_OPTIONS = ["B.Tech", "BCA", "BBA", "B.Com", "B.A. Liberal Arts", "B.A. Mass Communication", "B.A. Film, TV & Web Series", "B.Des", "B.A. LL.B. (Hons.)", "BBA LL.B. (Hons.)", "MBA", "MCA", "M.Tech", "M.A. Mass Communication", "M.A. Economics", "LL.M.", "PG Diploma in TV & Digital Journalism", "B.Tech Global", "BBA Global", "B.A. Global Liberal Arts", "B.A. Global Media", "B.Des Global", "All"];
 
-function MultiSelectPills({ label, options }: { label: string; options: string[] }) {
-  const [selected, setSelected] = useState<string[]>([]);
-  
+function MultiSelectPills({ label, options, selected, onChange }: { label: string; options: string[]; selected: string[]; onChange: (sel: string[]) => void }) {
   const toggle = (opt: string) => {
     if (opt === "All") {
-      // If clicking All, and it's already selected, unselect it. Otherwise, select ONLY All.
       if (selected.includes("All")) {
-        setSelected([]);
+        onChange([]);
       } else {
-        setSelected(["All"]);
+        onChange(["All"]);
       }
     } else {
-      // If clicking a specific option, unselect All, and toggle the specific option
       let newSelected = selected.filter(x => x !== "All");
       if (newSelected.includes(opt)) {
         newSelected = newSelected.filter(x => x !== opt);
       } else {
         newSelected = [...newSelected, opt];
       }
-      setSelected(newSelected);
+      onChange(newSelected);
     }
   };
-
-  const isAllSelected = selected.length === options.length && options.length > 0;
 
   return (
     <FormField label={label}>
@@ -69,23 +62,21 @@ function MultiSelectPills({ label, options }: { label: string; options: string[]
   );
 }
 
-function DynamicListInput({ label, placeholder }: { label: string; placeholder: string }) {
-  const [items, setItems] = useState<string[]>([""]);
-
+function DynamicListInput({ label, placeholder, items, onChange }: { label: string; placeholder: string; items: string[]; onChange: (items: string[]) => void }) {
   const handleAdd = () => {
-    setItems([...items, ""]);
+    onChange([...items, ""]);
   };
 
   const handleRemove = (index: number) => {
     const newItems = [...items];
     newItems.splice(index, 1);
-    setItems(newItems.length ? newItems : [""]);
+    onChange(newItems.length ? newItems : [""]);
   };
 
   const handleChange = (index: number, val: string) => {
     const newItems = [...items];
     newItems[index] = val;
-    setItems(newItems);
+    onChange(newItems);
   };
 
   return (
@@ -154,9 +145,7 @@ interface CustomField {
   options?: string;
 }
 
-function CustomFormBuilder() {
-  const [fields, setFields] = useState<CustomField[]>([]);
-
+function CustomFormBuilder({ fields, setFields }: { fields: CustomField[]; setFields: React.Dispatch<React.SetStateAction<CustomField[]>> }) {
   const handleAddField = () => {
     setFields([...fields, { id: Math.random().toString(36).substr(2, 9), label: "", type: "text", required: false }]);
   };
@@ -173,10 +162,10 @@ function CustomFormBuilder() {
     <div style={{ marginTop: "1rem", padding: "1.5rem", backgroundColor: "rgba(181, 189, 160, 0.1)", borderRadius: "8px", border: "1px solid rgba(181, 189, 160, 0.3)" }}>
       <h4 style={{ fontSize: "14px", fontWeight: 600, color: "#1a1a1a", marginBottom: "12px" }}>Custom Form Builder</h4>
       <p style={{ fontSize: "13px", color: "#6b6b6b", marginBottom: "1.5rem", lineHeight: 1.5 }}>
-        Add specific fields you want applicants to fill out. You can ask for text answers, require document uploads (like portfolios), or provide dropdown selections.
+        Add specific fields you want applicants to fill out. You can ask for text answers, require document uploads, or provide dropdown selections.
       </p>
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-        {fields.map((field, index) => (
+        {fields.map((field) => (
           <div key={field.id} style={{ display: "flex", flexWrap: "wrap", gap: "12px", alignItems: "flex-start", backgroundColor: "#fff", padding: "16px", borderRadius: "8px", border: "1px solid #b5bda0" }}>
             <div style={{ flex: "1 1 200px" }}>
               <label style={{ display: "block", fontSize: "12px", color: "#6b6b6b", marginBottom: "4px" }}>Field Label</label>
@@ -264,41 +253,84 @@ function CustomFormBuilder() {
 export default function CreateProgramPage() {
   const router = useRouter();
   const { role } = useAuth();
+  
+  const [name, setName] = useState("");
+  const [partner, setPartner] = useState("");
+  const [duration, setDuration] = useState("");
+  const [mou, setMou] = useState("");
+  const [programType, setProgramType] = useState("");
+  const [country, setCountry] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [lastDateToApply, setLastDateToApply] = useState("");
+  
   const [showLivingCost, setShowLivingCost] = useState(false);
-  const [useDefaultForm, setUseDefaultForm] = useState(false);
+  const [useDefaultForm, setUseDefaultForm] = useState(true);
   const [isComingSoon, setIsComingSoon] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   
   const [ourPOCs, setOurPOCs] = useState<any[]>([]);
   const [showPOCDropdown, setShowPOCDropdown] = useState(false);
   const [usersList, setUsersList] = useState<any[]>([]);
+  const [mousList, setMousList] = useState<{ value: string; label: string }[]>([]);
 
+  const [schoolsEligible, setSchoolsEligible] = useState<string[]>([]);
+  const [semestersEligible, setSemestersEligible] = useState<string[]>([]);
+  const [coursesEligible, setCoursesEligible] = useState<string[]>([]);
+  const [overview, setOverview] = useState("");
+  const [highlights, setHighlights] = useState<string[]>([""]);
+  const [feeSummary, setFeeSummary] = useState("");
+  const [feeBreakdown, setFeeBreakdown] = useState("");
+  const [estimatedStayCost, setEstimatedStayCost] = useState("");
+  const [livingCostsText, setLivingCostsText] = useState("");
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
+
+  const [posterUrl, setPosterUrl] = useState("");
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [isUploadingPoster, setIsUploadingPoster] = useState(false);
+  const [isUploadingGallery, setIsUploadingGallery] = useState(false);
+
+  // Fetch Users and MOUs
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem("access_token");
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/users`, {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+        
+        // Fetch Users
+        const usersRes = await fetch(`${API_URL}/api/v1/users`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
-        if (res.ok) {
-          const data = await res.json();
+        if (usersRes.ok) {
+          const data = await usersRes.json();
           setUsersList(data.data || []);
         }
+
+        // Fetch MOUs
+        const mousRes = await fetch(`${API_URL}/api/v1/mous`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (mousRes.ok) {
+          const data = await mousRes.json();
+          const mapped = (data.data || []).map((m: any) => ({
+            value: m.id,
+            label: m.name
+          }));
+          setMousList([{ value: "", label: "None" }, ...mapped]);
+        }
       } catch (err) {
-        console.error("Failed to fetch users:", err);
+        console.error("Failed to fetch initial data for create program:", err);
       }
     };
-    fetchUsers();
+    fetchData();
   }, []);
-
 
   const addPOC = (user?: any) => {
     if (user) {
       setOurPOCs([...ourPOCs, { 
         name: user.display_name || user.name || user.email, 
-        designation: user.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1)) : "", 
+        designation: user.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1)) : "Coordinator", 
         email: user.email, 
-        contactNumber: user.mobile || user.phoneNumber || "+91 9876543210" 
+        contactNumber: user.phone_number || "+91 9876543210" 
       }]);
     } else {
       setOurPOCs([...ourPOCs, { name: "", designation: "", email: "", contactNumber: "" }]);
@@ -318,6 +350,152 @@ export default function CreateProgramPage() {
     setOurPOCs(updated);
   };
 
+  const handlePosterUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingPoster(true);
+      const token = localStorage.getItem("access_token");
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch(`${API_URL}/api/v1/media`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setPosterUrl(data.publicUrl || data.url);
+      } else {
+        alert("Upload failed.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error uploading file.");
+    } finally {
+      setIsUploadingPoster(false);
+    }
+  };
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    try {
+      setIsUploadingGallery(true);
+      const token = localStorage.getItem("access_token");
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+      const uploaded: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const formData = new FormData();
+        formData.append("file", files[i]);
+
+        const res = await fetch(`${API_URL}/api/v1/media`, {
+          method: "POST",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: formData,
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          uploaded.push(data.publicUrl || data.url);
+        }
+      }
+      setGalleryUrls((prev) => [...prev, ...uploaded]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsUploadingGallery(false);
+    }
+  };
+
+  const removeGalleryImage = (index: number) => {
+    setGalleryUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const executeSaveProgram = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+      const startD = isComingSoon ? "2099-12-31" : startDate;
+      const applyD = isComingSoon ? "2099-12-31" : lastDateToApply;
+
+      if (!name || !programType || !country || !startD || !applyD) {
+        alert("Please fill in all required fields (Name, Program Type, Country, Start Date, Apply Date).");
+        setShowConfirm(false);
+        return;
+      }
+
+      // Parse living costs details into structured formats if needed, or store in custom_fields
+      const livingCosts = livingCostsText.split('\n').filter(l => l.trim() !== "").map(line => {
+        const parts = line.split('|');
+        return {
+          item: parts[0]?.trim() || "",
+          cost: parts[1]?.trim() || "",
+          costINR: parts[2]?.trim() || ""
+        };
+      });
+
+      const payload = {
+        name,
+        duration: duration || null,
+        partner: partner || null,
+        mou: mou || null,
+        program_type: programType,
+        country,
+        start_date: startD,
+        last_date_to_apply: applyD,
+        schools_eligible: schoolsEligible,
+        semesters_eligible: semestersEligible,
+        courses_eligible: coursesEligible,
+        overview: overview || null,
+        highlights: highlights.filter(h => h.trim() !== ""),
+        fee_summary: feeSummary || null,
+        fee_breakdown: feeBreakdown || null,
+        show_living_cost: showLivingCost,
+        estimated_stay_cost: estimatedStayCost || null,
+        living_cost_details: livingCostsText || null,
+        use_default_form: useDefaultForm,
+        custom_fields: {
+          posterUrl,
+          galleryUrls,
+          ourPOCs,
+          formFields: customFields,
+          isComingSoon,
+          livingCosts
+        },
+        status: (role === 'editor' || role === 'admin') ? 'pending_approval' : 'published'
+      };
+
+      const res = await fetch(`${API_URL}/api/v1/programs`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        router.push("/admin/programs");
+      } else {
+        const errorJson = await res.json();
+        alert(`Failed to save program: ${errorJson.error?.message || "Unknown error"}`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error occurred while saving program.");
+    } finally {
+      setShowConfirm(false);
+    }
+  };
+
   return (
     <div style={{ maxWidth: "800px", margin: "0 auto" }}>
       <div style={{ marginBottom: "2rem" }}>
@@ -334,235 +512,239 @@ export default function CreateProgramPage() {
           <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#1a1a1a", marginBottom: "1rem", borderBottom: "1px solid rgba(181, 189, 160, 0.5)", paddingBottom: "0.5rem" }}>Basic Details</h3>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
             <FormField label="Program Name" required>
-              <input type="text" placeholder="e.g. HSE St. Petersburg Summer School" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0", padding: "8px 12px", borderRadius: "4px", width: "100%", fontSize: "14px" }} />
+              <input type="text" placeholder="e.g. HSE Summer School" value={name} onChange={(e) => setName(e.target.value)} required style={{ backgroundColor: "transparent", border: "1px solid #b5bda0", padding: "8px 12px", borderRadius: "4px", width: "100%", fontSize: "14px" }} />
             </FormField>
-            
             <FormField label="Partner University Name">
-              <input type="text" placeholder="e.g. HSE University" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0", padding: "8px 12px", borderRadius: "4px", width: "100%", fontSize: "14px" }} />
+              <input type="text" placeholder="e.g. HSE University" value={partner} onChange={(e) => setPartner(e.target.value)} style={{ backgroundColor: "transparent", border: "1px solid #b5bda0", padding: "8px 12px", borderRadius: "4px", width: "100%", fontSize: "14px" }} />
             </FormField>
           </div>
           
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginTop: "1rem" }}>
-            <FormField label="Program Type">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem", marginTop: "1rem" }}>
+            <FormField label="Program Type" required>
               <CustomDropdown
-                onChange={() => {}}
+                value={programType}
+                onChange={setProgramType}
                 options={[
-                  { value: "", label: "Select Program Type" },
+                  { value: "", label: "Select Type" },
                   { value: "Semester Exchange", label: "Semester Exchange" },
                   { value: "Global Immersion", label: "Global Immersion" },
                   { value: "Inbound Immersion", label: "Inbound Immersion" },
                   { value: "Pathways Program", label: "Pathways Program" },
                   { value: "Progression Arrangement", label: "Progression Arrangement" },
                   { value: "International Internship", label: "International Internship" },
-                  { value: "Inbound Semester Exchange", label: "Inbound Semester Exchange" },
-                  { value: "Summer Program", label: "Summer Program" },
-                  { value: "Winter Program", label: "Winter Program" },
-                  { value: "Study Tour", label: "Study Tour" },
-                  { value: "Dual Degree", label: "Dual Degree" },
-                  { value: "Other", label: "Other" },
+                  { value: "Inbound Semester Exchange", label: "Inbound Semester Exchange" }
                 ]}
               />
             </FormField>
+            <FormField label="Duration (Weeks/Months)">
+              <input type="text" placeholder="e.g. 4 Weeks" value={duration} onChange={(e) => setDuration(e.target.value)} style={{ backgroundColor: "transparent", border: "1px solid #b5bda0", padding: "8px 12px", borderRadius: "4px", width: "100%", fontSize: "14px" }} />
+            </FormField>
+            <FormField label="Country" required>
+              <input type="text" placeholder="e.g. Russia" value={country} onChange={(e) => setCountry(e.target.value)} required style={{ backgroundColor: "transparent", border: "1px solid #b5bda0", padding: "8px 12px", borderRadius: "4px", width: "100%", fontSize: "14px" }} />
+            </FormField>
+          </div>
 
-            <FormField label="Linked MoU">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "1rem", marginTop: "1rem" }}>
+            <FormField label="Link MOU">
               <CustomDropdown
-                onChange={() => {}}
-                options={[
-                  { value: "", label: "Select Linked MoU" },
-                  { value: "mou_hse", label: "HSE University MoU - 2024" },
-                  { value: "mou_ntu", label: "NTU Singapore Exchange - 2025" },
-                  { value: "mou_gatech", label: "Georgia Tech Research - 2023" },
-                ]}
+                value={mou}
+                onChange={setMou}
+                options={mousList}
               />
             </FormField>
           </div>
 
-          <div style={{ marginTop: "2rem", marginBottom: "1rem" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-              <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#1a1a1a", marginBottom: 0 }}>Our University POCs</h3>
-              <div style={{ position: "relative" }}>
-                <button 
-                  type="button"
-                  onClick={() => setShowPOCDropdown(!showPOCDropdown)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", fontWeight: 700,
-                    color: "#1a1a1a", backgroundColor: "transparent", border: "1px solid #1a1a1a",
-                    padding: "6px 12px", borderRadius: "4px", cursor: "pointer"
-                  }}
-                >
-                  <Plus size={14} /> Add POC
-                </button>
-                
-                {showPOCDropdown && (
-                  <div style={{
-                    position: "absolute", top: "100%", right: 0, marginTop: "8px",
-                    backgroundColor: "#fff", border: "1px solid #b5bda0", borderRadius: "8px",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)", zIndex: 10, minWidth: "200px",
-                    overflow: "hidden"
-                  }}>
-                    <div data-lenis-prevent style={{ padding: "8px", maxHeight: "200px", overflowY: "auto" }}>
-                      <div style={{ fontSize: "11px", fontWeight: 700, color: "#6b6b6b", textTransform: "uppercase", padding: "4px 8px 8px 8px", borderBottom: "1px solid #eaeaea", marginBottom: "4px" }}>Select from Users</div>
-                      {(usersList.length > 0 ? usersList : MOCK_USERS_LIST).map((u) => (
-                        <button
-                          key={u.id}
-                          type="button"
-                          onClick={() => addPOC(u)}
-                          style={{
-                            width: "100%", textAlign: "left", padding: "8px", background: "none", border: "none",
-                            fontSize: "13px", color: "#1a1a1a", cursor: "pointer", borderRadius: "4px",
-                            display: "flex", flexDirection: "column", gap: "2px", transition: "background 0.1s"
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#FFFBF2"}
-                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
-                        >
-                          <span style={{ fontWeight: 600 }}>{u.display_name || u.name || u.email}</span>
-                          <span style={{ fontSize: "11px", color: "#6b6b6b" }}>{u.email}</span>
-                        </button>
-                      ))}
-                      <div style={{ borderTop: "1px solid #eaeaea", margin: "4px 0" }} />
-                      <button
-                        type="button"
-                        onClick={() => addPOC()}
-                        style={{
-                          width: "100%", textAlign: "left", padding: "8px", background: "none", border: "none",
-                          fontSize: "13px", color: "#1a1a1a", cursor: "pointer", borderRadius: "4px",
-                          fontWeight: 600, display: "flex", alignItems: "center", gap: "6px", transition: "background 0.1s"
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#FFFBF2"}
+          {/* POC Section */}
+          <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#1a1a1a", marginTop: "2rem", marginBottom: "1rem", borderBottom: "1px solid rgba(181, 189, 160, 0.5)", paddingBottom: "0.5rem" }}>Points of Contact (POCs)</h3>
+          
+          <div style={{ marginBottom: "1.5rem" }}>
+            <div style={{ display: "flex", gap: "12px", marginBottom: "1rem", position: "relative" }}>
+              <button 
+                type="button" 
+                onClick={() => setShowPOCDropdown(!showPOCDropdown)} 
+                style={{ padding: "8px 16px", backgroundColor: "#1a1a1a", color: "#f5f0e8", border: "none", fontSize: "13px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
+              >
+                + Add POC from Database
+              </button>
+              <button 
+                type="button" 
+                onClick={() => addPOC()} 
+                style={{ padding: "8px 16px", backgroundColor: "transparent", color: "#1a1a1a", border: "1px solid #1a1a1a", fontSize: "13px", cursor: "pointer" }}
+              >
+                Create Custom POC
+              </button>
+
+              {showPOCDropdown && (
+                <div style={{ position: "absolute", top: "100%", left: 0, width: "300px", maxHeight: "250px", overflowY: "auto", backgroundColor: "#f5f0e8", border: "1px solid #b5bda0", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", zIndex: 100, padding: "8px" }}>
+                  <div style={{ fontSize: "11px", fontWeight: 600, color: "#6b6b6b", marginBottom: "6px", padding: "4px" }}>SELECT A USER</div>
+                  {usersList.length === 0 ? (
+                    <div style={{ padding: "8px", fontSize: "12px", color: "#6b6b6b" }}>No users found</div>
+                  ) : (
+                    usersList.map(u => (
+                      <div 
+                        key={u.id} 
+                        onClick={() => addPOC(u)}
+                        style={{ padding: "8px", fontSize: "13px", color: "#1a1a1a", cursor: "pointer", borderBottom: "1px solid rgba(181,189,160,0.3)" }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(181,189,160,0.2)"}
                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
                       >
-                        <Plus size={14} /> Blank Custom POC
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+                        {u.name || u.display_name || u.email} ({u.role})
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
-            <div style={{ borderBottom: "1px solid rgba(181, 189, 160, 0.5)", marginBottom: "16px", marginTop: "8px" }} />
 
-            {ourPOCs.length === 0 && (
-              <div style={{ 
-                padding: "32px 24px", 
-                textAlign: "center", 
-                backgroundColor: "rgba(181, 189, 160, 0.1)", 
-                border: "1px dashed #b5bda0", 
-                borderRadius: "8px",
-                color: "#6b6b6b",
-                fontSize: "14px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: "8px"
-              }}>
-                <span style={{ fontSize: "16px", fontWeight: 600, color: "#1a1a1a" }}>No POCs Assigned</span>
-                <span>Click the <strong>+ Add POC</strong> button above to assign a university contact for this program.</span>
+            {ourPOCs.length === 0 ? (
+              <div style={{ border: "1px dashed #b5bda0", padding: "24px", textAlign: "center", color: "#6b6b6b", fontSize: "14px" }}>
+                <span style={{ fontWeight: 600, color: "#1a1a1a" }}>No POCs Assigned</span>
               </div>
+            ) : (
+              ourPOCs.map((poc, index) => (
+                <div key={index} style={{ backgroundColor: "rgba(181, 189, 160, 0.1)", border: "1px dashed #b5bda0", padding: "16px", borderRadius: "8px", marginBottom: "16px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                    <span style={{ fontSize: "12px", fontWeight: 700, color: "#1a1a1a" }}>POC #{index + 1}</span>
+                    <button type="button" onClick={() => removePOC(index)} style={{ background: "none", border: "none", color: "#c0392b", cursor: "pointer" }}>
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                    <FormField label="Name">
+                      <input type="text" value={poc.name} onChange={(e) => updatePOC(index, 'name', e.target.value)} placeholder="Enter name" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0" }} />
+                    </FormField>
+                    <FormField label="Designation">
+                      <input type="text" value={poc.designation} onChange={(e) => updatePOC(index, 'designation', e.target.value)} placeholder="Enter designation" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0" }} />
+                    </FormField>
+                    <FormField label="Email">
+                      <input type="email" value={poc.email} onChange={(e) => updatePOC(index, 'email', e.target.value)} placeholder="Enter email" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0" }} />
+                    </FormField>
+                    <FormField label="Contact Number">
+                      <input type="text" value={poc.contactNumber} onChange={(e) => updatePOC(index, 'contactNumber', e.target.value)} placeholder="Enter number" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0" }} />
+                    </FormField>
+                  </div>
+                </div>
+              ))
             )}
-
-            {ourPOCs.map((poc, index) => (
-              <div key={index} style={{ backgroundColor: "rgba(181, 189, 160, 0.1)", border: "1px dashed #b5bda0", padding: "16px", borderRadius: "8px", marginBottom: "16px", position: "relative" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                  <span style={{ fontSize: "12px", fontWeight: 700, color: "#1a1a1a" }}>POC #{index + 1}</span>
-                  <button type="button" onClick={() => removePOC(index)} style={{ background: "none", border: "none", color: "#c0392b", cursor: "pointer" }}>
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                  <FormField label="Name">
-                    <input type="text" value={poc.name} onChange={(e) => updatePOC(index, 'name', e.target.value)} placeholder="Enter here" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0" }} />
-                  </FormField>
-                  <FormField label="Designation">
-                    <input type="text" value={poc.designation} onChange={(e) => updatePOC(index, 'designation', e.target.value)} placeholder="Enter here" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0" }} />
-                  </FormField>
-                  <FormField label="Email">
-                    <input type="email" value={poc.email} onChange={(e) => updatePOC(index, 'email', e.target.value)} placeholder="Enter here" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0" }} />
-                  </FormField>
-                  <FormField label="Contact Number">
-                    <input type="text" value={poc.contactNumber} onChange={(e) => updatePOC(index, 'contactNumber', e.target.value)} placeholder="Enter here" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0" }} />
-                  </FormField>
-                </div>
-              </div>
-            ))}
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem", marginTop: "1rem" }}>
-            <FormField label="Program Start Date">
+          {/* Dates */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginTop: "1rem" }}>
+            <FormField label="Program Start Date" required>
               {isComingSoon ? (
                 <input key="coming-soon-start" type="text" defaultValue="Coming Soon" disabled style={{ backgroundColor: "rgba(181, 189, 160, 0.2)", color: "#6b6b6b", border: "1px solid #b5bda0", padding: "10px", borderRadius: "4px", width: "100%", outline: "none", cursor: "not-allowed" }} />
               ) : (
-                <input key="date-start" type="date" />
+                <input key="date-start" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
               )}
             </FormField>
-            <FormField label="Program End Date">
-              {isComingSoon ? (
-                <input key="coming-soon-end-prog" type="text" defaultValue="Coming Soon" disabled style={{ backgroundColor: "rgba(181, 189, 160, 0.2)", color: "#6b6b6b", border: "1px solid #b5bda0", padding: "10px", borderRadius: "4px", width: "100%", outline: "none", cursor: "not-allowed" }} />
-              ) : (
-                <input key="date-end-prog" type="date" />
-              )}
-            </FormField>
-            <FormField label="Last Date to Apply">
+            <FormField label="Last Date to Apply" required>
               {isComingSoon ? (
                 <input key="coming-soon-end" type="text" defaultValue="Coming Soon" disabled style={{ backgroundColor: "rgba(181, 189, 160, 0.2)", color: "#6b6b6b", border: "1px solid #b5bda0", padding: "10px", borderRadius: "4px", width: "100%", outline: "none", cursor: "not-allowed" }} />
               ) : (
-                <input key="date-end" type="date" />
+                <input key="date-end" type="date" value={lastDateToApply} onChange={(e) => setLastDateToApply(e.target.value)} required />
               )}
             </FormField>
           </div>
 
+          {/* Image Upload Poster */}
           <div style={{ marginTop: "1.5rem" }}>
             <FormField label="Program Poster Image">
-              <div style={{ 
-                border: "1px dashed #b5bda0", 
-                borderRadius: "4px", 
-                padding: "2rem", 
-                textAlign: "center", 
-                backgroundColor: "rgba(255,255,255,0.4)",
-                cursor: "pointer"
-              }}>
-                <div style={{ fontSize: "13px", color: "#6b6b6b" }}>
-                  <span style={{ fontWeight: 600, color: "#1a1a1a" }}>Click to upload</span> or drag and drop<br />
-                  SVG, PNG, JPG or GIF (max. 5MB)
+              {posterUrl ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-start" }}>
+                  <img src={posterUrl} alt="Poster Preview" style={{ maxWidth: "200px", borderRadius: "8px", border: "1px solid #b5bda0" }} />
+                  <button
+                    type="button"
+                    onClick={() => setPosterUrl("")}
+                    style={{ padding: "6px 12px", border: "1px solid #c0392b", color: "#c0392b", background: "transparent", cursor: "pointer", fontSize: "12px", fontWeight: 600 }}
+                  >
+                    Remove Image
+                  </button>
                 </div>
-              </div>
+              ) : (
+                <div style={{ border: "1px dashed #b5bda0", borderRadius: "4px", padding: "2rem", textAlign: "center", backgroundColor: "rgba(255,255,255,0.4)" }}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="poster-upload"
+                    style={{ display: "none" }}
+                    onChange={handlePosterUpload}
+                    disabled={isUploadingPoster}
+                  />
+                  <label htmlFor="poster-upload" style={{ cursor: isUploadingPoster ? "not-allowed" : "pointer" }}>
+                    <div style={{ fontSize: "13px", color: "#6b6b6b" }}>
+                      <span style={{ fontWeight: 600, color: "#1a1a1a", textDecoration: "underline" }}>
+                        {isUploadingPoster ? "Uploading..." : "Click to upload poster"}
+                      </span> or drag and drop<br />
+                      PNG, JPG or WebP (max. 5MB)
+                    </div>
+                  </label>
+                </div>
+              )}
             </FormField>
           </div>
 
+          {/* Gallery Images */}
           <div style={{ marginTop: "1.5rem" }}>
-            <FormField label="Program Images">
+            <FormField label="Program Images (Gallery)">
               <div style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
-                <input type="file" multiple accept="image/*" id="media-upload" style={{ display: "none" }} />
-                <label htmlFor="media-upload" style={{ cursor: "pointer", color: "#1a1a1a", fontSize: "14px", fontWeight: 500, textDecoration: "underline" }}>
-                  Click to upload program images
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  id="media-upload"
+                  style={{ display: "none" }}
+                  onChange={handleGalleryUpload}
+                  disabled={isUploadingGallery}
+                />
+                <label htmlFor="media-upload" style={{ cursor: isUploadingGallery ? "not-allowed" : "pointer", color: "#1a1a1a", fontSize: "14px", fontWeight: 500, textDecoration: "underline" }}>
+                  {isUploadingGallery ? "Uploading..." : "Click to upload program images"}
                 </label>
-                <div style={{ fontSize: "12px", color: "#6b6b6b", marginTop: "8px" }}>PNG, JPG up to 10MB</div>
-                <div style={{ fontSize: "12px", color: "#6b6b6b", marginTop: "4px" }}>Recommended resolution: 1920 x 1080 px</div>
+                <div style={{ fontSize: "12px", color: "#6b6b6b", marginTop: "8px" }}>PNG, JPG, WebP allowed</div>
               </div>
+
+              {galleryUrls.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "12px" }}>
+                  {galleryUrls.map((url, idx) => (
+                    <div key={idx} style={{ position: "relative", width: "100px", height: "100px", border: "1px solid #b5bda0", borderRadius: "4px", overflow: "hidden" }}>
+                      <img src={url} alt={`Gallery ${idx}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <button
+                        type="button"
+                        onClick={() => removeGalleryImage(idx)}
+                        style={{
+                          position: "absolute", top: "2px", right: "2px", backgroundColor: "rgba(192, 57, 43, 0.8)",
+                          color: "#fff", border: "none", borderRadius: "50%", width: "20px", height: "20px", cursor: "pointer",
+                          fontSize: "12px", display: "flex", alignItems: "center", justifyContent: "center"
+                        }}
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </FormField>
           </div>
 
           {/* Eligibility */}
           <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#1a1a1a", marginTop: "2rem", marginBottom: "1rem", borderBottom: "1px solid rgba(181, 189, 160, 0.5)", paddingBottom: "0.5rem" }}>Eligibility</h3>
-          <MultiSelectPills label="Eligible Schools" options={SCHOOL_OPTIONS} />
-          <MultiSelectPills label="Eligible Semesters" options={SEMESTER_OPTIONS} />
-          <MultiSelectPills label="Eligible Courses" options={COURSE_OPTIONS} />
+          <MultiSelectPills label="Eligible Schools" options={SCHOOL_OPTIONS} selected={schoolsEligible} onChange={setSchoolsEligible} />
+          <MultiSelectPills label="Eligible Semesters" options={SEMESTER_OPTIONS} selected={semestersEligible} onChange={setSemestersEligible} />
+          <MultiSelectPills label="Eligible Courses" options={COURSE_OPTIONS} selected={coursesEligible} onChange={setCoursesEligible} />
 
           {/* Content */}
           <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#1a1a1a", marginTop: "2rem", marginBottom: "1rem", borderBottom: "1px solid rgba(181, 189, 160, 0.5)", paddingBottom: "0.5rem" }}>Content</h3>
           <FormField label="Overview">
-            <div style={{ position: "relative" }}>
-              <textarea rows={4} placeholder="Enter detailed program overview..." style={{ width: "100%" }} />
-              <div style={{ fontSize: "11px", color: "#6b6b6b", position: "absolute", bottom: "-20px", right: "0" }}>Max 150 words</div>
-            </div>
+            <textarea rows={4} placeholder="Enter detailed program overview..." value={overview} onChange={(e) => setOverview(e.target.value)} style={{ width: "100%" }} />
           </FormField>
-          <DynamicListInput label="Highlights" placeholder="e.g. Fully funded by DAAD" />
+          <DynamicListInput label="Highlights" placeholder="e.g. Fully funded by partner" items={highlights} onChange={setHighlights} />
 
           {/* Financials */}
           <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#1a1a1a", marginTop: "2rem", marginBottom: "1rem", borderBottom: "1px solid rgba(181, 189, 160, 0.5)", paddingBottom: "0.5rem" }}>Financials</h3>
           <FormField label="Program Fee Summary">
-            <input type="text" placeholder="e.g. ₹28,675 – ₹50,669" />
+            <input type="text" placeholder="e.g. ₹28,675 – ₹50,669" value={feeSummary} onChange={(e) => setFeeSummary(e.target.value)} />
           </FormField>
           <FormField label="Fee Breakdown">
-            <textarea rows={4} placeholder="e.g. Tuition Fee: ₹28,675" />
+            <textarea rows={4} placeholder="e.g. Tuition Fee: ₹28,675" value={feeBreakdown} onChange={(e) => setFeeBreakdown(e.target.value)} />
           </FormField>
 
           <FormField label="Add approximate living cost?">
@@ -579,10 +761,10 @@ export default function CreateProgramPage() {
           {showLivingCost && (
             <div style={{ marginTop: "1rem", padding: "1.5rem", backgroundColor: "rgba(181, 189, 160, 0.1)", borderRadius: "8px", border: "1px solid rgba(181, 189, 160, 0.3)" }}>
               <FormField label="Estimated Stay Cost">
-                <input type="text" placeholder="e.g. ₹8,000–₹18,000 approx." />
+                <input type="text" placeholder="e.g. ₹8,000–₹18,000 approx." value={estimatedStayCost} onChange={(e) => setEstimatedStayCost(e.target.value)} />
               </FormField>
               <FormField label="Living Costs (Format: Item | Cost | CostINR, one per line)">
-                <textarea rows={4} placeholder="e.g. Food & Groceries | 10,000 RUB/month | ₹11,600" />
+                <textarea rows={4} placeholder="e.g. Food & Groceries | 10,000 RUB/month | ₹11,600" value={livingCostsText} onChange={(e) => setLivingCostsText(e.target.value)} />
               </FormField>
             </div>
           )}
@@ -603,9 +785,9 @@ export default function CreateProgramPage() {
           {useDefaultForm ? (
             <div style={{ marginTop: "1rem", padding: "1.5rem", backgroundColor: "rgba(181, 189, 160, 0.1)", borderRadius: "8px", border: "1px solid rgba(181, 189, 160, 0.3)" }}>
               <p style={{ fontSize: "13px", color: "#6b6b6b", marginBottom: "1.5rem", lineHeight: 1.5 }}>
-                The default form includes: Full Name, Enrollment No, Gender, School, Semester, Course, CGPA, and Passport details. You can add additional fields below if required.
+                The default form includes: Full Name, Enrollment No, Gender, School, Semester, Course, CGPA, and Passport details. You can add additional fields below.
               </p>
-              <CustomFormBuilder />
+              <CustomFormBuilder fields={customFields} setFields={setCustomFields} />
             </div>
           ) : (
             <div style={{ marginTop: "1rem", padding: "1.5rem", backgroundColor: "rgba(181, 189, 160, 0.1)", borderRadius: "8px", border: "1px solid rgba(181, 189, 160, 0.3)" }}>
@@ -659,15 +841,16 @@ export default function CreateProgramPage() {
         <div style={{
           position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: "rgba(0,0,0,0.6)", zIndex: 10000,
-          display: "flex", alignItems: "center", justifyContent: "center"
+          display: "flex", alignItems: "center",
+          alignContent: "center", justifyContent: "center"
         }}>
           <div style={{
-            backgroundColor: "#f5f0e8", border: "2px solid #b5bda0", padding: "32px", maxWidth: "400px", textAlign: "center", boxShadow: "0 8px 32px rgba(0,0,0,0.15)"
+            backgroundColor: "#f5f0e8", border: "2px solid #b5bda0", padding: "32px", maxWidth: "400px", textAlign: "center", boxShadow: "0 8px 32px rgba(0,0,0,0.15)", margin: "auto"
           }}>
             <h3 style={{ margin: "0 0 16px 0", color: "#1a1a1a", fontSize: "18px" }}>Save program?</h3>
             <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginTop: "24px" }}>
               <button 
-                onClick={() => router.push("/admin/programs")}
+                onClick={executeSaveProgram}
                 style={{ padding: "8px 24px", backgroundColor: "#1a1a1a", color: "#fff", border: "none", fontWeight: 600, cursor: "pointer" }}
               >
                 Yes

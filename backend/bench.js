@@ -120,7 +120,7 @@ async function benchAPI() {
   // Check if server is running
   let serverUp = false
   try {
-    const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(2000) })
+    const res = await fetch(`${API_BASE}/`, { signal: AbortSignal.timeout(2000) })
     serverUp = res.ok
   } catch {
     try {

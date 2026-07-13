@@ -1,13 +1,11 @@
 "use client";
-
 import { useRef, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import CircuitPattern from "./CircuitPattern";
 import SplashCursor from "./SplashCursor";
 
-// ============================================================
-// DATA — Program nodes with float physics parameters
-// ============================================================
 interface ProgramNode {
+  id?: string;
   label: string;
   baseX: number;      // base position (% of section width)
   baseY: number;      // base position (% of section height)
@@ -19,19 +17,20 @@ interface ProgramNode {
   phaseY: number;     // Y phase offset (radians)
 }
 
-const PROGRAMS: ProgramNode[] = [
-  { label: "Semester Exchange", baseX: 16, baseY: 14, speedX: 0.4, speedY: 0.3, ampX: 41, ampY: 36, phaseX: 0, phaseY: 0.5 },
-  { label: "Global Immersion", baseX: 60, baseY: 9, speedX: 0.3, speedY: 0.5, ampX: 48, ampY: 30, phaseX: 1.2, phaseY: 0.3 },
-  { label: "Inbound Immersion", baseX: 88, baseY: 30, speedX: 0.5, speedY: 0.4, ampX: 36, ampY: 48, phaseX: 2.1, phaseY: 1.0 },
-  { label: "Pathways Program", baseX: 85, baseY: 64, speedX: 0.35, speedY: 0.45, ampX: 45, ampY: 39, phaseX: 0.8, phaseY: 2.0 },
-  { label: "Progression Arrangement", baseX: 68, baseY: 84, speedX: 0.45, speedY: 0.35, ampX: 39, ampY: 45, phaseX: 3.0, phaseY: 0.7 },
-  { label: "International Internship", baseX: 14, baseY: 78, speedX: 0.3, speedY: 0.5, ampX: 48, ampY: 32, phaseX: 1.5, phaseY: 2.5 },
-  { label: "Inbound Semester Exchange", baseX: 5, baseY: 46, speedX: 0.5, speedY: 0.3, ampX: 30, ampY: 53, phaseX: 0.3, phaseY: 1.8 },
+const DEFAULT_NODE_PARAMS = [
+  { baseX: 16, baseY: 14, speedX: 0.4, speedY: 0.3, ampX: 41, ampY: 36, phaseX: 0, phaseY: 0.5 },
+  { baseX: 60, baseY: 9, speedX: 0.3, speedY: 0.5, ampX: 48, ampY: 30, phaseX: 1.2, phaseY: 0.3 },
+  { baseX: 88, baseY: 30, speedX: 0.5, speedY: 0.4, ampX: 36, ampY: 48, phaseX: 2.1, phaseY: 1.0 },
+  { baseX: 85, baseY: 64, speedX: 0.35, speedY: 0.45, ampX: 45, ampY: 39, phaseX: 0.8, phaseY: 2.0 },
+  { baseX: 68, baseY: 84, speedX: 0.45, speedY: 0.35, ampX: 39, ampY: 45, phaseX: 3.0, phaseY: 0.7 },
+  { baseX: 14, baseY: 78, speedX: 0.3, speedY: 0.5, ampX: 48, ampY: 32, phaseX: 1.5, phaseY: 2.5 },
+  { baseX: 5, baseY: 46, speedX: 0.5, speedY: 0.3, ampX: 30, ampY: 53, phaseX: 0.3, phaseY: 1.8 },
 ];
 
 // ============================================================
 
 export default function ProgramsSection() {
+  const router = useRouter();
   const sectionRef = useRef<HTMLElement>(null);
   const lineRefs = useRef<(SVGLineElement | null)[]>([]);
   const nodeRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -40,11 +39,36 @@ export default function ProgramsSection() {
 
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [dims, setDims] = useState({ w: 0, h: 0 });
+  const [programs, setPrograms] = useState<ProgramNode[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Keep hoveredRef in sync with state (avoids stale closure in rAF)
   useEffect(() => {
     hoveredRef.current = hoveredIndex;
   }, [hoveredIndex]);
+
+  /* ── Fetch active programs from backend ── */
+  useEffect(() => {
+    const fetchPrograms = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/programs?status=published`);
+        if (res.ok) {
+          const json = await res.json();
+          const mapped = (json.data || []).slice(0, 7).map((p: any, i: number) => ({
+            id: p.id,
+            label: p.name,
+            ...DEFAULT_NODE_PARAMS[i]
+          }));
+          setPrograms(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to fetch homepage programs:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchPrograms();
+  }, []);
 
   /* ── Track section dimensions ── */
   useEffect(() => {
@@ -61,7 +85,7 @@ export default function ProgramsSection() {
 
   /* ── Animation loop — moves nodes AND SVG lines in lockstep ── */
   useEffect(() => {
-    if (dims.w === 0 || dims.h === 0) return;
+    if (dims.w === 0 || dims.h === 0 || programs.length === 0) return;
 
     const cx = dims.w / 2;
     const cy = dims.h / 2;
@@ -69,10 +93,10 @@ export default function ProgramsSection() {
     const animate = (time: number) => {
       const t = time / 1000;
 
-      PROGRAMS.forEach((prog, i) => {
+      programs.forEach((prog, i) => {
         // Compute float offset using sine/cosine for organic motion
-        const ox = Math.sin(t * prog.speedX + prog.phaseX) * prog.ampX;
-        const oy = Math.cos(t * prog.speedY + prog.phaseY) * prog.ampY;
+        const ox = Math.sin(t * (prog.speedX || 0.4) + (prog.phaseX || 0)) * (prog.ampX || 40);
+        const oy = Math.cos(t * (prog.speedY || 0.3) + (prog.phaseY || 0)) * (prog.ampY || 35);
 
         // Current pixel position of this node
         const nx = (prog.baseX / 100) * dims.w + ox;
@@ -106,7 +130,7 @@ export default function ProgramsSection() {
 
     animRef.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animRef.current);
-  }, [dims]);
+  }, [dims, programs]);
 
   /* ── Simple bottom-to-top entrance via IntersectionObserver ── */
   const [isVisible, setIsVisible] = useState(false);
@@ -161,7 +185,7 @@ export default function ProgramsSection() {
 
       {/* ── SVG Lines — radiate from each floating node to center ── */}
       <svg className="programs-lines absolute inset-0 w-full h-full z-10 pointer-events-none">
-        {PROGRAMS.map((_, i) => (
+        {programs.map((_, i) => (
           <line
             key={i}
             ref={(el) => { lineRefs.current[i] = el; }}
@@ -193,47 +217,56 @@ export default function ProgramsSection() {
       </div>
 
       {/* ── Floating Node Labels ── */}
-      {PROGRAMS.map((prog, i) => (
-        <div
-          key={i}
-          className="program-node absolute z-30"
-          style={{ left: `${prog.baseX}%`, top: `${prog.baseY}%` }}
-        >
-          <div
-            ref={(el) => { nodeRefs.current[i] = el; }}
-            className="cursor-pointer"
-            style={{ transform: "translate(-50%, -50%)" }}
-            onMouseEnter={() => setHoveredIndex(i)}
-            onMouseLeave={() => setHoveredIndex(null)}
-          >
-            {/* Small square marker */}
-            <span
-              className="inline-block rounded-sm mr-2 align-middle transition-all duration-300"
-              style={{
-                width: hoveredIndex === i ? 8 : 5,
-                height: hoveredIndex === i ? 8 : 5,
-                backgroundColor:
-                  hoveredIndex === i ? "#393939" : "rgba(57, 57, 57, 0.6)",
-              }}
-            />
-            {/* Label text */}
-            <span
-              className="italic whitespace-nowrap transition-all duration-300 align-middle"
-              style={{
-                fontFamily: "var(--font-space-grotesk), sans-serif",
-                fontSize: hoveredIndex === i ? "1.2rem" : "0.95rem",
-                color:
-                  hoveredIndex === i ? "#393939" : "rgba(57, 57, 57, 0.75)",
-                fontWeight: hoveredIndex === i ? 600 : 500,
-              }}
-            >
-              {prog.label}
-            </span>
-          </div>
+      {isLoading ? (
+        <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
+          <span className="font-sans text-foreground/50 text-sm font-semibold tracking-widest uppercase">Loading programs...</span>
         </div>
-      ))}
-
-
+      ) : programs.length === 0 ? (
+        <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
+          <span className="font-sans text-foreground/50 text-sm font-semibold tracking-widest uppercase">No programs found.</span>
+        </div>
+      ) : (
+        programs.map((prog, i) => (
+          <div
+            key={i}
+            className="program-node absolute z-30"
+            style={{ left: `${prog.baseX}%`, top: `${prog.baseY}%` }}
+          >
+            <div
+              ref={(el) => { nodeRefs.current[i] = el; }}
+              className="cursor-pointer"
+              style={{ transform: "translate(-50%, -50%)" }}
+              onMouseEnter={() => setHoveredIndex(i)}
+              onMouseLeave={() => setHoveredIndex(null)}
+              onClick={() => prog.id && router.push(`/programs/other/${prog.id}`)}
+            >
+              {/* Small square marker */}
+              <span
+                className="inline-block rounded-sm mr-2 align-middle transition-all duration-300"
+                style={{
+                  width: hoveredIndex === i ? 8 : 5,
+                  height: hoveredIndex === i ? 8 : 5,
+                  backgroundColor:
+                    hoveredIndex === i ? "#393939" : "rgba(57, 57, 57, 0.6)",
+                }}
+              />
+              {/* Label text */}
+              <span
+                className="italic whitespace-nowrap transition-all duration-300 align-middle"
+                style={{
+                  fontFamily: "var(--font-space-grotesk), sans-serif",
+                  fontSize: hoveredIndex === i ? "1.2rem" : "0.95rem",
+                  color:
+                    hoveredIndex === i ? "#393939" : "rgba(57, 57, 57, 0.75)",
+                  fontWeight: hoveredIndex === i ? 600 : 500,
+                }}
+              >
+                {prog.label}
+              </span>
+            </div>
+          </div>
+        ))
+      )}
     </section>
   );
 }
