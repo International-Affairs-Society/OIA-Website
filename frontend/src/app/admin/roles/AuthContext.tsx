@@ -74,12 +74,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Fetch user data from backend using the HTTP-only cookie
   const fetchMe = async () => {
     try {
+      const token = localStorage.getItem("access_token");
       const res = await fetch(`${API_URL}/api/v1/auth/me`, {
         credentials: "include",
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
-          'Expires': '0'
+          'Expires': '0',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         cache: 'no-store'
       });
@@ -99,11 +101,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // 1. Check existing session on mount
-    fetchMe();
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          localStorage.setItem("access_token", session.access_token);
+        } else {
+          localStorage.removeItem("access_token");
+        }
+      } catch (err) {
+        console.error("Error retrieving Supabase session on mount:", err);
+      }
+      await fetchMe();
+    };
+
+    // 1. Check existing session and sync to local storage on mount
+    initAuth();
 
     // 2. Listen for Supabase auth events (like completing the OAuth redirect)
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        localStorage.setItem("access_token", session.access_token);
+      } else {
+        localStorage.removeItem("access_token");
+      }
+
       if (event === "SIGNED_IN" && session) {
         setIsLoading(true);
         try {

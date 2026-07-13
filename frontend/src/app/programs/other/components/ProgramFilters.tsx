@@ -162,12 +162,27 @@ const COURSE_OPTIONS: FilterOption[] = [
   { label: "B.Des Global", value: "B.Des Global" },
 ];
 
-export default function ProgramFilters() {
-  const [school, setSchool] = useState("");
-  const [program, setProgram] = useState("");
-  const [semester, setSemester] = useState("");
-  const [course, setCourse] = useState("");
+interface ProgramFiltersProps {
+  school: string;
+  setSchool: (val: string) => void;
+  program: string;
+  setProgram: (val: string) => void;
+  semester: string;
+  setSemester: (val: string) => void;
+  course: string;
+  setCourse: (val: string) => void;
+}
 
+export default function ProgramFilters({
+  school,
+  setSchool,
+  program,
+  setProgram,
+  semester,
+  setSemester,
+  course,
+  setCourse
+}: ProgramFiltersProps) {
   return (
     <>
       <div className="program-filters-grid">
