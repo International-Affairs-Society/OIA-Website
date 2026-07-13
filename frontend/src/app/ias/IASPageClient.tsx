@@ -6,6 +6,8 @@ import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import GlobeDark from "./GlobeDark";
 import TimelineSection from "./TimelineSection";
+import TeamsSection from "./TeamsSection";
+import IASFooter from "./IASFooter";
 
 
 gsap.registerPlugin(ScrollTrigger);
@@ -214,7 +216,7 @@ export default function IASPageClient() {
                   fontWeight: 700,
                   lineHeight: 1.0,
                   letterSpacing: "-0.02em",
-                  color: "#ffffff",
+                  color: "#d4d4d4",
                   fontFamily: "var(--font-gmarket-sans)",
                   textTransform: "uppercase",
                   margin: 0,
@@ -361,6 +363,11 @@ export default function IASPageClient() {
         {/* ═══ TIMELINE SECTION ═══ */}
         <TimelineSection />
 
+        {/* ═══ TEAMS SECTION ═══ */}
+        <TeamsSection />
+
+        {/* ═══ FOOTER ═══ */}
+        <IASFooter />
       </main>
     </>
   );

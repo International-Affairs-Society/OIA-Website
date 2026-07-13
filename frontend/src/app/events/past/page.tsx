@@ -5,6 +5,7 @@ import MobileTimeline from "./components/Timeline/MobileTimeline";
 import Footer from "@/app/homepage/Footer";
 import styles from "./past-events.module.css";
 
+export const dynamic = "force-dynamic";
 async function getPastEvents() {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/events?eventType=past`, { cache: 'no-store' });

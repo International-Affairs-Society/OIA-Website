@@ -301,6 +301,7 @@ export default function EditProgramPage({ params }: { params: Promise<{ id: stri
         
         // 1. Fetch Users
         const usersRes = await fetch(`${API_URL}/api/v1/users`, {
+          credentials: "include",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         if (usersRes.ok) {
@@ -310,6 +311,7 @@ export default function EditProgramPage({ params }: { params: Promise<{ id: stri
 
         // 2. Fetch MOUs
         const mousRes = await fetch(`${API_URL}/api/v1/mous`, {
+          credentials: "include",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         if (mousRes.ok) {
@@ -323,6 +325,7 @@ export default function EditProgramPage({ params }: { params: Promise<{ id: stri
 
         // 3. Fetch Program Details
         const programRes = await fetch(`${API_URL}/api/v1/programs/${id}`, {
+          credentials: "include",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         if (programRes.ok) {
@@ -411,6 +414,7 @@ export default function EditProgramPage({ params }: { params: Promise<{ id: stri
 
       const res = await fetch(`${API_URL}/api/v1/media`, {
         method: "POST",
+        credentials: "include",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
       });
@@ -445,6 +449,7 @@ export default function EditProgramPage({ params }: { params: Promise<{ id: stri
 
         const res = await fetch(`${API_URL}/api/v1/media`, {
           method: "POST",
+          credentials: "include",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
           body: formData,
         });
@@ -521,6 +526,7 @@ export default function EditProgramPage({ params }: { params: Promise<{ id: stri
 
       const res = await fetch(`${API_URL}/api/v1/programs/${id}`, {
         method: "PATCH",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
