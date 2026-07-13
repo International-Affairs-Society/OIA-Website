@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>3D Globe</title>
+  <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/map.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: transparent; /* Changed to transparent for integration */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Georgia', serif;
+      overflow: hidden;
+    }
+
+    .globe-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+
+    #chartdiv {
+      width: 520px;
+      height: 520px;
+      border-radius: 50%;
+      /* Removed the box-shadow for cleaner integration */
+    }
+  </style>
+</head>
+<body>
+
+<div class="globe-wrapper">
+  <div id="chartdiv"></div>
+</div>
+
+<script>
+am5.ready(function () {
+
+  // ── Palette ──────────────────────────────────────────────────────────────
+  const OCEAN_FILL      = am5.color(0x000000);   // Transparent ocean hack: set to 0 and use opacity, but we need it to catch events
+  const OCEAN_STROKE    = am5.color(0x3a3832);
+  const LAND_FILL       = am5.color(0xeaeaea);   // Light grey land
+  const LAND_STROKE     = am5.color(0xd0d0d0);
+  const LAND_HOVER      = am5.color(0xffffff);
+  const GRATICULE       = am5.color(0xcccccc);
+  const LINE_COLOR      = am5.color(0xe63946);   // Red color for lines
+  // ─────────────────────────────────────────────────────────────────────────
+
+  var root = am5.Root.new("chartdiv");
+
+  root.setThemes([am5themes_Animated.new(root)]);
+
+  var chart = root.container.children.push(
+    am5map.MapChart.new(root, {
+      panX: "rotateX",
+      panY: "rotateY",
+      projection: am5map.geoOrthographic(),
+      paddingBottom: 0,
+      paddingTop: 0,
+      paddingLeft: 0,
+      paddingRight: 0,
+    })
+  );
+
+  var backgroundSeries = chart.series.push(
+    am5map.MapPolygonSeries.new(root, {})
+  );
+  backgroundSeries.mapPolygons.template.setAll({
+    fill: am5.color(0xffffff),
+    fillOpacity: 0.0, // Transparent ocean
+    stroke: am5.color(0xcccccc),
+    strokeOpacity: 0.4,
+    strokeWidth: 0.5,
+  });
+  backgroundSeries.data.push({
+    geometry: am5map.getGeoRectangle(90, 180, -90, -180),
+  });
+
+  // ── Continuous 360° rotation ─────────────────────────────────────────────
+  var rotationAnim;
+  var isDragging = false;
+
+  function spinGlobe() {
+    if (isDragging) return;
+    var currentX = chart.get("rotationX", 0);
+    rotationAnim = chart.animate({
+      key: "rotationX",
+      from: currentX,
+      to: currentX + 360,
+      duration: 30000,
+      easing: am5.ease.linear,
+    });
+    rotationAnim.events.on("stopped", function () {
+      if (!isDragging) spinGlobe();
+    });
+  }
+
+  chart.events.on("pointerdown", function () {
+    isDragging = true;
+    if (rotationAnim) rotationAnim.stop();
+  });
+
+  // Detect pointer up globally so it resumes even if mouse leaves globe
+  am5.registry.events.on("globalpointerup", function() {
+    if (isDragging) {
+      isDragging = false;
+      spinGlobe();
+    }
+  });
+
+  chart.appear(1000, 100);
+  spinGlobe();
+
+  // ── Countries ────────────────────────────────────────────────────────────
+  var polygonSeries = chart.series.push(
+    am5map.MapPolygonSeries.new(root, {
+      geoJSON: am5geodata_worldLow,
+    })
+  );
+
+  polygonSeries.mapPolygons.template.setAll({
+    fill: LAND_FILL,
+    stroke: LAND_STROKE,
+    strokeWidth: 0.5,
+    strokeOpacity: 0.7,
+    interactive: true,
+  });
+
+  polygonSeries.mapPolygons.template.states.create("hover", {
+    fill: LAND_HOVER,
+  });
+
+  // ── Animated Lines ───────────────────────────────────────────────────────
+  var lineSeries = chart.series.push(am5map.MapLineSeries.new(root, {}));
+  lineSeries.mapLines.template.setAll({
+    stroke: LINE_COLOR,
+    strokeWidth: 2,
+    strokeOpacity: 0.8
+  });
+
+  // Coordinates of some continents/cities to connect
+  var cities = [
+    { id: "newyork", longitude: -74.006, latitude: 40.7128 },
+    { id: "london", longitude: -0.1276, latitude: 51.5074 },
+    { id: "tokyo", longitude: 139.6917, latitude: 35.6895 },
+    { id: "sydney", longitude: 151.2093, latitude: -33.8688 },
+    { id: "saopaulo", longitude: -46.6333, latitude: -23.5505 },
+    { id: "cairo", longitude: 31.2357, latitude: 30.0444 },
+    { id: "delhi", longitude: 77.209, latitude: 28.6139 },
+    { id: "moscow", longitude: 37.6173, latitude: 55.7558 }
+  ];
+
+  function addLine() {
+    // Pick two random cities
+    var c1 = cities[Math.floor(Math.random() * cities.length)];
+    var c2 = cities[Math.floor(Math.random() * cities.length)];
+    
+    if (c1 === c2) return addLine(); // avoid same city
+
+    var line = lineSeries.pushDataItem({
+      geometry: {
+        type: "LineString",
+        coordinates: [
+          [c1.longitude, c1.latitude],
+          [c2.longitude, c2.latitude]
+        ]
+      }
+    });
+
+    var mapLine = line.get("mapLine");
+    if (!mapLine) return;
+    
+    // Animate the line drawing
+    mapLine.set("strokeDasharray", [1000, 1000]);
+    mapLine.set("strokeDashoffset", 1000);
+    
+    mapLine.animate({
+      key: "strokeDashoffset",
+      to: 0,
+      duration: 2000,
+      easing: am5.ease.out(am5.ease.cubic)
+    }).events.on("stopped", function() {
+      // Fade out and remove
+      mapLine.animate({
+        key: "strokeOpacity",
+        to: 0,
+        duration: 1000,
+        delay: 500
+      }).events.on("stopped", function() {
+        lineSeries.dataItems.removeValue(line);
+      });
+    });
+  }
+
+  // Create a new line every 1.5 seconds
+  setInterval(addLine, 1500);
+
+}); // end am5.ready
+</script>
+</body>
+</html>

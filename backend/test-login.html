@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Microsoft Login</title>
+    <!-- Load Supabase from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+        button {
+            background-color: #0078D4; /* Microsoft Blue */
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 10px 0;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #005a9e;
+        }
+        #logout-btn {
+            background-color: #dc2626;
+            display: none;
+        }
+        #logout-btn:hover {
+            background-color: #b91c1c;
+        }
+        .token-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            text-align: left;
+            word-break: break-all;
+            display: none;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        h1 { margin-top: 0; color: #1f2937; }
+        .user-info { margin-top: 20px; font-weight: 500; color: #4b5563; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Backend Testing Portal</h1>
+        <p>Use this page to log in via Microsoft and grab your Bearer token for Postman.</p>
+        
+        <button id="login-btn">Log in with Microsoft</button>
+        <button id="logout-btn">Log Out</button>
+
+        <div id="user-info" class="user-info"></div>
+
+        <div class="token-box" id="token-container">
+            <strong>Your Access Token (Bearer):</strong><br><br>
+            <span id="token-text"></span>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Supabase client
+        const SUPABASE_URL = 'https://zzkxuqbmzsivbgouvdwo.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp6a3h1cWJtenNpdmJnb3V2ZHdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NDEzMTksImV4cCI6MjA5NzAxNzMxOX0.9pGRbU69klP1Xc7kH2qlx6LaVI1_xRX_BgpxPZP7yNE';
+        
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const tokenContainer = document.getElementById('token-container');
+        const tokenText = document.getElementById('token-text');
+        const userInfo = document.getElementById('user-info');
+
+        // Function to trigger Microsoft OAuth login
+        async function login() {
+            loginBtn.innerText = "Redirecting to Microsoft...";
+            const { data, error } = await supabaseClient.auth.signInWithOAuth({
+                provider: 'azure',
+                options: {
+                    scopes: 'email',
+                    // The redirect URL where Microsoft should send the user back after login.
+                    // Important: Make sure this exact URL is added to the "Redirect URLs" in your Supabase Auth settings!
+                    redirectTo: window.location.href
+                }
+            });
+            if (error) {
+                console.error('Login error:', error.message);
+                alert('Failed to log in: ' + error.message);
+                loginBtn.innerText = "Log in with Microsoft";
+            }
+        }
+
+        // Function to log out
+        async function logout() {
+            await supabaseClient.auth.signOut();
+            window.location.reload();
+        }
+
+        // Check if user is already logged in on page load
+        async function checkSession() {
+            const { data: { session }, error } = await supabaseClient.auth.getSession();
+            
+            if (session) {
+                // User is logged in
+                loginBtn.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+                tokenContainer.style.display = 'block';
+                
+                userInfo.innerHTML = `Logged in as: <strong>${session.user.email}</strong>`;
+                tokenText.innerText = session.access_token;
+            } else {
+                // User is not logged in
+                loginBtn.style.display = 'inline-block';
+                logoutBtn.style.display = 'none';
+                tokenContainer.style.display = 'none';
+            }
+        }
+
+        // Event Listeners
+        loginBtn.addEventListener('click', login);
+        logoutBtn.addEventListener('click', logout);
+
+        // Run session check immediately
+        checkSession();
+
+        // Listen for auth state changes (e.g., successful redirect back from Microsoft)
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                checkSession();
+            }
+        });
+    </script>
+</body>
+</html>

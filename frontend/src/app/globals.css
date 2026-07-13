@@ -1,0 +1,256 @@
+@import "tailwindcss";
+@source "../../src";
+
+
+
+/* Tan Pearl display font */
+@font-face {
+  font-family: "TanPearl";
+  src: url("/fonts/fonnts.com-tan-pearl.otf") format("opentype");
+  font-display: swap;
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Riesling custom font */
+@font-face {
+  font-family: "Riesling";
+  src: url("/fonts/riesling.ttf") format("truetype");
+  font-display: swap;
+  font-weight: 400;
+  font-style: normal;
+}
+
+:root {
+  --background: #FFFBF2;
+  --foreground: #393939;
+  --accent: #e63946;
+  --muted-1: #EBEFC9;
+  --muted-2: #EEE0B7;
+  --muted-3: #C4CBB7;
+  --navbar-bg: #FFFBF2;
+  --line-color: rgba(0, 0, 0, 0.1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
+  --color-muted-1: var(--muted-1);
+  --color-muted-2: var(--muted-2);
+  --color-muted-3: var(--muted-3);
+  --color-navbar-bg: var(--navbar-bg);
+  --font-sans: var(--font-space-grotesk);
+  --font-mono: var(--font-space-mono);
+  --font-display: var(--font-space-grotesk);
+  --font-riesling: "Riesling";
+  --font-roboto: var(--font-roboto-condensed);
+}
+
+/* ===== GLOBAL RESETS ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  overflow-x: clip;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-space-grotesk), Arial, Helvetica, sans-serif;
+  overflow-x: clip;
+}
+
+/* ===== LENIS CROSS-BROWSER SUPPORT ===== */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* ===== ANIMATION KEYFRAMES ===== */
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes menuSlideDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ===== SCROLLBAR STYLING ===== */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* ===== PARTNERS SECTION — pseudo-elements & keyframes (can't be Tailwind) ===== */
+
+@keyframes dotPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+
+  70%,
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+
+.country-dot::before {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0;
+  animation: dotPulse 2.5s ease-out infinite;
+}
+
+.country-dot::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  z-index: -1;
+}
+
+.tooltip-uni::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  opacity: 0.6;
+  margin-right: 6px;
+}
+
+/* ===== Programs Section — floating nodes ===== */
+@keyframes programFloat {
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) translateY(0px) translateX(0px);
+  }
+
+  25% {
+    transform: translate(-50%, -50%) translateY(-8px) translateX(4px);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) translateY(-3px) translateX(-6px);
+  }
+
+  75% {
+    transform: translate(-50%, -50%) translateY(6px) translateX(2px);
+  }
+}
+
+/* ===== APPLE LIQUID GLASS — Card ===== */
+
+.liquid-glass-card {
+  position: relative;
+  border-radius: 20px;
+  padding: 24px;
+  overflow: hidden;
+  isolation: isolate;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+/* Inner glow ring + specular rim */
+.liquid-glass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.75),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.65),
+    inset 0 -1px 0 0 rgba(180, 160, 130, 0.12);
+}
+
+/* Displacement-map glass distortion layer */
+.liquid-glass-card::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  backdrop-filter: blur(18px) saturate(180%) brightness(1.05);
+  -webkit-backdrop-filter: blur(18px) saturate(180%) brightness(1.05);
+  filter: url(#liquid-glass-card-filter);
+  -webkit-filter: url(#liquid-glass-card-filter);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.liquid-glass-card-content {
+  position: relative;
+  z-index: 3;
+}
+
+.liquid-glass-card-shine {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}

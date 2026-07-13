@@ -1,0 +1,376 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  general
+  student
+  editor
+  admin
+  super_admin
+  viewer
+}
+
+enum Gender {
+  Male
+  Female
+  Other
+}
+
+enum ProgramStatus {
+  draft
+  pending_approval
+  published
+  archived
+}
+
+enum EventType {
+  upcoming
+  past
+}
+
+enum EventStatus {
+  draft
+  pending_approval
+  published
+  archived
+}
+
+enum MOUStatus {
+  Active
+  Draft
+  Expired
+  Dormant
+  Expiring_in_30_days  @map("Expiring in 30 days")
+  Expiring_in_90_days  @map("Expiring in 90 days")
+  Expiring_in_120_days @map("Expiring in 120 days")
+}
+
+enum MOUReviewStatus {
+  draft
+  pending_approval
+  published
+}
+
+enum ReviewType {
+  program
+  upcoming_event
+  past_event
+  mou
+}
+
+enum ReviewStatus {
+  pending
+  approved
+  rejected
+  changes_requested
+}
+
+enum VisitStatus {
+  approved
+  pending
+}
+
+enum AuditAction {
+  Approved
+  Requested_Changes @map("Requested Changes")
+  Submitted
+  Rejected
+  Archived
+  Unarchived
+}
+
+enum AuditItemType {
+  Event
+  Program
+  MOU
+}
+
+enum MOUType {
+  Semester_Exchange         @map("Semester Exchange")
+  Global_Immersion          @map("Global Immersion")
+  Inbound_Immersion         @map("Inbound Immersion")
+  Pathways_Program          @map("Pathways Program")
+  Progression_Arrangement   @map("Progression Arrangement")
+  International_Internship  @map("International Internship")
+  Inbound_Semester_Exchange @map("Inbound Semester Exchange")
+  Summer_Program            @map("Summer Program")
+  Winter_Program            @map("Winter Program")
+  Study_Tour                @map("Study Tour")
+  Dual_Degree               @map("Dual Degree")
+  Articulation
+  Other
+}
+
+model users {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String?
+  email        String   @unique
+  phone_number String?
+  gender       Gender?
+  photo_url    String?
+  role         Role     @default(general)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+
+  students   students?
+  programs   programs[]
+  events     events[]
+  mous       mous[]
+  reviews    reviews[]
+  visits     visits[]
+  notifications notifications[]
+}
+
+model students {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id         String   @unique @db.Uuid
+  enrollment_no   String   @unique
+  school          String?
+  course          String?
+
+  user            users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  applications    applications[]
+}
+
+model programs {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String
+  duration            String?
+  partner             String?
+  mou                 String   @default("None")
+  program_type        String
+  country             String
+  start_date          DateTime @db.Date
+  last_date_to_apply  DateTime @db.Date
+  schools_eligible    String[]
+  semesters_eligible  String[]
+  courses_eligible    String[]
+  overview            String?
+  highlights          String[]
+  fee_summary         String?
+  fee_breakdown       String?
+  show_living_cost    Boolean  @default(false)
+  estimated_stay_cost String?
+  living_cost_details String?
+  use_default_form    Boolean  @default(true)
+  custom_fields       Json?
+  is_archived         Boolean  @default(false)
+  status              ProgramStatus @default(draft)
+  created_by          String   @db.Uuid
+  created_at          DateTime @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime @default(now()) @db.Timestamptz(6)
+
+  author              users    @relation(fields: [created_by], references: [id])
+  applications        applications[]
+}
+
+model events {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title               String
+  event_type          EventType
+  description         String?
+  location            String?
+  date                DateTime @db.Date
+  linked_mou_id       String?  @db.Uuid
+  is_archived         Boolean  @default(false)
+  add_to_homepage     Boolean  @default(false)
+  registration_link   String?
+  poster_url          String?
+  gallery_urls        String[]
+  status              EventStatus @default(draft)
+  created_by          String   @db.Uuid
+  created_at          DateTime @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime @default(now()) @db.Timestamptz(6)
+
+  author              users    @relation(fields: [created_by], references: [id])
+  mou                 mous?    @relation(fields: [linked_mou_id], references: [id])
+
+  // Indexes for common query patterns
+  @@index([event_type, status, is_archived]) // Main public listing filter
+  @@index([add_to_homepage, status])         // Homepage event widget
+  @@index([date])                            // ORDER BY date
+}
+
+
+model mous {
+  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                 String
+  partner_university   String
+  country              String
+  type                 MOUType
+  status               MOUStatus @default(Active)
+  duration             String?
+  start_date           DateTime @db.Date
+  expiry_date          DateTime @db.Date
+  applicable_semesters String[]
+  eligible_schools     String[]
+  eligible_courses     String[]
+  notes                String?
+  is_archived          Boolean  @default(false)
+  review_status        MOUReviewStatus @default(draft)
+  created_by           String   @db.Uuid
+  created_at           DateTime @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime @default(now()) @db.Timestamptz(6)
+
+  author               users    @relation(fields: [created_by], references: [id])
+  events               events[]
+  partner_pocs         mou_partner_pocs[]
+  our_pocs             mou_our_pocs[]
+  documents            mou_documents[]
+}
+
+model mou_partner_pocs {
+  id             String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  mou_id         String @db.Uuid
+  name           String
+  designation    String
+  email          String
+  contact_number String
+
+  mou            mous   @relation(fields: [mou_id], references: [id], onDelete: Cascade)
+}
+
+model mou_our_pocs {
+  id             String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  mou_id         String  @db.Uuid
+  user_id        String? @db.Uuid
+  name           String
+  designation    String
+  email          String
+  contact_number String
+
+  mou            mous    @relation(fields: [mou_id], references: [id], onDelete: Cascade)
+}
+
+model mou_documents {
+  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  mou_id String @db.Uuid
+  name   String
+  url    String
+
+  mou    mous   @relation(fields: [mou_id], references: [id], onDelete: Cascade)
+}
+
+model applications {
+  id                     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  student_id             String   @db.Uuid
+  program_id             String   @db.Uuid
+  status                 String   @default("Application Submitted")
+  current_stage          String   @default("Submitted")
+  custom_field_responses Json?
+  submitted_at           DateTime @default(now()) @db.Timestamptz(6)
+  updated_at             DateTime @default(now()) @db.Timestamptz(6)
+
+  student                students @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  program                programs @relation(fields: [program_id], references: [id], onDelete: Cascade)
+
+  @@unique([student_id, program_id])
+}
+
+model program_leads {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String
+  phone        String
+  email        String
+  submitted_at DateTime @default(now()) @db.Timestamptz(6)
+  source_page  String?
+}
+
+model visits {
+  id           String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  university   String
+  date         DateTime          @db.Date
+  status       VisitStatus       @default(pending)
+  purpose      String?
+  highlights   String[]
+  photos       String[]
+  created_by   String            @db.Uuid
+  created_at   DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime          @default(now()) @db.Timestamptz(6)
+
+  author       users             @relation(fields: [created_by], references: [id])
+  delegations  visit_delegations[]
+  our_pocs     visit_our_pocs[]
+  reports      visit_reports[]
+}
+
+model visit_delegations {
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  visit_id    String @db.Uuid
+  name        String
+  designation String
+  email       String
+  country     String
+  university  String
+
+  visit       visits @relation(fields: [visit_id], references: [id], onDelete: Cascade)
+}
+
+model visit_our_pocs {
+  id             String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  visit_id       String  @db.Uuid
+  user_id        String? @db.Uuid
+  name           String
+  designation    String
+  email          String
+  contact_number String
+
+  visit          visits  @relation(fields: [visit_id], references: [id], onDelete: Cascade)
+}
+
+model visit_reports {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  visit_id String @db.Uuid
+  name     String
+  url      String
+
+  visit    visits @relation(fields: [visit_id], references: [id], onDelete: Cascade)
+}
+
+model audit_logs {
+  id                String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  item_id           String
+  action            AuditAction
+  item_title        String
+  item_type         AuditItemType
+  performed_by_name String
+  performed_by_role String
+  timestamp         DateTime      @default(now()) @db.Timestamptz(6)
+  details           String?
+}
+
+model reviews {
+  id                 String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type               ReviewType
+  title              String
+  submitted_by       String       @db.Uuid
+  submitted_by_name  String
+  submitted_by_email String
+  submitted_by_role  Role
+  submitted_at       DateTime     @default(now()) @db.Timestamptz(6)
+  status             ReviewStatus @default(pending)
+  comments           Json?
+  data               Json
+
+  author             users        @relation(fields: [submitted_by], references: [id])
+}
+
+model notifications {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type             String
+  recipient_filter String?
+  subject          String
+  body_html        String
+  sent_by_id       String?  @db.Uuid
+  recipient_count  Int?     @default(0)
+  sent_at          DateTime @default(now()) @db.Timestamptz(6)
+
+  sender           users?   @relation(fields: [sent_by_id], references: [id])
+}

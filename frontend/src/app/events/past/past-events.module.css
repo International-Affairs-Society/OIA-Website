@@ -1,0 +1,21 @@
+/* Desktop timeline: hidden on mobile, shown on md+ */
+.desktopOnly {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .desktopOnly {
+    display: block;
+  }
+}
+
+/* Mobile timeline: shown on mobile, hidden on md+ */
+.mobileOnly {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .mobileOnly {
+    display: none;
+  }
+}
