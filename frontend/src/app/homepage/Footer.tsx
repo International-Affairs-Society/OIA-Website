@@ -127,7 +127,23 @@ export default function Footer() {
               onClick={() => setShowDevs(!showDevs)}
               className="animate-footer text-left focus:outline-none flex items-center gap-2"
             >
+              <p className="font-sans text-[0.8rem] text-[#D12027] font-semibold tracking-widest uppercase cursor-pointer hover:opacity-80 transition-opacity">
+                Developers
+              </p>
             </button>
+            <div
+              className={`flex flex-col gap-2 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDevs ? 'max-h-[200px] opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'}`}
+            >
+              <p className="font-sans text-sm text-foreground/70 leading-relaxed max-w-xs">
+                This website is designed
+              </p>
+              <p className="font-sans text-sm text-foreground/70 leading-relaxed max-w-xs">
+                and developed by
+              </p>
+              <p className="font-sans text-sm text-foreground font-semibold leading-relaxed max-w-xs mt-1">
+                Shrish & Shivam
+              </p>
+            </div>
           </div>
         </div>
 
