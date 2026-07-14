@@ -28,11 +28,18 @@ export const getReviews = asyncHandler(async (req, res) => {
 
   const paginatedResult = await paginate(prisma.reviews, req.query, {
     where,
+    include: { author: true },
     orderBy: { submitted_at: 'desc' }
   })
 
+  // Override static submitted_by_name with the real name from the DB
+  const formatted = paginatedResult.data.map(r => ({
+    ...r,
+    submitted_by_name: r.author?.name || r.submitted_by_name
+  }))
+
   res.json({
-    data: paginatedResult.data,
+    data: formatted,
     page: paginatedResult.page,
     limit: paginatedResult.limit,
     total: paginatedResult.total
@@ -42,7 +49,10 @@ export const getReviews = asyncHandler(async (req, res) => {
 // GET /reviews/:id (super_admin, admin, editor-owner)
 export const getReviewById = asyncHandler(async (req, res) => {
   const { id } = req.params
-  const review = await prisma.reviews.findUnique({ where: { id } })
+  const review = await prisma.reviews.findUnique({
+    where: { id },
+    include: { author: true }
+  })
 
   if (!review) {
     return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Review not found' } })
@@ -53,7 +63,10 @@ export const getReviewById = asyncHandler(async (req, res) => {
     return res.status(403).json({ error: { code: 'FORBIDDEN', message: 'Access denied' } })
   }
 
-  res.json(review)
+  res.json({
+    ...review,
+    submitted_by_name: review.author?.name || review.submitted_by_name
+  })
 })
 
 // POST /reviews  (admin, editor — submit a change request for review)
@@ -126,10 +139,16 @@ export const approveReview = asyncHandler(async (req, res) => {
       })
     }
   } else if (review.type === 'program') {
+    // Re-cast date strings to Date objects to avoid Prisma type errors
+    const dbPayload = { ...payload }
+    if (dbPayload.start_date) dbPayload.start_date = new Date(dbPayload.start_date)
+    if (dbPayload.last_date_to_apply) dbPayload.last_date_to_apply = new Date(dbPayload.last_date_to_apply)
+    if (dbPayload.updated_at) delete dbPayload.updated_at // let Prisma handle timestamps
+
     if (action === 'CREATE') {
       await prisma.programs.create({
         data: {
-          ...payload,
+          ...dbPayload,
           status: 'published'
         }
       })
@@ -137,8 +156,9 @@ export const approveReview = asyncHandler(async (req, res) => {
       await prisma.programs.update({
         where: { id: targetId },
         data: {
-          ...payload,
-          status: 'published'
+          ...dbPayload,
+          status: 'published',
+          updated_at: new Date()
         }
       })
     }

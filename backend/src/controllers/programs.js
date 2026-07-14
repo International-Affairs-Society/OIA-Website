@@ -179,6 +179,31 @@ export const getProgramById = asyncHandler(async (req, res) => {
 export const createProgram = asyncHandler(async (req, res) => {
   const parsed = programCreateSchema.parse(req.body)
 
+  // Intercept Admin/Editor requests and route to reviews queue
+  if (['admin', 'editor'].includes(req.user.role)) {
+    const review = await prisma.reviews.create({
+      data: {
+        type: 'program',
+        title: parsed.name,
+        submitted_by: req.user.id,
+        submitted_by_name: req.user.name,
+        submitted_by_email: req.user.email,
+        submitted_by_role: req.user.role,
+        status: 'pending',
+        data: {
+          action: 'CREATE',
+          payload: parsed
+        }
+      }
+    })
+    return res.status(202).json({
+      message: 'Program creation submitted for review',
+      reviewId: review.id,
+      status: 'pending'
+    })
+  }
+
+  // Super Admin direct write
   const newProgram = await prisma.programs.create({
     data: {
       ...parsed,
@@ -208,6 +233,36 @@ export const updateProgram = asyncHandler(async (req, res) => {
   const parsed = programUpdateSchema.parse(req.body)
 
   const dataToUpdate = { ...parsed }
+  if (parsed.start_date) dataToUpdate.start_date = parsed.start_date // keep as string for review payload
+  if (parsed.last_date_to_apply) dataToUpdate.last_date_to_apply = parsed.last_date_to_apply
+
+  // Intercept Admin/Editor requests and route to reviews queue
+  if (['admin', 'editor'].includes(req.user.role)) {
+    const existingProg = await prisma.programs.findUnique({ where: { id } })
+    const review = await prisma.reviews.create({
+      data: {
+        type: 'program',
+        title: parsed.name || existingProg?.name || id,
+        submitted_by: req.user.id,
+        submitted_by_name: req.user.name,
+        submitted_by_email: req.user.email,
+        submitted_by_role: req.user.role,
+        status: 'pending',
+        data: {
+          action: 'UPDATE',
+          targetId: id,
+          payload: dataToUpdate
+        }
+      }
+    })
+    return res.status(202).json({
+      message: 'Program update submitted for review',
+      reviewId: review.id,
+      status: 'pending'
+    })
+  }
+
+  // Super Admin direct write
   if (parsed.start_date) dataToUpdate.start_date = new Date(parsed.start_date)
   if (parsed.last_date_to_apply) dataToUpdate.last_date_to_apply = new Date(parsed.last_date_to_apply)
   dataToUpdate.updated_at = new Date()
