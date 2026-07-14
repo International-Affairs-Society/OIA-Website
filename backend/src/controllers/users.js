@@ -324,54 +324,92 @@ export const deleteUser = asyncHandler(async (req, res) => {
   }
 
   // Hard delete: Since there's no soft delete and relationships are restricted,
-  // we must cascade the delete manually in a transaction.
+  // we must cascade/reassign manually in a transaction.
   await prisma.$transaction(async (tx) => {
-    // 1. Delete stage history records created by or belonging to this user's applications
-    await tx.stage_history.deleteMany({
+    // 1. Find a fallback admin user to inherit created resources
+    const fallbackUser = await tx.users.findFirst({
       where: {
-        OR: [
-          { changed_by_id: id },
-          { applications: { student: { user_id: id } } }
-        ]
+        role: { in: ['super_admin', 'admin'] },
+        id: { not: id }
       }
     })
 
-    // 2. Delete documents owned by or verified by this user
-    await tx.documents.deleteMany({
-      where: {
-        OR: [
-          { user_id: id },
-          { verified_by_id: id }
-        ]
-      }
+    if (fallbackUser) {
+      // Reassign ownership to fallback admin
+      await tx.programs.updateMany({
+        where: { created_by: id },
+        data: { created_by: fallbackUser.id }
+      })
+
+      await tx.events.updateMany({
+        where: { created_by: id },
+        data: { created_by: fallbackUser.id }
+      })
+
+      await tx.mous.updateMany({
+        where: { created_by: id },
+        data: { created_by: fallbackUser.id }
+      })
+
+      await tx.visits.updateMany({
+        where: { created_by: id },
+        data: { created_by: fallbackUser.id }
+      })
+
+      await tx.reviews.updateMany({
+        where: { submitted_by: id },
+        data: { submitted_by: fallbackUser.id }
+      })
+    } else {
+      // If no fallback admin exists, we must cascade delete these records to prevent orphan constraint violations
+      await tx.reviews.deleteMany({
+        where: { submitted_by: id }
+      })
+
+      await tx.programs.deleteMany({
+        where: { created_by: id }
+      })
+
+      await tx.events.deleteMany({
+        where: { created_by: id }
+      })
+
+      await tx.mous.deleteMany({
+        where: { created_by: id }
+      })
+
+      await tx.visits.deleteMany({
+        where: { created_by: id }
+      })
+    }
+
+    // 2. Unlink user from POC references (nullable fields)
+    await tx.visit_our_pocs.updateMany({
+      where: { user_id: id },
+      data: { user_id: null }
     })
 
-    // 3. Delete applications
-    await tx.applications.deleteMany({
-      where: { student: { user_id: id } }
+    await tx.mou_our_pocs.updateMany({
+      where: { user_id: id },
+      data: { user_id: null }
     })
 
-    // 4. Delete student records (FIXED: was student_records)
-    await tx.students.deleteMany({
-      where: { user_id: id }
-    })
-
-    // 5. Unlink from notifications sent by this user
     await tx.notifications.updateMany({
       where: { sent_by_id: id },
       data: { sent_by_id: null }
     })
 
-    // 6. Delete or unlink from change requests
-    await tx.change_requests.deleteMany({
-      where: { requested_by: id }
-    })
-    await tx.change_requests.updateMany({
-      where: { reviewed_by: id },
-      data: { reviewed_by: null }
+    // 3. Delete dependent student applications first
+    await tx.applications.deleteMany({
+      where: { student: { user_id: id } }
     })
 
-    // 7. Finally, delete the user
+    // 4. Delete the student record
+    await tx.students.deleteMany({
+      where: { user_id: id }
+    })
+
+    // 5. Finally, delete the user
     await tx.users.delete({
       where: { id }
     })

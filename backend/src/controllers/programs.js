@@ -34,15 +34,22 @@ const programCreateSchema = programBaseSchema
 
 const programUpdateSchema = programBaseSchema.partial()
 
-function formatProgram(prog) {
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+function isUuid(str) {
+  return uuidRegex.test(str)
+}
+
+function formatProgram(prog, mouMap) {
   if (!prog) return null
+  const mouName = mouMap && prog.mou ? (mouMap.get(prog.mou) || prog.mou) : (prog.mou || 'None')
   return {
     id: prog.id,
     name: prog.name,
     title: prog.name, // compatibility
     duration: prog.duration,
     partner: prog.partner,
-    mou: prog.mou,
+    mou: mouName,
+    mouId: prog.mou,
     program_type: prog.program_type,
     type: prog.program_type, // compatibility
     country: prog.country,
@@ -118,8 +125,21 @@ export const getPrograms = asyncHandler(async (req, res) => {
     orderBy: { created_at: 'desc' }
   })
 
+  const mouIds = paginatedResult.data
+    .map(p => p.mou)
+    .filter(m => m && isUuid(m))
+
+  let mouMap = new Map()
+  if (mouIds.length > 0) {
+    const linkedMous = await prisma.mous.findMany({
+      where: { id: { in: mouIds } },
+      select: { id: true, name: true }
+    })
+    mouMap = new Map(linkedMous.map(m => [m.id, m.name]))
+  }
+
   res.json({
-    data: paginatedResult.data.map(formatProgram),
+    data: paginatedResult.data.map(p => formatProgram(p, mouMap)),
     page: paginatedResult.page,
     limit: paginatedResult.limit,
     total: paginatedResult.total
@@ -141,7 +161,18 @@ export const getProgramById = asyncHandler(async (req, res) => {
     })
   }
 
-  res.json(formatProgram(prog))
+  let mouMap = new Map()
+  if (prog.mou && isUuid(prog.mou)) {
+    const mou = await prisma.mous.findUnique({
+      where: { id: prog.mou },
+      select: { id: true, name: true }
+    })
+    if (mou) {
+      mouMap.set(mou.id, mou.name)
+    }
+  }
+
+  res.json(formatProgram(prog, mouMap))
 })
 
 // POST /programs (STAFF, LEADERSHIP only)
@@ -157,7 +188,18 @@ export const createProgram = asyncHandler(async (req, res) => {
     }
   })
 
-  res.status(201).json(formatProgram(newProgram))
+  let mouMap = new Map()
+  if (newProgram.mou && isUuid(newProgram.mou)) {
+    const mou = await prisma.mous.findUnique({
+      where: { id: newProgram.mou },
+      select: { id: true, name: true }
+    })
+    if (mou) {
+      mouMap.set(mou.id, mou.name)
+    }
+  }
+
+  res.status(201).json(formatProgram(newProgram, mouMap))
 })
 
 // PATCH /programs/:id (STAFF, LEADERSHIP only)
@@ -175,7 +217,18 @@ export const updateProgram = asyncHandler(async (req, res) => {
     data: dataToUpdate
   })
 
-  res.json(formatProgram(updated))
+  let mouMap = new Map()
+  if (updated.mou && isUuid(updated.mou)) {
+    const mou = await prisma.mous.findUnique({
+      where: { id: updated.mou },
+      select: { id: true, name: true }
+    })
+    if (mou) {
+      mouMap.set(mou.id, mou.name)
+    }
+  }
+
+  res.json(formatProgram(updated, mouMap))
 })
 
 // DELETE /programs/:id (LEADERSHIP only)

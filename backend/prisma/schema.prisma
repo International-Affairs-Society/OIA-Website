@@ -178,6 +178,9 @@ model events {
   description         String?
   location            String?
   date                DateTime @db.Date
+  end_date            DateTime? @db.Date
+  highlights          String[]  @default([])
+  poster_ratio        Float?
   linked_mou_id       String?  @db.Uuid
   is_archived         Boolean  @default(false)
   add_to_homepage     Boolean  @default(false)

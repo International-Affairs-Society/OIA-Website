@@ -29,18 +29,18 @@ export default function UsersPage() {
     try {
       setIsLoading(true);
       const token = localStorage.getItem("access_token");
-      const res = await fetch(`${API_URL}/api/v1/users`, {
+      const res = await fetch(`${API_URL}/api/v1/users?role=admin,super_admin,editor,viewer`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) {
         const data = await res.json();
         setUsers((data.data || []).map((u: any) => ({
           id: u.id,
-          name: u.display_name || u.email,
+          name: u.displayName || "No Name",
           email: u.email,
           role: u.role || "viewer",
-          phoneNumber: u.phone_number || "",
-          department: u.course || u.school || "",
+          phoneNumber: u.mobile || "N/A",
+          department: u.student ? `${u.student.school} - ${u.student.course}` : "N/A",
         })));
       }
     } catch (err) {

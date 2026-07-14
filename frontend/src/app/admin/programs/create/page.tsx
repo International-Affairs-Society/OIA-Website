@@ -257,7 +257,7 @@ export default function CreateProgramPage() {
   const [name, setName] = useState("");
   const [partner, setPartner] = useState("");
   const [duration, setDuration] = useState("");
-  const [mou, setMou] = useState("");
+  const [mou, setMou] = useState("None");
   const [programType, setProgramType] = useState("");
   const [country, setCountry] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -313,10 +313,10 @@ export default function CreateProgramPage() {
         if (mousRes.ok) {
           const data = await mousRes.json();
           const mapped = (data.data || []).map((m: any) => ({
-            value: m.id,
+            value: m.name,
             label: m.name
           }));
-          setMousList([{ value: "", label: "None" }, ...mapped]);
+          setMousList([{ value: "None", label: "None" }, ...mapped]);
         }
       } catch (err) {
         console.error("Failed to fetch initial data for create program:", err);
@@ -328,10 +328,10 @@ export default function CreateProgramPage() {
   const addPOC = (user?: any) => {
     if (user) {
       setOurPOCs([...ourPOCs, { 
-        name: user.display_name || user.name || user.email, 
+        name: user.displayName || "No Name", 
         designation: user.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1)) : "Coordinator", 
         email: user.email, 
-        contactNumber: user.phone_number || "+91 9876543210" 
+        contactNumber: user.mobile || "+91 9876543210" 
       }]);
     } else {
       setOurPOCs([...ourPOCs, { name: "", designation: "", email: "", contactNumber: "" }]);
@@ -590,7 +590,7 @@ export default function CreateProgramPage() {
                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(181,189,160,0.2)"}
                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
                       >
-                        {u.name || u.display_name || u.email} ({u.role})
+                        {u.displayName || "No Name"} ({u.role})
                       </div>
                     ))
                   )}

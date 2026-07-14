@@ -22,6 +22,10 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   const [showOnHomepage, setShowOnHomepage] = useState(false);
   const [posterUrl, setPosterUrl] = useState("");
   const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [endDate, setEndDate] = useState("");
+  const [highlights, setHighlights] = useState<string[]>([]);
+  const [newHighlight, setNewHighlight] = useState("");
+  const [posterRatio, setPosterRatio] = useState<number | null>(null);
   
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
   const [isUploadingPoster, setIsUploadingPoster] = useState(false);
@@ -69,9 +73,14 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
           setPosterUrl(event.posterUrl || "");
           setGalleryUrls(event.galleryUrls || []);
           setLinkedMouId(event.linked_mou_id || "");
+          setHighlights(event.highlights || []);
+          setPosterRatio(event.posterRatio || null);
 
           if (event.date) {
             setDate(new Date(event.date).toISOString().split('T')[0]);
+          }
+          if (event.endDate) {
+            setEndDate(new Date(event.endDate).toISOString().split('T')[0]);
           }
         } else {
           alert("Event not found.");
@@ -148,7 +157,16 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
 
       if (res.ok) {
         const data = await res.json();
-        setPosterUrl(data.publicUrl || data.url);
+        const url = data.publicUrl || data.url;
+        setPosterUrl(url);
+        
+        // Auto-calculate poster ratio from the uploaded image
+        const img = new window.Image();
+        img.onload = () => {
+          const ratio = img.naturalWidth / img.naturalHeight;
+          setPosterRatio(Number(ratio.toFixed(4)));
+        };
+        img.src = url;
       } else {
         alert("Upload failed.");
       }
@@ -187,6 +205,9 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
         description,
         location,
         date,
+        endDate: endDate || null,
+        highlights,
+        posterRatio,
         linkedMouId: linkedMouId || null,
         isArchived,
         addToHomepage: eventType === "past" ? showOnHomepage : undefined,
@@ -262,6 +283,52 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
           </FormField>
           <FormField label="Date" required>
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+          </FormField>
+
+          <FormField label="End Date (Optional for multi-day events)">
+            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+          </FormField>
+
+          <FormField label="Event Highlights (Max 3 tags)">
+            <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
+              <input
+                type="text"
+                placeholder="Add a highlight (e.g. Academic, Workshop)"
+                value={newHighlight}
+                onChange={(e) => setNewHighlight(e.target.value)}
+                disabled={highlights.length >= 3}
+                style={{ flex: 1, padding: "8px", border: "1px solid #b5bda0", backgroundColor: "#fff" }}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (newHighlight.trim() && highlights.length < 3) {
+                    setHighlights([...highlights, newHighlight.trim()]);
+                    setNewHighlight("");
+                  }
+                }}
+                disabled={!newHighlight.trim() || highlights.length >= 3}
+                style={{ padding: "8px 16px", cursor: "pointer", backgroundColor: "#1a1a1a", color: "#f5f0e8", border: "none", fontWeight: 600 }}
+              >
+                Add
+              </button>
+            </div>
+            {highlights.length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "8px" }}>
+                {highlights.map((h, i) => (
+                  <div key={i} style={{ display: "inline-flex", alignItems: "center", gap: "6px", backgroundColor: "#e8e5d3", border: "1px solid #b5bda0", padding: "4px 10px", borderRadius: "4px", fontSize: "12px", fontWeight: 600 }}>
+                    {h}
+                    <button
+                      type="button"
+                      onClick={() => setHighlights(highlights.filter((_, idx) => idx !== i))}
+                      style={{ background: "none", border: "none", cursor: "pointer", color: "#c0392b", fontWeight: "bold", padding: 0, fontSize: "14px" }}
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </FormField>
 
           <FormField label="Link MOU">
