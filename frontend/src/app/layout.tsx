@@ -74,6 +74,12 @@ const gmarketSans = localFont({
   display: "swap",
 });
 
+const gallery = localFont({
+  src: "../../public/fonts/Gallery.otf",
+  variable: "--font-gallery",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Office of International Affairs | Bennett University",
   description:
@@ -96,7 +102,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${outfit.variable} ${spaceGrotesk.variable} ${spaceMono.variable} ${robotoCondensed.variable} ${gastonHoney.variable} ${instrumentSerif.variable} ${universo.variable} ${libreBodoni.variable} ${gmarketSans.variable}`}
+      className={`${outfit.variable} ${spaceGrotesk.variable} ${spaceMono.variable} ${robotoCondensed.variable} ${gastonHoney.variable} ${instrumentSerif.variable} ${universo.variable} ${libreBodoni.variable} ${gmarketSans.variable} ${gallery.variable}`}
     >
       <body className="antialiased">
         <AuthWrapper>

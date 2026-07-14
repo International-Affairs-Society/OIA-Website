@@ -48,7 +48,7 @@ export default function DefaultApplicationForm({ onSubmit, onCancel, customField
         </FormField>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginTop: "1rem" }}>
         <FormField label="Gender" required>
           <CustomDropdown
             onChange={() => {}}
@@ -60,6 +60,16 @@ export default function DefaultApplicationForm({ onSubmit, onCancel, customField
             ]}
           />
         </FormField>
+        <FormField label="Semester" required>
+          <CustomDropdown
+            onChange={() => {}}
+            placeholder="Select Sem"
+            options={Array.from({length: 10}, (_, i) => ({ label: `Semester ${i+1}`, value: String(i+1) }))}
+          />
+        </FormField>
+      </div>
+
+      <div style={{ marginTop: "1rem" }}>
         <FormField label="School" required>
           <CustomDropdown
             onChange={() => {}}
@@ -74,13 +84,6 @@ export default function DefaultApplicationForm({ onSubmit, onCancel, customField
               { label: "SOLA – School of Liberal Arts", value: "SOLA" },
               { label: "SOD – School of Design", value: "SOD" },
             ]}
-          />
-        </FormField>
-        <FormField label="Semester" required>
-          <CustomDropdown
-            onChange={() => {}}
-            placeholder="Select Sem"
-            options={Array.from({length: 10}, (_, i) => ({ label: `Semester ${i+1}`, value: String(i+1) }))}
           />
         </FormField>
       </div>

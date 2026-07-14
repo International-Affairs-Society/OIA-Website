@@ -38,7 +38,7 @@ export default function ApplyProgramPage({ params }: { params: Promise<{ id: str
         <Navbar />
       </div>
 
-      <main style={{ position: "relative", zIndex: 10, maxWidth: "800px", width: "100%", margin: "0 auto", padding: "60px clamp(24px, 4vw, 64px) 100px", boxSizing: "border-box" }}>
+      <main style={{ position: "relative", zIndex: 10, maxWidth: "800px", width: "100%", margin: "0 auto", padding: "140px clamp(24px, 4vw, 64px) 100px", boxSizing: "border-box" }}>
         <div style={{ marginBottom: "2rem" }}>
           <Link href={`/programs/other/${id}`} style={{ color: "#6b6b6b", textDecoration: "none", fontSize: "14px", fontFamily: "var(--font-outfit)" }}>
             &larr; Back to {programTitle}
