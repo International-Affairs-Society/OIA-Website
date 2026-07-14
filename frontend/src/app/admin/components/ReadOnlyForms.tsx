@@ -54,10 +54,12 @@ function DisabledTextarea({ value, placeholder = "", isEditable, onChange }: { v
 }
 
 function DisabledDate({ value, isEditable, onChange }: { value: any; isEditable?: boolean; onChange?: (val: string) => void }) {
+  // Normalize ISO timestamps (2026-07-31T00:00:00.000Z) to YYYY-MM-DD for <input type="date">
+  const normalizedValue = value ? String(value).split('T')[0] : ''
   return (
     <input
       type="date"
-      value={value || ""}
+      value={normalizedValue}
       disabled={!isEditable}
       onChange={(e) => onChange?.(e.target.value)}
       style={{
@@ -172,33 +174,49 @@ export function ProgramReadOnlyForm({ data, isEditable, onChange }: { data: Reco
     if (onChange) onChange(key, val);
   };
 
+  // Resolve with snake_case fallbacks for DB-sourced payloads
+  const title = data.title || data.name;
+  const programType = data.programType || data.program_type;
+  const startDate = data.startDate || data.start_date;
+  const lastDate = data.lastDate || data.last_date_to_apply;
+  const schools = data.schools || data.schools_eligible || [];
+  const semesters = data.semesters || data.semesters_eligible || [];
+  const courses = data.courses || data.courses_eligible || [];
+  const feeSummary = data.feeSummary || data.fee_summary;
+  const feeBreakdown = data.feeBreakdown || data.fee_breakdown;
+  const showLivingCost = data.showLivingCost ?? data.show_living_cost;
+  const estimatedStayCost = data.estimatedStayCost || data.estimated_stay_cost;
+  const livingCostDetails = data.livingCostDetails || data.living_cost_details;
+  const useDefaultForm = data.useDefaultForm ?? data.use_default_form;
+  const customFields = data.customFields || data.custom_fields?.formFields || [];
+
   return (
     <div>
       {sectionTitle("Basic Details")}
       <FormField label="Program Name">
-        <DisabledInput value={data.title} isEditable={isEditable} onChange={(v) => handleChange("title", v)} />
+        <DisabledInput value={title} isEditable={isEditable} onChange={(v) => handleChange("title", v)} />
       </FormField>
       <FormField label="Program Type">
-        <DisabledInput value={data.programType} isEditable={isEditable} onChange={(v) => handleChange("programType", v)} />
+        <DisabledInput value={programType} isEditable={isEditable} onChange={(v) => handleChange("programType", v)} />
       </FormField>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginTop: "1rem" }}>
         <FormField label="Program Start Date">
-          <DisabledDate value={data.startDate} isEditable={isEditable} onChange={(v) => handleChange("startDate", v)} />
+          <DisabledDate value={startDate} isEditable={isEditable} onChange={(v) => handleChange("startDate", v)} />
         </FormField>
         <FormField label="Last Date to Apply">
-          <DisabledDate value={data.lastDate} isEditable={isEditable} onChange={(v) => handleChange("lastDate", v)} />
+          <DisabledDate value={lastDate} isEditable={isEditable} onChange={(v) => handleChange("lastDate", v)} />
         </FormField>
       </div>
 
       {sectionTitle("Eligibility")}
       <FormField label="Eligible Schools">
-        <DisabledPills options={SCHOOL_OPTIONS} selected={data.schools} isEditable={isEditable} onChange={(v) => handleChange("schools", v)} />
+        <DisabledPills options={SCHOOL_OPTIONS} selected={schools} isEditable={isEditable} onChange={(v) => handleChange("schools", v)} />
       </FormField>
       <FormField label="Eligible Semesters">
-        <DisabledPills options={SEMESTER_OPTIONS} selected={data.semesters} isEditable={isEditable} onChange={(v) => handleChange("semesters", v)} />
+        <DisabledPills options={SEMESTER_OPTIONS} selected={semesters} isEditable={isEditable} onChange={(v) => handleChange("semesters", v)} />
       </FormField>
       <FormField label="Eligible Courses">
-        <DisabledPills options={COURSE_OPTIONS} selected={data.courses} isEditable={isEditable} onChange={(v) => handleChange("courses", v)} />
+        <DisabledPills options={COURSE_OPTIONS} selected={courses} isEditable={isEditable} onChange={(v) => handleChange("courses", v)} />
       </FormField>
 
       {sectionTitle("Content")}
@@ -211,30 +229,30 @@ export function ProgramReadOnlyForm({ data, isEditable, onChange }: { data: Reco
 
       {sectionTitle("Financials")}
       <FormField label="Program Fee Summary">
-        <DisabledInput value={data.feeSummary} isEditable={isEditable} onChange={(v) => handleChange("feeSummary", v)} />
+        <DisabledInput value={feeSummary} isEditable={isEditable} onChange={(v) => handleChange("feeSummary", v)} />
       </FormField>
       <FormField label="Fee Breakdown">
-        <DisabledTextarea value={data.feeBreakdown} isEditable={isEditable} onChange={(v) => handleChange("feeBreakdown", v)} />
+        <DisabledTextarea value={feeBreakdown} isEditable={isEditable} onChange={(v) => handleChange("feeBreakdown", v)} />
       </FormField>
 
       <FormField label="Show Living Cost?">
         <div style={{ display: "flex", gap: "1.5rem", marginTop: "0.5rem" }}>
           <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "14px", color: "#1a1a1a" }}>
-            <input type="radio" checked={data.showLivingCost === true} disabled={!isEditable} onChange={() => handleChange("showLivingCost", true)} /> Yes
+            <input type="radio" checked={showLivingCost === true} disabled={!isEditable} onChange={() => handleChange("showLivingCost", true)} /> Yes
           </label>
           <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "14px", color: "#1a1a1a" }}>
-            <input type="radio" checked={data.showLivingCost !== true} disabled={!isEditable} onChange={() => handleChange("showLivingCost", false)} /> No
+            <input type="radio" checked={showLivingCost !== true} disabled={!isEditable} onChange={() => handleChange("showLivingCost", false)} /> No
           </label>
         </div>
       </FormField>
 
-      {data.showLivingCost && (
+      {showLivingCost && (
         <div style={{ marginTop: "1rem", padding: "1.5rem", backgroundColor: "rgba(181, 189, 160, 0.1)", borderRadius: "8px", border: "1px solid rgba(181, 189, 160, 0.3)" }}>
           <FormField label="Estimated Stay Cost">
-            <DisabledInput value={data.estimatedStayCost} isEditable={isEditable} onChange={(v) => handleChange("estimatedStayCost", v)} />
+            <DisabledInput value={estimatedStayCost} isEditable={isEditable} onChange={(v) => handleChange("estimatedStayCost", v)} />
           </FormField>
           <FormField label="Living Costs (Item | Cost | CostINR)">
-            <DisabledTextarea value={data.livingCostDetails} isEditable={isEditable} onChange={(v) => handleChange("livingCostDetails", v)} />
+            <DisabledTextarea value={livingCostDetails} isEditable={isEditable} onChange={(v) => handleChange("livingCostDetails", v)} />
           </FormField>
         </div>
       )}
@@ -243,21 +261,21 @@ export function ProgramReadOnlyForm({ data, isEditable, onChange }: { data: Reco
       <FormField label="Attach default application form?">
         <div style={{ display: "flex", gap: "1.5rem", marginTop: "0.5rem" }}>
           <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "14px", color: "#1a1a1a" }}>
-            <input type="radio" checked={data.useDefaultForm === true} disabled={!isEditable} onChange={() => handleChange("useDefaultForm", true)} /> Yes
+            <input type="radio" checked={useDefaultForm === true} disabled={!isEditable} onChange={() => handleChange("useDefaultForm", true)} /> Yes
           </label>
           <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "14px", color: "#1a1a1a" }}>
-            <input type="radio" checked={data.useDefaultForm !== true} disabled={!isEditable} onChange={() => handleChange("useDefaultForm", false)} /> No
+            <input type="radio" checked={useDefaultForm !== true} disabled={!isEditable} onChange={() => handleChange("useDefaultForm", false)} /> No
           </label>
         </div>
       </FormField>
 
-      {data.useDefaultForm && (
+      {useDefaultForm && (
         <div style={{ marginTop: "1rem", padding: "1.5rem", backgroundColor: "rgba(181, 189, 160, 0.1)", borderRadius: "8px", border: "1px solid rgba(181, 189, 160, 0.3)" }}>
           <p style={{ fontSize: "13px", color: "#6b6b6b", marginBottom: "1rem", lineHeight: 1.5 }}>
             Includes: Full Name, Enrollment No, Gender, School, Semester, Course, CGPA, Passport details.
           </p>
           <FormField label="Additional Custom Fields">
-            <DisabledDynamicList items={data.customFields} isEditable={isEditable} onChange={(v) => handleChange("customFields", v)} />
+            <DisabledDynamicList items={customFields} isEditable={isEditable} onChange={(v) => handleChange("customFields", v)} />
           </FormField>
         </div>
       )}
@@ -269,6 +287,10 @@ export function UpcomingEventReadOnlyForm({ data, isEditable, onChange }: { data
   const handleChange = (key: string, val: any) => {
     if (onChange) onChange(key, val);
   };
+
+  // Resolve with snake_case fallbacks for DB-sourced payloads
+  const linkedMOU = data.linkedMOU || data.linked_mou_id;
+  const isArchived = data.archived ?? data.is_archived ?? data.isArchived;
 
   return (
     <div>
@@ -285,10 +307,10 @@ export function UpcomingEventReadOnlyForm({ data, isEditable, onChange }: { data
         <DisabledDate value={data.date} isEditable={isEditable} onChange={(v) => handleChange("date", v)} />
       </FormField>
       <FormField label="Linked MOU">
-        <DisabledInput value={data.linkedMOU} isEditable={isEditable} onChange={(v) => handleChange("linkedMOU", v)} />
+        <DisabledInput value={linkedMOU} isEditable={isEditable} onChange={(v) => handleChange("linkedMOU", v)} />
       </FormField>
       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "1rem" }}>
-        <input type="checkbox" checked={data.archived} disabled={!isEditable} onChange={(e) => handleChange("archived", e.target.checked)} />
+        <input type="checkbox" checked={!!isArchived} disabled={!isEditable} onChange={(e) => handleChange("archived", e.target.checked)} />
         <label style={{ fontSize: "13px", color: "#6b6b6b" }}>Archive this event</label>
       </div>
       <div style={{ marginTop: "1.5rem" }}>
@@ -309,6 +331,11 @@ export function PastEventReadOnlyForm({ data, isEditable, onChange }: { data: Re
     if (onChange) onChange(key, val);
   };
 
+  // Resolve with snake_case fallbacks for DB-sourced payloads
+  const linkedMOU = data.linkedMOU || data.linked_mou_id;
+  const isArchived = data.archived ?? data.is_archived ?? data.isArchived;
+  const addToHomepage = data.addToHomepage ?? data.add_to_homepage;
+
   return (
     <div>
       <FormField label="Title">
@@ -324,10 +351,10 @@ export function PastEventReadOnlyForm({ data, isEditable, onChange }: { data: Re
         <DisabledDate value={data.date} isEditable={isEditable} onChange={(v) => handleChange("date", v)} />
       </FormField>
       <FormField label="Linked MOU">
-        <DisabledInput value={data.linkedMOU} isEditable={isEditable} onChange={(v) => handleChange("linkedMOU", v)} />
+        <DisabledInput value={linkedMOU} isEditable={isEditable} onChange={(v) => handleChange("linkedMOU", v)} />
       </FormField>
       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "1rem" }}>
-        <input type="checkbox" checked={data.archived} disabled={!isEditable} onChange={(e) => handleChange("archived", e.target.checked)} />
+        <input type="checkbox" checked={!!isArchived} disabled={!isEditable} onChange={(e) => handleChange("archived", e.target.checked)} />
         <label style={{ fontSize: "13px", color: "#6b6b6b" }}>Archive this event</label>
       </div>
       <div style={{ marginTop: "1.5rem" }}>
@@ -345,10 +372,10 @@ export function PastEventReadOnlyForm({ data, isEditable, onChange }: { data: Re
         </div>
         <div style={{ display: "flex", gap: "1.5rem" }}>
           <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "14px", color: "#1a1a1a" }}>
-            <input type="radio" checked={data.addToHomepage === true} disabled={!isEditable} onChange={() => handleChange("addToHomepage", true)} /> Yes
+            <input type="radio" checked={addToHomepage === true} disabled={!isEditable} onChange={() => handleChange("addToHomepage", true)} /> Yes
           </label>
           <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "14px", color: "#1a1a1a" }}>
-            <input type="radio" checked={data.addToHomepage !== true} disabled={!isEditable} onChange={() => handleChange("addToHomepage", false)} /> No
+            <input type="radio" checked={addToHomepage !== true} disabled={!isEditable} onChange={() => handleChange("addToHomepage", false)} /> No
           </label>
         </div>
       </div>
@@ -361,23 +388,28 @@ export function MOUReadOnlyForm({ data, isEditable, onChange }: { data: Record<s
     if (onChange) onChange(key, val);
   };
 
+  // Resolve with snake_case fallbacks for DB-sourced payloads
+  const partnerUniversity = data.partner || data.partner_university;
+  const startDate = data.startDate || data.start_date;
+  const expiryDate = data.expiryDate || data.expiry_date;
+
   return (
     <div>
       <FormField label="MOU Name">
         <DisabledInput value={data.name} isEditable={isEditable} onChange={(v) => handleChange("name", v)} />
       </FormField>
       <FormField label="Partner University">
-        <DisabledInput value={data.partner} isEditable={isEditable} onChange={(v) => handleChange("partner", v)} />
+        <DisabledInput value={partnerUniversity} isEditable={isEditable} onChange={(v) => handleChange("partner", v)} />
       </FormField>
       <FormField label="Status">
         <DisabledInput value={data.status} isEditable={isEditable} onChange={(v) => handleChange("status", v)} />
       </FormField>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginTop: "1rem" }}>
         <FormField label="Start Date">
-          <DisabledDate value={data.startDate} isEditable={isEditable} onChange={(v) => handleChange("startDate", v)} />
+          <DisabledDate value={startDate} isEditable={isEditable} onChange={(v) => handleChange("startDate", v)} />
         </FormField>
         <FormField label="Expiry Date">
-          <DisabledDate value={data.expiryDate} isEditable={isEditable} onChange={(v) => handleChange("expiryDate", v)} />
+          <DisabledDate value={expiryDate} isEditable={isEditable} onChange={(v) => handleChange("expiryDate", v)} />
         </FormField>
       </div>
       <FormField label="Notes">

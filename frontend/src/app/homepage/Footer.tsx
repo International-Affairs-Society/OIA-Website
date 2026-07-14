@@ -12,11 +12,11 @@ export default function Footer() {
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
-    
+
     if (!footerRef.current) return;
 
     const elements = gsap.utils.toArray(".animate-footer");
-    
+
     gsap.fromTo(
       elements,
       { opacity: 0, y: 50 },
@@ -46,7 +46,7 @@ export default function Footer() {
       <CircuitPattern />
 
       {/* ── Main Content ── */}
-      <div 
+      <div
         className="relative z-10 px-6 md:px-12 lg:px-16 pb-8"
         style={{ width: "100%", maxWidth: "1400px" }}
       >
@@ -71,7 +71,7 @@ export default function Footer() {
                 aria-label="LinkedIn"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
                 </svg>
               </a>
             </div>
@@ -123,7 +123,7 @@ export default function Footer() {
 
           {/* Right — Developers */}
           <div className="flex flex-col gap-2">
-            <button 
+            <button
               onClick={() => setShowDevs(!showDevs)}
               className="animate-footer text-left focus:outline-none flex items-center gap-2"
             >
@@ -131,7 +131,7 @@ export default function Footer() {
                 Developers
               </p>
             </button>
-            <div 
+            <div
               className={`flex flex-col gap-2 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDevs ? 'max-h-[200px] opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'}`}
             >
               <p className="font-sans text-sm text-foreground/70 leading-relaxed max-w-xs">

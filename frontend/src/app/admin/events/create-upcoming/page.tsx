@@ -133,7 +133,7 @@ export default function CreateUpcomingEventPage() {
         endDate: endDate || null,
         highlights,
         posterRatio,
-        linkedMouId: linkedMouId || null,
+        linkedMOU: linkedMouId || null,
         isArchived,
         posterUrl: posterUrl || null,
         eventType: "upcoming"

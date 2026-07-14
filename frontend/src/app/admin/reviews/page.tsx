@@ -424,10 +424,10 @@ function ReviewsContent() {
         border: "1px solid #b5bda0", padding: "2rem", backgroundColor: "#f5f0e8",
         boxShadow: "0 4px 12px rgba(0,0,0,0.05)", marginBottom: "1.5rem",
       }}>
-        {selected.type === "program" && <ProgramReadOnlyForm data={selected.data} />}
-        {selected.type === "upcoming_event" && <UpcomingEventReadOnlyForm data={selected.data} />}
-        {selected.type === "past_event" && <PastEventReadOnlyForm data={selected.data} />}
-        {selected.type === "mou" && <MOUReadOnlyForm data={selected.data} />}
+        {selected.type === "program" && <ProgramReadOnlyForm data={selected.data?.payload || selected.data} />}
+        {selected.type === "upcoming_event" && <UpcomingEventReadOnlyForm data={selected.data?.payload || selected.data} />}
+        {selected.type === "past_event" && <PastEventReadOnlyForm data={selected.data?.payload || selected.data} />}
+        {selected.type === "mou" && <MOUReadOnlyForm data={selected.data?.payload || selected.data} />}
       </div>
 
       {/* ── Comment Section ── */}
