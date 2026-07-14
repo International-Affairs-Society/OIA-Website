@@ -47,27 +47,26 @@ export default function ProgramsSection() {
     hoveredRef.current = hoveredIndex;
   }, [hoveredIndex]);
 
-  /* ── Fetch active programs from backend ── */
+  /* ── Load static programs ── */
   useEffect(() => {
-    const fetchPrograms = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/programs?status=published`);
-        if (res.ok) {
-          const json = await res.json();
-          const mapped = (json.data || []).slice(0, 7).map((p: any, i: number) => ({
-            id: p.id,
-            label: p.name,
-            ...DEFAULT_NODE_PARAMS[i]
-          }));
-          setPrograms(mapped);
-        }
-      } catch (err) {
-        console.error("Failed to fetch homepage programs:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchPrograms();
+    const STATIC_PROGRAMS = [
+      "Semester Exchange",
+      "Summer School",
+      "Immersion Program",
+      "Progression Program",
+      "Articulation Program",
+      "Joint Degree",
+      "Dual Degree"
+    ];
+    
+    const mapped = STATIC_PROGRAMS.map((name, i) => ({
+      id: `static-${i}`,
+      label: name,
+      ...DEFAULT_NODE_PARAMS[i]
+    }));
+    
+    setPrograms(mapped);
+    setIsLoading(false);
   }, []);
 
   /* ── Track section dimensions ── */
@@ -238,7 +237,7 @@ export default function ProgramsSection() {
               style={{ transform: "translate(-50%, -50%)" }}
               onMouseEnter={() => setHoveredIndex(i)}
               onMouseLeave={() => setHoveredIndex(null)}
-              onClick={() => prog.id && router.push(`/programs/other/${prog.id}`)}
+              onClick={() => router.push(`/programs`)}
             >
               {/* Small square marker */}
               <span

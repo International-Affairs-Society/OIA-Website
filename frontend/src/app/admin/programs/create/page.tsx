@@ -261,6 +261,7 @@ export default function CreateProgramPage() {
   const [programType, setProgramType] = useState("");
   const [country, setCountry] = useState("");
   const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [lastDateToApply, setLastDateToApply] = useState("");
   
   const [showLivingCost, setShowLivingCost] = useState(false);
@@ -468,7 +469,8 @@ export default function CreateProgramPage() {
           ourPOCs,
           formFields: customFields,
           isComingSoon,
-          livingCosts
+          livingCosts,
+          endDate: endDate || null
         },
         status: (role === 'editor' || role === 'admin') ? 'pending_approval' : 'published'
       };
@@ -629,7 +631,7 @@ export default function CreateProgramPage() {
           </div>
 
           {/* Dates */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginTop: "1rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem", marginTop: "1rem" }}>
             <FormField label="Program Start Date" required>
               {isComingSoon ? (
                 <input key="coming-soon-start" type="text" defaultValue="Coming Soon" disabled style={{ backgroundColor: "rgba(181, 189, 160, 0.2)", color: "#6b6b6b", border: "1px solid #b5bda0", padding: "10px", borderRadius: "4px", width: "100%", outline: "none", cursor: "not-allowed" }} />
@@ -637,11 +639,18 @@ export default function CreateProgramPage() {
                 <input key="date-start" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
               )}
             </FormField>
+            <FormField label="Program End Date">
+              {isComingSoon ? (
+                <input key="coming-soon-end-date" type="text" defaultValue="Coming Soon" disabled style={{ backgroundColor: "rgba(181, 189, 160, 0.2)", color: "#6b6b6b", border: "1px solid #b5bda0", padding: "10px", borderRadius: "4px", width: "100%", outline: "none", cursor: "not-allowed" }} />
+              ) : (
+                <input key="date-end" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+              )}
+            </FormField>
             <FormField label="Last Date to Apply" required>
               {isComingSoon ? (
-                <input key="coming-soon-end" type="text" defaultValue="Coming Soon" disabled style={{ backgroundColor: "rgba(181, 189, 160, 0.2)", color: "#6b6b6b", border: "1px solid #b5bda0", padding: "10px", borderRadius: "4px", width: "100%", outline: "none", cursor: "not-allowed" }} />
+                <input key="coming-soon-apply" type="text" defaultValue="Coming Soon" disabled style={{ backgroundColor: "rgba(181, 189, 160, 0.2)", color: "#6b6b6b", border: "1px solid #b5bda0", padding: "10px", borderRadius: "4px", width: "100%", outline: "none", cursor: "not-allowed" }} />
               ) : (
-                <input key="date-end" type="date" value={lastDateToApply} onChange={(e) => setLastDateToApply(e.target.value)} required />
+                <input key="date-apply" type="date" value={lastDateToApply} onChange={(e) => setLastDateToApply(e.target.value)} required />
               )}
             </FormField>
           </div>

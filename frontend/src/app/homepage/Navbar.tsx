@@ -30,7 +30,7 @@ const NAV_ITEMS: NavItem[] = [
       { label: "Past event", href: "/events/past" },
     ],
   },
-  { label: "Partners", href: "/#partners", id: "nav-partners" },
+  { label: "Partners", href: "/partners", id: "nav-partners" },
   { label: "Team", href: "/team", id: "nav-team" },
   { label: "IAS", href: "/ias", id: "nav-ias" },
 ];
