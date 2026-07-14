@@ -54,7 +54,7 @@ export default function LeadCaptureModal() {
     };
   }, [showModal]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!name.trim() || !number.trim() || !email.trim()) {
@@ -67,21 +67,48 @@ export default function LeadCaptureModal() {
       return;
     }
 
-    const newLead = {
-      id: Date.now().toString(),
-      name: name.trim(),
-      phone: number.trim(),
-      email: email.trim(),
-      date: new Date().toISOString(),
-    };
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+      const payload = {
+        name: name.trim(),
+        phone: number.trim(),
+        email: email.trim(),
+        source_page: typeof window !== "undefined" ? window.location.pathname : "/programs/other"
+      };
 
-    const existingLeads = JSON.parse(localStorage.getItem("program_leads_data") || "[]");
-    existingLeads.push(newLead);
-    localStorage.setItem("program_leads_data", JSON.stringify(existingLeads));
+      const res = await fetch(`${API_URL}/api/v1/program-leads`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
 
-    localStorage.setItem("leadFormFilled_v4", "true");
-    setShowModal(false);
-    document.body.style.overflow = "auto";
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        setError(errJson.error?.message || "Failed to save details. Please try again.");
+        return;
+      }
+
+      const newLead = {
+        id: Date.now().toString(),
+        name: name.trim(),
+        phone: number.trim(),
+        email: email.trim(),
+        date: new Date().toISOString(),
+      };
+
+      const existingLeads = JSON.parse(localStorage.getItem("program_leads_data") || "[]");
+      existingLeads.push(newLead);
+      localStorage.setItem("program_leads_data", JSON.stringify(existingLeads));
+
+      localStorage.setItem("leadFormFilled_v4", "true");
+      setShowModal(false);
+      document.body.style.overflow = "auto";
+    } catch (err) {
+      console.error("Failed to save lead:", err);
+      setError("Network error. Please try again.");
+    }
   };
 
   if (!showModal) return null;
