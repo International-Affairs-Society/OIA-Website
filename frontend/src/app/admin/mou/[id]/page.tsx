@@ -2,6 +2,7 @@
 import React, { useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { AdminPageHeader, StatusBadge } from "@/app/admin/components";
+import { AdminFormSkeleton } from "@/app/admin/optemization_component";
 
 export default function ViewMOUPage() {
   const router = useRouter();
@@ -59,8 +60,8 @@ export default function ViewMOUPage() {
 
   if (loading) {
     return (
-      <div style={{ width: "100%", padding: "40px", textAlign: "center" }}>
-        <p style={{ color: "#6b6b6b" }}>Loading MOU...</p>
+      <div style={{ width: "100%", padding: "40px" }}>
+        <AdminFormSkeleton fields={8} />
       </div>
     );
   }

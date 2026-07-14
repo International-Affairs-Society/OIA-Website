@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { AdminPageHeader, FilterBar, ProgramReadOnlyForm, UpcomingEventReadOnlyForm, PastEventReadOnlyForm, MOUReadOnlyForm } from "@/app/admin/components";
+import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 import { ReviewItem, ReviewType, ReviewComment, ReviewStatus } from "@/app/admin/data/mockReviews";
 
 /* ── Helpers ── */
@@ -257,6 +258,14 @@ function SubmissionsContent() {
   const approvedCount = reviews.filter((r) => r.status === "approved").length;
 
   // ── List View ──
+  if (loading) {
+    return (
+      <div style={{ maxWidth: "900px" }}>
+        <AdminPageSkeleton columns={4} rows={4} showFilter={true} filterCount={2} showAction={false} />
+      </div>
+    );
+  }
+
   if (!selected) {
     return (
       <div style={{ maxWidth: "900px" }}>

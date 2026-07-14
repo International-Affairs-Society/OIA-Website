@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { AdminPageHeader } from "../../components";
+import { AdminFormSkeleton } from "@/app/admin/optemization_component";
 
 import { ArrowLeft, ChevronLeft, ChevronRight, Download, CheckCircle, Clock } from "lucide-react";
 import Image from "next/image";
@@ -118,11 +119,7 @@ export default function VisitDetailsPage() {
   }, [id, router]);
 
   if (loading) {
-    return (
-      <div style={{ width: "100%", padding: "40px", textAlign: "center" }}>
-        <p style={{ color: "#6b6b6b" }}>Loading visit details...</p>
-      </div>
-    );
+    return <AdminFormSkeleton fields={6} />;
   }
 
   if (!visit) return null;

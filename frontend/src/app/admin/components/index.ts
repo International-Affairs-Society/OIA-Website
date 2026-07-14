@@ -1,6 +1,7 @@
 export { default as AdminTable } from './AdminTable';
 export { default as StatusBadge } from './StatusBadge';
 export { default as ActionButtons } from './ActionButtons';
+export { default as ConfirmModal } from "./ConfirmModal";
 export { default as FilterBar } from './FilterBar';
 export { default as AdminPageHeader } from './AdminPageHeader';
 export { default as FormField } from './FormField';

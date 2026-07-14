@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { AdminPageHeader, FormField, FilterBar, ProgramReadOnlyForm, UpcomingEventReadOnlyForm, PastEventReadOnlyForm, MOUReadOnlyForm } from "@/app/admin/components";
+import { AdminPageHeader, FormField, FilterBar, ProgramReadOnlyForm, UpcomingEventReadOnlyForm, PastEventReadOnlyForm, MOUReadOnlyForm, ConfirmModal } from "@/app/admin/components";
+import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 import { MOCK_REVIEWS, ReviewItem, ReviewType, ReviewComment } from "@/app/admin/data/mockReviews";
 
 /* ── Type label helpers ── */
@@ -73,85 +74,6 @@ function CommentTimeline({ comments }: { comments: ReviewComment[] }) {
           <p style={{ margin: 0, fontSize: "14px", color: "#1a1a1a", lineHeight: 1.7 }}>{c.text}</p>
         </div>
       ))}
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────── */
-/*  Confirmation Modal                                     */
-/* ─────────────────────────────────────────────────────── */
-function ConfirmModal({
-  isOpen,
-  title = "Confirm",
-  description = "",
-  confirmText = "Yes",
-  cancelText = "No",
-  onConfirm,
-  onCancel,
-}: {
-  isOpen: boolean;
-  title?: string;
-  description?: string;
-  confirmText?: string;
-  cancelText?: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-}) {
-  if (!isOpen) return null;
-  return (
-    <div
-      style={{
-        position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-        backgroundColor: "rgba(0,0,0,0.4)", zIndex: 2000,
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}
-      onClick={onCancel}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          backgroundColor: "#FFFBF2", border: "1px solid #b5bda0",
-          padding: "2rem", width: "420px", maxWidth: "90vw",
-          boxShadow: "0 16px 48px rgba(0,0,0,0.15)",
-        }}
-      >
-        <h3 style={{
-          margin: "0 0 8px", fontSize: "20px", fontWeight: 700,
-          fontFamily: "var(--font-instrument-serif)", color: "#1a1a1a",
-        }}>
-          {title}
-        </h3>
-        {description && (
-          <p style={{ fontSize: "14px", color: "#6b6b6b", margin: "0 0 24px", lineHeight: 1.6 }}>
-            {description}
-          </p>
-        )}
-        <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
-          <button
-            onClick={onCancel}
-            style={{
-              padding: "10px 24px", backgroundColor: "transparent", color: "#1a1a1a",
-              border: "1px solid #1a1a1a", fontSize: "13px", fontWeight: 600,
-              cursor: "pointer", letterSpacing: "0.04em", textTransform: "uppercase",
-            }}
-          >
-            {cancelText}
-          </button>
-          <button
-            onClick={onConfirm}
-            style={{
-              padding: "10px 24px", backgroundColor: "#5C6B3F", color: "#fff",
-              border: "none", fontSize: "13px", fontWeight: 600,
-              cursor: "pointer", letterSpacing: "0.04em", textTransform: "uppercase",
-              transition: "background-color 0.2s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#4A5832")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#5C6B3F")}
-          >
-            {confirmText}
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
@@ -231,7 +153,11 @@ function ReviewsContent() {
 
   // ── List View ──
   if (isLoading) {
-    return <div style={{ padding: "40px", textAlign: "center", color: "#6b6b6b" }}>Loading reviews...</div>;
+    return (
+      <div style={{ width: "100%", maxWidth: "100%" }}>
+        <AdminPageSkeleton columns={5} rows={5} showFilter={true} filterCount={3} showAction={false} />
+      </div>
+    );
   }
 
   if (!selected) {
@@ -565,10 +491,12 @@ function ReviewsContent() {
       {/* Request Changes Confirmation */}
       <ConfirmModal
         isOpen={showRequestChangesConfirm}
+        onClose={() => setShowRequestChangesConfirm(false)}
         title="Request Changes"
-        description="Send this comment to the submitter and mark the submission as needing changes?"
-        confirmText="Yes, Request Changes"
-        cancelText="No"
+        message="Send this comment to the submitter and mark the submission as needing changes?"
+        confirmLabel="Yes, Request Changes"
+        cancelLabel="No"
+        isDestructive={true}
         onConfirm={async () => {
           try {
             const token = localStorage.getItem("access_token");
@@ -582,24 +510,29 @@ function ReviewsContent() {
             });
             if (res.ok) {
               setCommentText("");
-              setShowRequestChangesConfirm(false);
               fetchReviews();
-              router.push("/admin/reviews");
+              return true;
             }
+            return false;
           } catch (err) {
             console.error("Failed to request changes:", err);
+            return false;
           }
         }}
-        onCancel={() => setShowRequestChangesConfirm(false)}
+        onSuccess={() => {
+          setShowRequestChangesConfirm(false);
+          router.push("/admin/reviews");
+        }}
       />
 
       {/* Approve Confirmation */}
       <ConfirmModal
         isOpen={showApproveConfirm}
+        onClose={() => setShowApproveConfirm(false)}
         title="Confirm Approval"
-        description="Are you sure you want to approve this submission? This action will publish the content to the live website."
-        confirmText="Yes, Approve"
-        cancelText="Cancel"
+        message="Are you sure you want to approve this submission? This action will publish the content to the live website."
+        confirmLabel="Yes, Approve"
+        cancelLabel="Cancel"
         onConfirm={async () => {
           try {
             const token = localStorage.getItem("access_token");
@@ -608,24 +541,30 @@ function ReviewsContent() {
               headers: token ? { Authorization: `Bearer ${token}` } : {}
             });
             if (res.ok) {
-              setShowApproveConfirm(false);
               fetchReviews();
-              router.push("/admin/reviews");
+              return true;
             }
+            return false;
           } catch (err) {
             console.error("Failed to approve review:", err);
+            return false;
           }
         }}
-        onCancel={() => setShowApproveConfirm(false)}
+        onSuccess={() => {
+          setShowApproveConfirm(false);
+          router.push("/admin/reviews");
+        }}
       />
 
       {/* Cancel Approval Confirmation */}
       <ConfirmModal
         isOpen={showCancelApprovalConfirm}
+        onClose={() => setShowCancelApprovalConfirm(false)}
         title="Cancel Approval"
-        description="Are you sure you want to cancel the approval for this submission? It will revert to 'Pending Approval' or 'Rejected'."
-        confirmText="Yes, Cancel Approval"
-        cancelText="Keep Approved"
+        message="Are you sure you want to cancel the approval for this submission? It will revert to 'Pending Approval' or 'Rejected'."
+        confirmLabel="Yes, Cancel Approval"
+        cancelLabel="Keep Approved"
+        isDestructive={true}
         onConfirm={async () => {
           try {
             const token = localStorage.getItem("access_token");
@@ -634,15 +573,19 @@ function ReviewsContent() {
               headers: token ? { Authorization: `Bearer ${token}` } : {}
             });
             if (res.ok) {
-              setShowCancelApprovalConfirm(false);
               fetchReviews();
-              router.push("/admin/reviews");
+              return true;
             }
+            return false;
           } catch (err) {
             console.error("Failed to reject review:", err);
+            return false;
           }
         }}
-        onCancel={() => setShowCancelApprovalConfirm(false)}
+        onSuccess={() => {
+          setShowCancelApprovalConfirm(false);
+          router.push("/admin/reviews");
+        }}
       />
     </div>
   );

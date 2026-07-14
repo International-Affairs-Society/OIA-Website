@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { AdminPageHeader, AdminTable, StatusBadge, FilterBar } from "@/app/admin/components";
 import CustomDropdown from "@/app/admin/components/CustomDropdown";
+import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 
 // Hardcoded options matching the programs section
 const SCHOOL_OPTIONS = [
@@ -524,7 +525,7 @@ export default function ApplicationsPage() {
       {/* ── Table ── */}
       <div style={{ border: "1px solid #b5bda0", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
         {isLoading ? (
-          <div style={{ padding: "40px", textAlign: "center", color: "#6b6b6b" }}>Loading Applications...</div>
+          <AdminPageSkeleton columns={8} rows={6} showFilter={false} showAction={false} />
         ) : data.length === 0 ? (
           <div style={{ padding: "40px", textAlign: "center", color: "#6b6b6b" }}>No applications found.</div>
         ) : (

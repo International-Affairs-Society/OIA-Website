@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader, AdminTable, ActionButtons, StatusBadge } from "@/app/admin/components";
+import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -103,7 +104,7 @@ export default function ProgramsPage() {
       
       <div style={{ border: "1px solid #b5bda0", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
         {isLoading ? (
-          <div style={{ padding: "40px", textAlign: "center", color: "#6b6b6b" }}>Loading programs...</div>
+          <AdminPageSkeleton columns={5} rows={5} showFilter={false} />
         ) : data.length === 0 ? (
           <div style={{ padding: "40px", textAlign: "center", color: "#6b6b6b" }}>No programs found.</div>
         ) : (

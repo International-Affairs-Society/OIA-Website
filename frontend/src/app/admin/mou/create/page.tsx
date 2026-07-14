@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AdminPageHeader, FormField, CustomDropdown } from "../../components";
+import { AdminPageHeader, FormField, CustomDropdown, ConfirmModal } from "../../components";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { Plus, Trash2 } from "lucide-react";
 
@@ -118,10 +118,12 @@ export default function CreateMOUPage() {
     else setList([...list, opt]);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const executeSave = async () => {
     if (!name || !partnerUniversity || !country || !startDate || !expiryDate) {
-      return alert("Please fill in all required fields.");
+      alert("Please fill in all required fields.");
+      return false;
     }
 
     try {
@@ -167,15 +169,16 @@ export default function CreateMOUPage() {
       });
 
       if (res.ok) {
-        alert("MOU created successfully!");
-        router.push("/admin/mou");
+        return true;
       } else {
         const errJson = await res.json();
         alert(errJson.error?.message || "Failed to create MOU");
+        return false;
       }
     } catch (err) {
       console.error("Error creating MOU:", err);
       alert("Error creating MOU");
+      return false;
     } finally {
       setIsSaving(false);
     }
@@ -203,7 +206,7 @@ export default function CreateMOUPage() {
       <AdminPageHeader title="Create MOU" />
 
       <div style={{ border: "1px solid #b5bda0", padding: "2rem", backgroundColor: "#f5f0e8", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={(e) => { e.preventDefault(); setShowConfirm(true); }}>
           
           <h3 style={{ ...sectionHeadingStyle, marginTop: 0 }}>General Details</h3>
           <FormField label="MOU Name" required>
@@ -577,6 +580,18 @@ export default function CreateMOUPage() {
           </div>
         </form>
       </div>
+
+      <ConfirmModal
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={executeSave}
+        onSuccess={() => router.push("/admin/mou")}
+        title="Save MOU?"
+        confirmLabel="Yes"
+        cancelLabel="No"
+        submittingLabel="Submitting..."
+        successLabel="Submitted!"
+      />
     </div>
   );
 }

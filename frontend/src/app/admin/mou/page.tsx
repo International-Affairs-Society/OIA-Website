@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { AdminPageHeader, AdminTable, ActionButtons, StatusBadge, FilterBar } from "@/app/admin/components";
 import { usePermission } from "@/app/admin/roles/usePermission";
 import { useAuth } from "@/app/admin/roles/AuthContext";
+import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 
 const MOU_TYPE_OPTIONS = [
   "Semester Exchange", "Global Immersion", "Inbound Immersion", 
@@ -179,7 +180,7 @@ export default function MOUsPage() {
 
       <div style={{ border: "1px solid #b5bda0", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
         {isLoading ? (
-          <div style={{ padding: "40px", textAlign: "center", color: "#6b6b6b" }}>Loading MOUs...</div>
+          <AdminPageSkeleton columns={8} rows={6} showFilter={false} />
         ) : data.length === 0 ? (
           <div style={{ padding: "40px", textAlign: "center", color: "#6b6b6b" }}>No MOUs found.</div>
         ) : (

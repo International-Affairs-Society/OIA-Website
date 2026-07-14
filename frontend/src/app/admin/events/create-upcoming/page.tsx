@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AdminPageHeader, FormField, CustomDropdown } from "../../components";
+import { AdminPageHeader, FormField, CustomDropdown, ConfirmModal } from "../../components";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 
 const MAX_WORDS = 60;
@@ -107,19 +107,20 @@ export default function CreateUpcomingEventPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const executeSave = async () => {
     if (!title.trim()) {
       alert("Title is required.");
-      return;
+      return false;
     }
     if (!date) {
       alert("Date is required.");
-      return;
+      return false;
     }
     if (isOverLimit) {
       alert(`Description exceeds the word limit of ${MAX_WORDS} words.`);
-      return;
+      return false;
     }
 
     try {
@@ -149,14 +150,16 @@ export default function CreateUpcomingEventPage() {
       });
 
       if (res.ok) {
-        router.push("/admin/events");
+        return true;
       } else {
         const errorJson = await res.json();
         alert(`Failed to save event: ${errorJson.error?.message || "Unknown error"}`);
+        return false;
       }
     } catch (err) {
       console.error("Failed to save event:", err);
       alert("An error occurred while saving the event.");
+      return false;
     }
   };
 
@@ -171,7 +174,7 @@ export default function CreateUpcomingEventPage() {
       <AdminPageHeader title="Create Upcoming Event" />
 
       <div style={{ border: "1px solid #b5bda0", padding: "2rem", backgroundColor: "#f5f0e8", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={(e) => { e.preventDefault(); setShowConfirm(true); }}>
           <FormField label="Title" required>
             <input type="text" placeholder="Enter title" value={title} onChange={(e) => setTitle(e.target.value)} required />
           </FormField>
@@ -341,6 +344,18 @@ export default function CreateUpcomingEventPage() {
           </div>
         </form>
       </div>
+
+      <ConfirmModal
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={executeSave}
+        onSuccess={() => router.push("/admin/events")}
+        title="Save Event?"
+        confirmLabel="Yes"
+        cancelLabel="No"
+        submittingLabel="Submitting..."
+        successLabel="Submitted!"
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { TabGroup, AdminTable, StatusBadge, FormField } from "@/app/admin/components";
+import { AdminFormSkeleton } from "@/app/admin/optemization_component";
 
 export default function StudentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -126,7 +127,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
     : "ST";
 
   if (isLoading) {
-    return <div style={{ padding: "40px", textAlign: "center", color: "#6b6b6b" }}>Loading student profile...</div>;
+    return <AdminFormSkeleton fields={8} />;
   }
 
   if (!student) {
