@@ -26,8 +26,8 @@ export const getChangeRequests = asyncHandler(async (req, res) => {
   const paginatedResult = await paginate(prisma.change_requests, req.query, {
     where,
     include: {
-      users_change_requests_requested_byTousers: { select: { id: true, display_name: true, email: true } },
-      users_change_requests_reviewed_byTousers: { select: { id: true, display_name: true, email: true } }
+      users_change_requests_requested_byTousers: { select: { id: true, name: true, email: true } },
+      users_change_requests_reviewed_byTousers: { select: { id: true, name: true, email: true } }
     },
     orderBy: { created_at: 'desc' }
   })

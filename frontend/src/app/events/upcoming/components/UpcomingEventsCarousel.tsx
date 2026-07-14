@@ -4,11 +4,7 @@ import React, { useRef, useEffect, useState } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { MOCK_UPCOMING_EVENTS } from "../data/mockUpcomingEvents";
 import CountdownTimer from "./CountdownTimer";
-
-const events = MOCK_UPCOMING_EVENTS;
-const NUM = events.length;
 
 /* ── Word cap for description ── */
 const DESC_WORD_LIMIT = 35;
@@ -25,21 +21,57 @@ function smoothstep(t: number) {
   return t * t * (3 - 2 * t);
 }
 
+function formatEventDate(startDateStr: string, endDateStr?: string | null) {
+  if (!startDateStr) return "";
+  const start = new Date(startDateStr);
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const startMonth = months[start.getMonth()];
+  const startDay = start.getDate();
+  const startYear = start.getFullYear();
+
+  if (!endDateStr) {
+    return `${startMonth} ${startDay}, ${startYear}`;
+  }
+
+  const end = new Date(endDateStr);
+  const endMonth = months[end.getMonth()];
+  const endDay = end.getDate();
+  const endYear = end.getFullYear();
+
+  if (startYear !== endYear) {
+    return `${startMonth} ${startDay}, ${startYear} - ${endMonth} ${endDay}, ${endYear}`;
+  }
+  if (startMonth !== endMonth) {
+    return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${startYear}`;
+  }
+  if (startDay !== endDay) {
+    return `${startMonth} ${startDay}-${endDay}, ${startYear}`;
+  }
+  return `${startMonth} ${startDay}, ${startYear}`;
+}
+
 /* ── Single event slide ── */
 function EventSlide({
   event,
   isActive,
   isPrev,
 }: {
-  event: (typeof events)[0];
+  event: any;
   isActive: boolean;
   isPrev: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const { short, truncated } = truncate(event.description, DESC_WORD_LIMIT);
+  const { short, truncated } = truncate(event.description || "", DESC_WORD_LIMIT);
 
   // Reset read-more when switching events
   useEffect(() => { setExpanded(false); }, [event.id]);
+
+  const displayDate = formatEventDate(event.date, event.endDate);
+  const countdownTarget = event.date ? `${event.date}T09:00:00` : "";
+  const posterRatio = event.posterRatio || (3 / 4);
 
   return (
     <div
@@ -65,27 +97,29 @@ function EventSlide({
           paddingLeft: "clamp(40px, 5vw, 80px)",
         }}
       >
-        {/* ── LEFT: Image card (no text overlay) ── */}
+        {/* ── LEFT: Image card ── */}
         <div
           style={{
             flexShrink: 0,
             width: "clamp(230px, 27.6vw, 380px)",
             maxHeight: "65vh",
-            aspectRatio: String(event.posterRatio ?? (3 / 4)),
+            aspectRatio: String(posterRatio),
             position: "relative",
             overflow: "hidden",
             borderRadius: "0px",
             boxShadow: "8px 12px 40px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.12)",
           }}
         >
-          <Image
-            src={event.thumbnail}
-            alt={event.title}
-            fill
-            className="object-cover"
-            unoptimized
-            priority={isActive}
-          />
+          {event.posterUrl && (
+            <Image
+              src={event.posterUrl}
+              alt={event.title}
+              fill
+              className="object-cover"
+              unoptimized
+              priority={isActive}
+            />
+          )}
         </div>
 
         {/* ── RIGHT: Text block ── */}
@@ -109,10 +143,10 @@ function EventSlide({
               marginBottom: "18px",
             }}
           >
-            {event.date}
+            {displayDate}
           </p>
 
-          {/* ── Title (top right, large) ── */}
+          {/* ── Title ── */}
           <h2
             className="font-outfit"
             style={{
@@ -191,9 +225,11 @@ function EventSlide({
           )}
 
           {/* ── Countdown timer ── */}
-          <div style={{ marginTop: "28px" }}>
-            <CountdownTimer targetDate={event.eventDate} />
-          </div>
+          {countdownTarget && (
+            <div style={{ marginTop: "28px" }}>
+              <CountdownTimer targetDate={countdownTarget} />
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -206,6 +242,10 @@ export default function UpcomingEventsCarousel() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [prevIndex, setPrevIndex] = useState<number | null>(null);
 
+  const [events, setEvents] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   /* ── Number indicator refs ── */
   const numberRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const dialRef = useRef<HTMLDivElement>(null);
@@ -214,8 +254,33 @@ export default function UpcomingEventsCarousel() {
   /* ── Thumbnail strip on the right ── */
   const [thumbActive, setThumbActive] = useState(0);
 
+  // Fetch events from backend API
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001").replace(/['"]/g, "");
+        const res = await fetch(`${API_URL}/api/v1/events?eventType=upcoming`);
+        if (res.ok) {
+          const json = await res.json();
+          setEvents(json.data || []);
+        } else {
+          setError("Failed to load events");
+        }
+      } catch (err) {
+        console.error("Error loading upcoming events:", err);
+        setError("Error loading upcoming events");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchEvents();
+  }, []);
+
   /* ── GSAP ScrollTrigger: pin + scrub ── */
   useEffect(() => {
+    if (isLoading || events.length === 0) return;
+
+    const NUM = events.length;
     gsap.registerPlugin(ScrollTrigger);
 
     const ctx = gsap.context(() => {
@@ -280,16 +345,35 @@ export default function UpcomingEventsCarousel() {
     }, sectionRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [isLoading, events]);
 
   /* ── Scroll to specific event on thumbnail click ── */
   const scrollToEvent = (targetIdx: number) => {
     const st = ScrollTrigger.getAll().find((t) => t.vars.id === "upcoming-carousel");
     if (!st) return;
+    const NUM = events.length;
     const targetProgress = targetIdx / NUM + 0.01;
     const targetScroll = st.start + (st.end - st.start) * targetProgress;
     window.scrollTo({ top: targetScroll, behavior: "smooth" });
   };
+
+  if (isLoading) {
+    return (
+      <section style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#FFFDE2", fontFamily: "var(--font-space-grotesk)" }}>
+        <p style={{ fontSize: "16px", color: "var(--foreground)", opacity: 0.6 }}>Loading upcoming events...</p>
+      </section>
+    );
+  }
+
+  if (error || events.length === 0) {
+    return (
+      <section style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#FFFDE2", fontFamily: "var(--font-space-grotesk)" }}>
+        <p style={{ fontSize: "16px", color: "var(--foreground)", opacity: 0.6 }}>No upcoming events scheduled at the moment.</p>
+      </section>
+    );
+  }
+
+  const NUM = events.length;
 
   return (
     <section
@@ -313,11 +397,13 @@ export default function UpcomingEventsCarousel() {
             const r = 150;
             const x = r + r * Math.cos(rad);
             const y = r + r * Math.sin(rad);
-            // Short form: "Aug 15" — take first 3 chars of month + first number of day
-            const parts = event.date.trim().split(/\s+/);
-            const monthShort = (parts[0] || "").slice(0, 3).toUpperCase();
-            const dayFirst = (parts[1] || "").replace(/[^0-9].*/, "");
+            
+            // Extract month and day safely using the start date object
+            const start = new Date(event.date);
+            const monthShort = start.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+            const dayFirst = start.getDate().toString();
             const shortDate = `${monthShort} ${dayFirst}`;
+
             return (
               <div
                 key={event.id}
@@ -365,7 +451,9 @@ export default function UpcomingEventsCarousel() {
               onClick={() => scrollToEvent(i)}
               style={{ width: "40px", height: "40px", overflow: "hidden", opacity: thumbActive === i ? 1 : 0.4, transition: "opacity 0.4s ease", cursor: "pointer" }}
             >
-              <Image src={event.thumbnail} width={40} height={40} style={{ objectFit: "cover", width: "100%", height: "100%" }} alt={event.title} unoptimized />
+              {event.posterUrl && (
+                <Image src={event.posterUrl} width={40} height={40} style={{ objectFit: "cover", width: "100%", height: "100%" }} alt={event.title} unoptimized />
+              )}
             </div>
           ))}
         </div>

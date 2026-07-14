@@ -39,17 +39,24 @@ app.use(helmet({
 }))
 
 // Global Rate Limiting
+const isDev = process.env.NODE_ENV !== 'production'
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  limit: isDev ? 10000 : 100, // Limit each IP (10000 in dev, 100 in prod)
   standardHeaders: 'draft-7', // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   message: { error: { code: 'TOO_MANY_REQUESTS', message: 'Too many requests from this IP, please try again later.' } }
 })
 
 // Global middleware
+const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/['"]/g, '')
+const allowedOrigins = [
+  frontendUrl,
+  'http://localhost:3000',
+  'http://127.0.0.1:3000'
+]
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: allowedOrigins,
   credentials: true
 }))
 app.use(limiter)

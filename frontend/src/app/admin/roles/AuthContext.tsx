@@ -8,7 +8,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { Role } from "./permissions";
 import { supabase } from "@/lib/supabaseClient";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001").replace(/['"]/g, "");
 
 interface User {
   id: string;
@@ -78,9 +78,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch(`${API_URL}/api/v1/auth/me`, {
         credentials: "include",
         headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0',
           ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         cache: 'no-store'
