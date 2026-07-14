@@ -7,6 +7,7 @@ import {
   Legend, ResponsiveContainer, PieChart, Pie, Cell, LabelList,
 } from "recharts";
 import * as d3 from "d3";
+import { AdminDashboardSkeleton } from "@/app/admin/optemization_component";
 
 const WorldMapSVG = dynamic(() => import("@/app/homepage/WorldMapSVG"), { ssr: false });
 
@@ -675,6 +676,8 @@ export default function AdminDashboardPage() {
   ];
 
   if (!mounted) return <div style={{ minHeight: "100vh", backgroundColor: "#f5f0e8" }} />;
+
+  if (isLoading) return <AdminDashboardSkeleton />;
 
   return (
     <div style={{ padding: "0.5rem 0", minHeight: "100%" }}>

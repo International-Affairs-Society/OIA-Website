@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { AdminPageHeader, AdminTable, ActionButtons, FilterBar } from "@/app/admin/components";
+import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -207,7 +208,7 @@ export default function UsersPage() {
 
       <div style={{ border: "1px solid #b5bda0", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
         {isLoading ? (
-          <div style={{ padding: "40px", textAlign: "center", color: "#6b6b6b" }}>Loading users...</div>
+          <AdminPageSkeleton columns={4} rows={6} showFilter={false} />
         ) : data.length === 0 ? (
           <div style={{ padding: "40px", textAlign: "center", color: "#6b6b6b" }}>No users found.</div>
         ) : (

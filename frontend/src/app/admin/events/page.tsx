@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader, AdminTable, ActionButtons, StatusBadge, AdminButton } from "@/app/admin/components";
+import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 
 export default function EventsPage() {
@@ -131,7 +132,7 @@ export default function EventsPage() {
       <AdminPageHeader title="Events" />
 
       {isLoading ? (
-        <div style={{ padding: "40px", textAlign: "center", color: "#6b6b6b" }}>Loading events...</div>
+        <AdminPageSkeleton columns={5} rows={4} showFilter={false} showAction={false} />
       ) : (
         <>
           {/* ── Upcoming Events ── */}

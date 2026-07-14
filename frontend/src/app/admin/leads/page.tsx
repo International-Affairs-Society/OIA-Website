@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { AdminPageHeader, AdminTable, FilterBar } from "@/app/admin/components";
+import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 
 interface Lead {
   id: string;
@@ -95,7 +96,7 @@ export default function ProgramLeadsPage() {
 
       <div style={{ border: "1px solid #b5bda0", boxShadow: "0 4px 12px rgba(0,0,0,0.05)", borderRadius: "8px", overflow: "hidden" }}>
         {isLoading ? (
-          <div style={{ padding: "40px", textAlign: "center", color: "#6b6b6b" }}>Loading program leads...</div>
+          <AdminPageSkeleton columns={5} rows={5} showFilter={false} />
         ) : formattedLeads.length === 0 ? (
           <div style={{ padding: "40px", textAlign: "center", color: "#6b6b6b" }}>No program leads found.</div>
         ) : (

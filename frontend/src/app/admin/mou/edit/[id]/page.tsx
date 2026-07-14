@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { AdminPageHeader, FormField, CustomDropdown } from "../../../components";
+import { AdminFormSkeleton } from "@/app/admin/optemization_component";
 
 const MOU_TYPE_OPTIONS = [
   { value: "Semester Exchange", label: "Semester Exchange" },
@@ -128,8 +129,8 @@ export default function EditMOUPage() {
 
   if (isLoading) {
     return (
-      <div style={{ width: "100%", padding: "40px", textAlign: "center" }}>
-        <p style={{ color: "#6b6b6b" }}>Loading MOU Details...</p>
+      <div style={{ maxWidth: "800px", margin: "0 auto", padding: "2rem 0" }}>
+        <AdminFormSkeleton fields={8} />
       </div>
     );
   }

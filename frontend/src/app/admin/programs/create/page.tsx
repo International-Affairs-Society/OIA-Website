@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AdminPageHeader, FormField, CustomDropdown } from "../../components";
+import { AdminPageHeader, FormField, CustomDropdown, ConfirmModal } from "../../components";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { Plus, Trash2 } from "lucide-react";
 
@@ -429,8 +429,7 @@ export default function CreateProgramPage() {
 
       if (!name || !programType || !country || !startD || !applyD) {
         alert("Please fill in all required fields (Name, Program Type, Country, Start Date, Apply Date).");
-        setShowConfirm(false);
-        return;
+        return false;
       }
 
       // Parse living costs details into structured formats if needed, or store in custom_fields
@@ -485,16 +484,16 @@ export default function CreateProgramPage() {
       });
 
       if (res.ok) {
-        router.push("/admin/programs");
+        return true;
       } else {
         const errorJson = await res.json();
         alert(`Failed to save program: ${errorJson.error?.message || "Unknown error"}`);
+        return false;
       }
     } catch (err) {
       console.error(err);
       alert("Error occurred while saving program.");
-    } finally {
-      setShowConfirm(false);
+      return false;
     }
   };
 
@@ -846,34 +845,17 @@ export default function CreateProgramPage() {
       </div>
 
       {/* Confirmation Popup */}
-      {showConfirm && (
-        <div style={{
-          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: "rgba(0,0,0,0.6)", zIndex: 10000,
-          display: "flex", alignItems: "center",
-          alignContent: "center", justifyContent: "center"
-        }}>
-          <div style={{
-            backgroundColor: "#f5f0e8", border: "2px solid #b5bda0", padding: "32px", maxWidth: "400px", textAlign: "center", boxShadow: "0 8px 32px rgba(0,0,0,0.15)", margin: "auto"
-          }}>
-            <h3 style={{ margin: "0 0 16px 0", color: "#1a1a1a", fontSize: "18px" }}>Save program?</h3>
-            <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginTop: "24px" }}>
-              <button 
-                onClick={executeSaveProgram}
-                style={{ padding: "8px 24px", backgroundColor: "#1a1a1a", color: "#fff", border: "none", fontWeight: 600, cursor: "pointer" }}
-              >
-                Yes
-              </button>
-              <button 
-                onClick={() => setShowConfirm(false)}
-                style={{ padding: "8px 24px", backgroundColor: "transparent", color: "#1a1a1a", border: "1px solid #1a1a1a", fontWeight: 600, cursor: "pointer" }}
-              >
-                No
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={executeSaveProgram}
+        onSuccess={() => router.push("/admin/programs")}
+        title="Save program?"
+        confirmLabel="Yes"
+        cancelLabel="No"
+        submittingLabel="Submitting..."
+        successLabel="Submitted!"
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader, AdminTable } from "../components";
+import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { Plus, ClipboardCheck } from "lucide-react";
 
@@ -141,7 +142,7 @@ export default function VisitsPage() {
 
       <div style={{ border: "1px solid #b5bda0", boxShadow: "0 4px 12px rgba(0,0,0,0.05)", borderRadius: "8px", overflow: "hidden" }}>
         {isLoading ? (
-          <div style={{ padding: "40px", textAlign: "center", color: "#6b6b6b" }}>Loading visits...</div>
+          <AdminPageSkeleton columns={4} rows={5} showFilter={false} />
         ) : filteredVisits.length === 0 ? (
           <div style={{ padding: "40px", textAlign: "center", color: "#6b6b6b" }}>No visits found.</div>
         ) : (

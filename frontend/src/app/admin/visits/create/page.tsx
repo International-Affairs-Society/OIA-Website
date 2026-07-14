@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AdminPageHeader, FormField } from "../../components";
+import { AdminPageHeader, FormField, ConfirmModal } from "../../components";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { Plus, Trash2, Upload, AlertCircle, CheckCircle, X, FileText, Loader2 } from "lucide-react";
 
@@ -277,15 +277,16 @@ export default function CreateVisitPage() {
       });
 
       if (res.ok) {
-        setShowConfirmDialog(false);
-        setShowConfirm(true);
+        return true;
       } else {
         const errJson = await res.json();
         alert(`Failed to save visit: ${errJson.error?.message || "Unknown error"}`);
+        return false;
       }
     } catch (err) {
       console.error("Error saving visit:", err);
       alert("Error saving visit.");
+      return false;
     }
   };
 
@@ -605,60 +606,18 @@ export default function CreateVisitPage() {
           </div>
         </form>
 
-        {showConfirmDialog && (
-          <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
-            <div style={{ backgroundColor: "#fff", padding: "2rem", borderRadius: "12px", maxWidth: "400px", textAlign: "center" }}>
-              <div style={{ width: "48px", height: "48px", borderRadius: "50%", backgroundColor: "#fff3e0", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem auto" }}>
-                <AlertCircle size={24} color="#ed6c02" />
-              </div>
-              <h3 style={{ fontSize: "18px", fontWeight: 600, color: "#1a1a1a", marginBottom: "0.5rem" }}>
-                Confirm Submission
-              </h3>
-              <p style={{ fontSize: "14px", color: "#6b6b6b", marginBottom: "1.5rem", lineHeight: 1.5 }}>
-                Are you sure you want to {role === 'admin' || role === 'editor' ? 'submit this visit for approval' : 'record this visit'}? This action cannot be undone.
-              </p>
-              <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
-                <button 
-                  onClick={() => setShowConfirmDialog(false)}
-                  style={{ padding: "10px 24px", backgroundColor: "transparent", color: "#1a1a1a", border: "1px solid #1a1a1a", borderRadius: "4px", fontSize: "14px", cursor: "pointer", flex: 1 }}
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={handleConfirmSubmit}
-                  style={{ padding: "10px 24px", backgroundColor: "#1a1a1a", color: "#f5f0e8", border: "none", borderRadius: "4px", fontSize: "14px", cursor: "pointer", flex: 1 }}
-                >
-                  Confirm
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showConfirm && (
-          <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
-            <div style={{ backgroundColor: "#fff", padding: "2rem", borderRadius: "12px", maxWidth: "400px", textAlign: "center" }}>
-              <div style={{ width: "48px", height: "48px", borderRadius: "50%", backgroundColor: "#e8f5e9", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem auto" }}>
-                <CheckCircle size={24} color="#4caf50" />
-              </div>
-              <h3 style={{ fontSize: "18px", fontWeight: 600, color: "#1a1a1a", marginBottom: "0.5rem" }}>
-                {role === 'admin' || role === 'editor' ? 'Submitted for Approval' : 'Visit Recorded'}
-              </h3>
-              <p style={{ fontSize: "14px", color: "#6b6b6b", marginBottom: "1.5rem", lineHeight: 1.5 }}>
-                {role === 'admin' || role === 'editor' 
-                  ? 'The visit record has been saved and sent to the Super Admin for final approval. An entry has been logged in the audit trail.'
-                  : 'The visit record has been successfully added to the database. An entry has been logged in the audit trail.'
-                }
-              </p>
-              <button 
-                onClick={() => router.push("/admin/visits")}
-                style={{ padding: "10px 24px", backgroundColor: "#1a1a1a", color: "#f5f0e8", border: "none", borderRadius: "4px", fontSize: "14px", cursor: "pointer", width: "100%" }}
-              >
-                Go to Visits
-              </button>
-            </div>
-          </div>
-        )}
+        <ConfirmModal
+          isOpen={showConfirmDialog}
+          onClose={() => setShowConfirmDialog(false)}
+          onConfirm={handleConfirmSubmit}
+          onSuccess={() => router.push("/admin/visits")}
+          title="Confirm Submission"
+          message={role === 'admin' || role === 'editor' ? 'Are you sure you want to submit this visit for approval? This action cannot be undone.' : 'Are you sure you want to record this visit? This action cannot be undone.'}
+          confirmLabel="Confirm"
+          cancelLabel="Cancel"
+          submittingLabel="Submitting..."
+          successLabel={role === 'admin' || role === 'editor' ? 'Submitted for Approval' : 'Visit Recorded'}
+        />
       </div>
     </div>
   );

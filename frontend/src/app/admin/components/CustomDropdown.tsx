@@ -53,8 +53,8 @@ export default function CustomDropdown({ value, onChange, options, placeholder =
           className="dropdown-scroll-area"
           onWheel={(e) => e.stopPropagation()}
         >
-          {options.map((opt) => (
-            <div key={opt.value} className="dropdown-item">
+          {options.map((opt, index) => (
+            <div key={`${opt.value}-${index}`} className="dropdown-item">
               {opt.isHeader ? (
                 <div style={{ padding: "8px 16px", fontSize: "11px", fontWeight: 700, color: "#798264", textTransform: "uppercase", letterSpacing: "0.05em", backgroundColor: "rgba(121, 130, 100, 0.05)", borderTop: "1px solid rgba(121, 130, 100, 0.1)", borderBottom: "1px solid rgba(121, 130, 100, 0.1)", marginTop: "4px", marginBottom: "4px" }}>
                   {opt.label}
