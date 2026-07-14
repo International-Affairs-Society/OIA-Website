@@ -1,15 +1,44 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { MOCK_UPCOMING_EVENTS } from "../data/mockUpcomingEvents";
 import CountdownTimer from "./CountdownTimer";
 
-const events = MOCK_UPCOMING_EVENTS;
+function formatEventDate(startDateStr: string, endDateStr?: string | null) {
+  if (!startDateStr) return "";
+  const start = new Date(startDateStr);
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const startMonth = months[start.getMonth()];
+  const startDay = start.getDate();
+  const startYear = start.getFullYear();
 
-function MobileEventCard({ event, index }: { event: (typeof events)[0]; index: number }) {
+  if (!endDateStr) {
+    return `${startMonth} ${startDay}, ${startYear}`;
+  }
+
+  const end = new Date(endDateStr);
+  const endMonth = months[end.getMonth()];
+  const endDay = end.getDate();
+  const endYear = end.getFullYear();
+
+  if (startYear !== endYear) {
+    return `${startMonth} ${startDay}, ${startYear} - ${endMonth} ${endDay}, ${endYear}`;
+  }
+  if (startMonth !== endMonth) {
+    return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${startYear}`;
+  }
+  if (startDay !== endDay) {
+    return `${startMonth} ${startDay}-${endDay}, ${startYear}`;
+  }
+  return `${startMonth} ${startDay}, ${startYear}`;
+}
+
+function MobileEventCard({ event, index, total }: { event: any; index: number; total: number }) {
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,6 +65,10 @@ function MobileEventCard({ event, index }: { event: (typeof events)[0]; index: n
     return () => ctx.revert();
   }, []);
 
+  const displayDate = formatEventDate(event.date, event.endDate);
+  const countdownTarget = event.date ? `${event.date}T09:00:00` : "";
+  const posterRatio = event.posterRatio || 3 / 4;
+
   return (
     <div
       ref={cardRef}
@@ -58,28 +91,30 @@ function MobileEventCard({ event, index }: { event: (typeof events)[0]; index: n
           marginBottom: "8px",
         }}
       >
-        {event.id}
+        {String(index + 1).padStart(2, "0")}
       </span>
 
       {/* Image */}
-      <div
-        style={{
-          width: "100%",
-          aspectRatio: event.posterRatio || 3 / 4,
-          position: "relative",
-          overflow: "hidden",
-          marginBottom: "20px",
-          boxShadow: "0 20px 40px rgba(0, 0, 0, 0.2)",
-        }}
-      >
-        <Image
-          src={event.thumbnail}
-          fill
-          style={{ objectFit: "cover" }}
-          alt={event.title}
-          unoptimized
-        />
-      </div>
+      {event.posterUrl && (
+        <div
+          style={{
+            width: "100%",
+            aspectRatio: posterRatio,
+            position: "relative",
+            overflow: "hidden",
+            marginBottom: "20px",
+            boxShadow: "0 20px 40px rgba(0, 0, 0, 0.2)",
+          }}
+        >
+          <Image
+            src={event.posterUrl}
+            fill
+            style={{ objectFit: "cover" }}
+            alt={event.title}
+            unoptimized
+          />
+        </div>
+      )}
 
       {/* Title */}
       <h2
@@ -108,33 +143,52 @@ function MobileEventCard({ event, index }: { event: (typeof events)[0]; index: n
           marginBottom: "16px",
         }}
       >
-        {event.date}
+        {displayDate}
+      </p>
+
+      {/* Description */}
+      <p
+        className="font-outfit"
+        style={{
+          fontSize: "15px",
+          fontWeight: 300,
+          lineHeight: 1.6,
+          color: "var(--foreground)",
+          opacity: 0.8,
+          marginBottom: "20px",
+        }}
+      >
+        {event.description}
       </p>
 
       {/* Highlights */}
-      <div style={{ marginBottom: "20px" }}>
-        {event.highlights.map((h) => (
-          <p
-            key={h}
-            className="font-space-grotesk"
-            style={{
-              fontSize: "13px",
-              fontWeight: 600,
-              color: "var(--foreground)",
-              marginBottom: "4px",
-              lineHeight: 1.5,
-            }}
-          >
-            {h}
-          </p>
-        ))}
-      </div>
+      {event.highlights && event.highlights.length > 0 && (
+        <div style={{ marginBottom: "20px" }}>
+          {event.highlights.map((h: string) => (
+            <p
+              key={h}
+              className="font-space-grotesk"
+              style={{
+                fontSize: "13px",
+                fontWeight: 600,
+                color: "var(--foreground)",
+                marginBottom: "4px",
+                lineHeight: 1.5,
+              }}
+            >
+              • {h}
+            </p>
+          ))}
+        </div>
+      )}
 
       {/* Countdown Timer */}
-      <CountdownTimer targetDate={event.eventDate} />
+      {countdownTarget && (
+        <CountdownTimer targetDate={countdownTarget} />
+      )}
 
       {/* Divider */}
-      {index < events.length - 1 && (
+      {index < total - 1 && (
         <div
           style={{
             marginTop: "40px",
@@ -148,6 +202,47 @@ function MobileEventCard({ event, index }: { event: (typeof events)[0]; index: n
 }
 
 export default function MobileUpcoming() {
+  const [events, setEvents] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001").replace(/['"]/g, "");
+        const res = await fetch(`${API_URL}/api/v1/events?eventType=upcoming`);
+        if (res.ok) {
+          const json = await res.json();
+          setEvents(json.data || []);
+        } else {
+          setError("Failed to load events");
+        }
+      } catch (err) {
+        console.error("Error loading upcoming events:", err);
+        setError("Error loading upcoming events");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchEvents();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <section style={{ backgroundColor: "#FFFDE2", paddingTop: "100px", paddingBottom: "60px", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-space-grotesk)" }}>
+        <p style={{ fontSize: "15px", color: "var(--foreground)", opacity: 0.6 }}>Loading upcoming events...</p>
+      </section>
+    );
+  }
+
+  if (error || events.length === 0) {
+    return (
+      <section style={{ backgroundColor: "#FFFDE2", paddingTop: "100px", paddingBottom: "60px", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-space-grotesk)" }}>
+        <p style={{ fontSize: "15px", color: "var(--foreground)", opacity: 0.6 }}>No upcoming events scheduled at the moment.</p>
+      </section>
+    );
+  }
+
   return (
     <section
       className="relative w-full"
@@ -177,7 +272,7 @@ export default function MobileUpcoming() {
 
       {/* Event Cards */}
       {events.map((event, i) => (
-        <MobileEventCard key={event.id} event={event} index={i} />
+        <MobileEventCard key={event.id} event={event} index={i} total={events.length} />
       ))}
     </section>
   );

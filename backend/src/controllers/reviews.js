@@ -65,7 +65,7 @@ export const createReview = asyncHandler(async (req, res) => {
       type: parsed.type,
       title: parsed.title,
       submitted_by: req.user.id,
-      submitted_by_name: req.user.display_name || req.user.email,
+      submitted_by_name: req.user.name || req.user.email,
       submitted_by_email: req.user.email,
       submitted_by_role: req.user.role,
       data: parsed.data,
@@ -81,7 +81,7 @@ export const createReview = asyncHandler(async (req, res) => {
       action: 'Submitted',
       item_title: parsed.title,
       item_type: mapReviewTypeToAuditType(parsed.type),
-      performed_by_name: req.user.display_name || req.user.email,
+      performed_by_name: req.user.name || req.user.email,
       performed_by_role: req.user.role
     }
   })
@@ -101,6 +101,66 @@ export const approveReview = asyncHandler(async (req, res) => {
     return res.status(400).json({ error: { code: 'BAD_REQUEST', message: 'Review is already processed' } })
   }
 
+  // Retrieve the review data (action, targetId, payload)
+  const reviewData = review.data || {}
+  const action = reviewData.action
+  const targetId = reviewData.targetId
+  const payload = reviewData.payload || {}
+
+  // Apply changes to the target table based on type
+  if (review.type === 'upcoming_event' || review.type === 'past_event') {
+    if (action === 'CREATE') {
+      await prisma.events.create({
+        data: {
+          ...payload,
+          status: 'published' // Ensure approved event is published
+        }
+      })
+    } else if (action === 'UPDATE' && targetId) {
+      await prisma.events.update({
+        where: { id: targetId },
+        data: {
+          ...payload,
+          status: 'published' // Ensure approved event is published
+        }
+      })
+    }
+  } else if (review.type === 'program') {
+    if (action === 'CREATE') {
+      await prisma.programs.create({
+        data: {
+          ...payload,
+          status: 'published'
+        }
+      })
+    } else if (action === 'UPDATE' && targetId) {
+      await prisma.programs.update({
+        where: { id: targetId },
+        data: {
+          ...payload,
+          status: 'published'
+        }
+      })
+    }
+  } else if (review.type === 'mou') {
+    if (action === 'CREATE') {
+      await prisma.mous.create({
+        data: {
+          ...payload,
+          review_status: 'published'
+        }
+      })
+    } else if (action === 'UPDATE' && targetId) {
+      await prisma.mous.update({
+        where: { id: targetId },
+        data: {
+          ...payload,
+          review_status: 'published'
+        }
+      })
+    }
+  }
+
   const updated = await prisma.reviews.update({
     where: { id },
     data: { status: 'approved' }
@@ -113,9 +173,9 @@ export const approveReview = asyncHandler(async (req, res) => {
       action: 'Approved',
       item_title: review.title,
       item_type: mapReviewTypeToAuditType(review.type),
-      performed_by_name: req.user.display_name || req.user.email,
+      performed_by_name: req.user.name || req.user.email,
       performed_by_role: req.user.role,
-      details: `Approved by ${req.user.display_name || req.user.email}`
+      details: `Approved by ${req.user.name || req.user.email}`
     }
   })
 
@@ -146,7 +206,7 @@ export const rejectReview = asyncHandler(async (req, res) => {
       action: 'Rejected',
       item_title: review.title,
       item_type: mapReviewTypeToAuditType(review.type),
-      performed_by_name: req.user.display_name || req.user.email,
+      performed_by_name: req.user.name || req.user.email,
       performed_by_role: req.user.role
     }
   })
@@ -167,7 +227,7 @@ export const requestChanges = asyncHandler(async (req, res) => {
   const existingComments = Array.isArray(review.comments) ? review.comments : []
   const newComment = {
     id: `c-${Date.now()}`,
-    author: req.user.display_name || req.user.email,
+    author: req.user.name || req.user.email,
     role: req.user.role,
     text: parsed.text,
     timestamp: new Date().toISOString()
@@ -188,7 +248,7 @@ export const requestChanges = asyncHandler(async (req, res) => {
       action: 'Requested_Changes',
       item_title: review.title,
       item_type: mapReviewTypeToAuditType(review.type),
-      performed_by_name: req.user.display_name || req.user.email,
+      performed_by_name: req.user.name || req.user.email,
       performed_by_role: req.user.role,
       details: parsed.text
     }

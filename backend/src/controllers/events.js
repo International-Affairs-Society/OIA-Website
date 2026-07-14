@@ -13,6 +13,9 @@ const eventSchema = z.object({
   description: z.string().optional().nullable(),
   location: z.string().optional().nullable(),
   date: z.string(),
+  endDate: z.string().optional().nullable(),
+  highlights: z.array(z.string()).optional().default([]),
+  posterRatio: z.number().optional().nullable(),
   linkedMOU: z.string().optional().nullable(),
   isArchived: z.boolean().optional().default(false),
   addToHomepage: z.boolean().optional().default(false),
@@ -31,6 +34,9 @@ function formatEvent(ev) {
     mou: ev.mou?.name || 'None',
     title: ev.title,
     date: ev.date ? ev.date.toISOString().split('T')[0] : null,
+    endDate: ev.end_date ? ev.end_date.toISOString().split('T')[0] : null,
+    highlights: ev.highlights || [],
+    posterRatio: ev.poster_ratio || null,
     event_type: ev.event_type,
     eventType: ev.event_type, // duplicate for frontend compatibility
     description: ev.description || '',
@@ -61,7 +67,7 @@ function formatEvent(ev) {
  * - Actual route-level auth (requireAuth middleware) already validates the token
  *   cryptographically before any write operation reaches the controller.
  */
-function isStaffFromToken(req) {
+async function isStaffFromToken(req) {
   const token =
     req.cookies?.access_token ||
     req.headers.authorization?.replace(/^Bearer\s+/i, '')
@@ -69,17 +75,14 @@ function isStaffFromToken(req) {
   if (!token) return false
 
   try {
-    // jwt.decode() is non-verifying — use only for reads/role hints
-    const decoded = jwt.decode(token)
-    if (!decoded) return false
+    const decoded = jwt.verify(token, process.env.SUPABASE_JWT_SECRET)
+    if (!decoded || !decoded.sub) return false
 
-    // Supabase stores app role in user_metadata or app_metadata
-    const role =
-      decoded?.user_metadata?.role ||
-      decoded?.app_metadata?.role ||
-      decoded?.role
-
-    return ['super_admin', 'admin', 'editor'].includes(role)
+    // Fetch the user from the database to see if they are staff
+    const user = await prisma.users.findUnique({
+      where: { id: decoded.sub }
+    })
+    return ['super_admin', 'admin', 'editor'].includes(user?.role)
   } catch {
     return false
   }
@@ -88,7 +91,7 @@ function isStaffFromToken(req) {
 // GET /events (Public / Authenticated)
 export const getEvents = asyncHandler(async (req, res) => {
   const { eventType, mouId, status, is_archived, addToHomepage } = req.query
-  const isStaffOrLeadership = isStaffFromToken(req)
+  const isStaffOrLeadership = await isStaffFromToken(req)
 
   // Serve cached response for public requests (cache busted on write mutations)
   if (!isStaffOrLeadership) {
@@ -188,13 +191,16 @@ export const createEvent = asyncHandler(async (req, res) => {
     description: parsed.description || null,
     location: parsed.location || null,
     date: new Date(parsed.date),
+    end_date: parsed.endDate ? new Date(parsed.endDate) : null,
+    highlights: parsed.highlights,
+    poster_ratio: parsed.posterRatio,
     linked_mou_id,
     is_archived: parsed.isArchived,
     add_to_homepage: parsed.addToHomepage,
     registration_link: parsed.registrationLink || null,
     poster_url: parsed.posterUrl || null,
     gallery_urls: parsed.galleryUrls,
-    status: parsed.status,
+    status: req.body.status || 'published',
     created_by: req.user.id
   }
 
@@ -266,6 +272,9 @@ export const updateEvent = asyncHandler(async (req, res) => {
   if (parsed.description !== undefined) dbData.description = parsed.description
   if (parsed.location !== undefined) dbData.location = parsed.location
   if (parsed.date !== undefined) dbData.date = new Date(parsed.date)
+  if (parsed.endDate !== undefined) dbData.end_date = parsed.endDate ? new Date(parsed.endDate) : null
+  if (parsed.highlights !== undefined) dbData.highlights = parsed.highlights
+  if (parsed.posterRatio !== undefined) dbData.poster_ratio = parsed.posterRatio
   if (linked_mou_id !== undefined) dbData.linked_mou_id = linked_mou_id
   if (parsed.isArchived !== undefined) dbData.is_archived = parsed.isArchived
   if (parsed.addToHomepage !== undefined) dbData.add_to_homepage = parsed.addToHomepage
@@ -273,6 +282,9 @@ export const updateEvent = asyncHandler(async (req, res) => {
   if (parsed.posterUrl !== undefined) dbData.poster_url = parsed.posterUrl
   if (parsed.galleryUrls !== undefined) dbData.gallery_urls = parsed.galleryUrls
   if (parsed.status !== undefined) dbData.status = parsed.status
+  if (req.user.role === 'super_admin') {
+    dbData.status = 'published'
+  }
 
   dbData.updated_at = new Date()
 

@@ -101,7 +101,7 @@ export default function VisitDetailsPage() {
             highlights: data.highlights || [],
             delegations: data.delegations || [],
             ourPOCs: data.our_pocs || [],
-            photos: data.media ? data.media.map((m: any) => m.url) : [],
+            photos: data.photos || [],
             reports: data.reports ? data.reports.map((r: any) => ({ name: r.name, url: r.url })) : []
           };
           setVisit(mapped);
