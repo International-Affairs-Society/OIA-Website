@@ -1,8 +1,12 @@
 "use client";
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import CircuitPattern from "./CircuitPattern";
-import SplashCursor from "./SplashCursor";
+import { useDeviceTierContext } from "@/hooks/useDeviceTier";
+
+// Dynamically import SplashCursor so low-end devices don't download 37KB of WebGL code
+const SplashCursor = dynamic(() => import("./SplashCursor"), { ssr: false });
 
 interface ProgramNode {
   id?: string;
@@ -31,6 +35,7 @@ const DEFAULT_NODE_PARAMS = [
 
 export default function ProgramsSection() {
   const router = useRouter();
+  const deviceTier = useDeviceTierContext();
   const sectionRef = useRef<HTMLElement>(null);
   const lineRefs = useRef<(SVGLineElement | null)[]>([]);
   const nodeRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -169,8 +174,8 @@ export default function ProgramsSection() {
         WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 85%, transparent 100%)",
       }}
     >
-      {/* ── Fluid Cursor Effect (Disabled on mobile for performance) ── */}
-      {isDesktop && (
+      {/* ── Fluid Cursor Effect (Disabled on mobile & low-end devices) ── */}
+      {isDesktop && deviceTier !== "low" && (
         <SplashCursor
           COLOR="#D12027"
           RAINBOW_MODE={false}

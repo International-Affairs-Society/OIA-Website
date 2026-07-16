@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
-import * as THREE from "three";
+import { useDeviceTierContext } from "@/hooks/useDeviceTier";
 
 // Dynamically import react-globe.gl to prevent SSR issues (WebGL needs window/document)
 const GlobeGL = dynamic(() => import("react-globe.gl"), {
@@ -28,7 +28,7 @@ const CITIES = [
 ];
 
 // Pre-generate arcs with fixed initial gaps (not random on every render)
-const ARCS = (() => {
+const ALL_ARCS = (() => {
   const result = [];
   for (let i = 0; i < 15; i++) {
     const c1 = CITIES[i % CITIES.length];
@@ -46,6 +46,9 @@ const ARCS = (() => {
   }
   return result;
 })();
+
+// Low-end devices get fewer arcs (5 instead of 15) to reduce GPU draw calls
+const LOW_END_ARCS = ALL_ARCS.slice(0, 5);
 
 // Stable callback functions (defined outside component to prevent re-creation)
 const POLYGON_CAP_COLOR = () => "#C4CBB7";
@@ -81,6 +84,11 @@ export default function Globe({ mouMarkers, compact }: GlobeProps = {}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [countries, setCountries] = useState({ features: [] });
   const [globeSize, setGlobeSize] = useState(compact ? 600 : 2500);
+  const deviceTier = useDeviceTierContext();
+  const isLowEnd = deviceTier === "low";
+
+  // Select arcs based on device tier (fewer on low-end)
+  const ARCS = isLowEnd ? LOW_END_ARCS : ALL_ARCS;
 
   // Detect screen size for responsive globe
   useEffect(() => {
@@ -113,13 +121,19 @@ export default function Globe({ mouMarkers, compact }: GlobeProps = {}) {
       .catch((err) => console.error("Failed to load map data", err));
   }, []);
 
-  // Create a tinted glass material
-  const invisibleMaterial = useMemo(() => {
-    return new THREE.MeshPhongMaterial({
-      color: "#939185",
-      transparent: true,
-      opacity: 0.4,
-      depthWrite: true,
+  // Create globe material — MeshBasicMaterial is much cheaper than MeshPhongMaterial
+  // (no per-pixel lighting calculations, just flat color + transparency)
+  const [globeMaterial, setGlobeMaterial] = useState<any>(null);
+  useEffect(() => {
+    import("three").then((THREE) => {
+      setGlobeMaterial(
+        new THREE.MeshBasicMaterial({
+          color: "#939185",
+          transparent: true,
+          opacity: 0.4,
+          depthWrite: true,
+        })
+      );
     });
   }, []);
 
@@ -138,47 +152,53 @@ export default function Globe({ mouMarkers, compact }: GlobeProps = {}) {
   }, [mouMarkers]);
 
   // ─── CONTROLS SETUP + ZOOM LOCK ───
-  // Uses requestAnimationFrame to continuously enforce enableZoom=false.
-  // This is necessary because the library may re-initialize controls,
-  // and a one-time useEffect can be overridden.
+  // Uses setInterval at 500ms instead of rAF (60x less CPU than every-frame polling).
+  // Also caps devicePixelRatio on low-end for fewer rendered pixels.
   useEffect(() => {
-    let rafId: number;
+    let intervalId: ReturnType<typeof setInterval>;
     let lockedDistance = 0;
 
-    const enforceNoZoom = () => {
-      if (globeEl.current) {
-        try {
-          const controls = globeEl.current.controls();
-          if (controls) {
-            // Keep auto-rotate and drag-rotate on
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = compact ? 0.6 : 0.4;
-            controls.enableRotate = true;
-            controls.enablePan = false;
+    const setupControls = () => {
+      if (!globeEl.current) return;
 
-            // FORCE zoom off every frame
-            controls.enableZoom = false;
+      try {
+        const controls = globeEl.current.controls();
+        if (controls) {
+          controls.autoRotate = true;
+          controls.autoRotateSpeed = compact ? 0.6 : 0.4;
+          controls.enableRotate = true;
+          controls.enablePan = false;
+          controls.enableZoom = false;
 
-            // Lock the camera distance
-            if (lockedDistance === 0) {
-              const dist = controls.getDistance();
-              if (dist > 0) lockedDistance = dist;
-            }
-            if (lockedDistance > 0) {
-              controls.minDistance = lockedDistance;
-              controls.maxDistance = lockedDistance;
-            }
+          if (lockedDistance === 0) {
+            const dist = controls.getDistance();
+            if (dist > 0) lockedDistance = dist;
           }
-        } catch {
-          // controls not ready yet
+          if (lockedDistance > 0) {
+            controls.minDistance = lockedDistance;
+            controls.maxDistance = lockedDistance;
+          }
         }
+
+        // Cap pixel ratio on low-end — renders 2.25x fewer pixels on 1.5x DPI screens
+        if (isLowEnd) {
+          const renderer = globeEl.current.renderer();
+          if (renderer) {
+            renderer.setPixelRatio(1);
+          }
+        }
+      } catch {
+        // controls not ready yet
       }
-      rafId = requestAnimationFrame(enforceNoZoom);
     };
 
-    rafId = requestAnimationFrame(enforceNoZoom);
-    return () => cancelAnimationFrame(rafId);
-  }, [compact]);
+    // Check every 500ms instead of every frame — 60x less CPU overhead
+    intervalId = setInterval(setupControls, 500);
+    // Also run once immediately
+    setupControls();
+
+    return () => clearInterval(intervalId);
+  }, [compact, isLowEnd]);
 
   // Point callbacks
   const pointColor = useCallback((d: any) => d.color, []);
@@ -202,11 +222,11 @@ export default function Globe({ mouMarkers, compact }: GlobeProps = {}) {
         width={compact ? 600 : globeSize}
         height={compact ? 380 : globeSize}
         backgroundColor="rgba(0,0,0,0)"
-        showAtmosphere={true}
+        showAtmosphere={!isLowEnd}
         atmosphereColor="#EEE0B7"
         atmosphereAltitude={0.15}
         showGlobe={true}
-        globeMaterial={invisibleMaterial}
+        globeMaterial={globeMaterial}
 
         // Polygons
         polygonsData={countries.features}
@@ -224,7 +244,7 @@ export default function Globe({ mouMarkers, compact }: GlobeProps = {}) {
         arcStroke={0.1}
         arcDashLength={0.9}
         arcDashGap={4}
-        arcDashAnimateTime={3000}
+        arcDashAnimateTime={isLowEnd ? 5000 : 3000}
         arcDashInitialGap={ARC_INITIAL_GAP}
         onArcHover={NOOP}
         arcLabel={EMPTY_LABEL}

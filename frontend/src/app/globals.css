@@ -1,26 +1,6 @@
 @import "tailwindcss";
 @source "../../src";
 
-
-
-/* Tan Pearl display font */
-@font-face {
-  font-family: "TanPearl";
-  src: url("/fonts/fonnts.com-tan-pearl.otf") format("opentype");
-  font-display: swap;
-  font-weight: 400;
-  font-style: normal;
-}
-
-/* Riesling custom font */
-@font-face {
-  font-family: "Riesling";
-  src: url("/fonts/riesling.ttf") format("truetype");
-  font-display: swap;
-  font-weight: 400;
-  font-style: normal;
-}
-
 :root {
   --background: #FFFBF2;
   --foreground: #393939;
@@ -41,9 +21,7 @@
   --color-muted-3: var(--muted-3);
   --color-navbar-bg: var(--navbar-bg);
   --font-sans: var(--font-space-grotesk);
-  --font-mono: var(--font-space-mono);
   --font-display: var(--font-space-grotesk);
-  --font-riesling: "Riesling";
   --font-roboto: var(--font-roboto-condensed);
 }
 

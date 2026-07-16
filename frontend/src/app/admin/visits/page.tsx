@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader, AdminTable } from "../components";
+import ActionButtons from "../components/ActionButtons";
 import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { Plus, ClipboardCheck } from "lucide-react";
@@ -15,6 +16,7 @@ export default function VisitsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [visits, setVisits] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   const canEdit = role === "admin" || role === "super_admin" || role === "editor";
   const canDelete = role === "super_admin";
@@ -47,6 +49,26 @@ export default function VisitsPage() {
     { key: "date", label: "Date", width: "10%" },
   ];
 
+  const handleDeleteVisit = async (id: string) => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(`${API_URL}/api/v1/visits/${id}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        setVisits(visits.filter(v => v.id !== id));
+      } else {
+        const errJson = await res.json();
+        alert(`Failed to delete visit: ${errJson.error?.message || "Unknown error"}`);
+      }
+    } catch (err) {
+      console.error("Failed to delete visit:", err);
+    } finally {
+      setConfirmingId(null);
+    }
+  };
+
   const filteredVisits = visits.filter(v => {
     return (v.university || "").toLowerCase().includes(searchTerm.toLowerCase());
   }).map((visit, index) => ({
@@ -69,49 +91,24 @@ export default function VisitsPage() {
   }));
 
   const renderActions = (row: any) => (
-    <div style={{ display: "flex", gap: "12px", alignItems: "center", justifyContent: "flex-end", fontSize: "13px", fontFamily: "var(--font-space-grotesk)" }}>
-      <Link href={`/admin/visits/${row.id}`} style={{ color: "#6b6b6b", textDecoration: "none" }}>
-        View
-      </Link>
-      <span style={{ color: "#b5bda0" }}>|</span>
-      {canEdit ? (
-        <>
-          <Link href={`/admin/visits/${row.id}/edit`} style={{ color: "#6b6b6b", textDecoration: "none" }}>
-            Edit
-          </Link>
-          <span style={{ color: "#b5bda0" }}>|</span>
-          {canDelete ? (
-            <button
-              onClick={() => console.log("Delete", row.id)}
-              style={{
-                background: "none",
-                border: "none",
-                color: "#D12027",
-                cursor: "pointer",
-                fontSize: "13px",
-                fontFamily: "var(--font-space-grotesk)",
-                padding: 0
-              }}
-            >
-              Delete
-            </button>
-          ) : (
-            <span style={{ color: "#ccc", cursor: "not-allowed" }}>Delete</span>
-          )}
-        </>
-      ) : (
-        <>
-          <span style={{ color: "#ccc", cursor: "not-allowed" }}>Edit</span>
-          <span style={{ color: "#b5bda0" }}>|</span>
-          <span style={{ color: "#ccc", cursor: "not-allowed" }}>Delete</span>
-        </>
-      )}
-    </div>
+    <ActionButtons
+      rowId={row.id}
+      confirmingDeleteId={confirmingId}
+      setConfirmingDeleteId={canDelete ? setConfirmingId : undefined}
+      onConfirmDelete={canDelete ? (id) => handleDeleteVisit(id) : undefined}
+      onCancelDelete={canDelete ? () => setConfirmingId(null) : undefined}
+      onView={() => router.push(`/admin/visits/${row.id}`)}
+      onEdit={canEdit ? () => router.push(`/admin/visits/edit/${row.id}`) : undefined}
+    />
   );
 
   return (
     <div>
-      <AdminPageHeader title="Visits & Delegations" />
+      <AdminPageHeader 
+        title="Visits & Delegations" 
+        actionLabel={canEdit ? "Record Visit" : undefined}
+        onAction={canEdit ? () => router.push("/admin/visits/create") : undefined}
+      />
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem", flexWrap: "wrap", gap: "1rem" }}>
         <div style={{ display: "flex", gap: "1rem", flex: 1, minWidth: "300px" }}>
@@ -126,18 +123,6 @@ export default function VisitsPage() {
             }}
           />
         </div>
-
-        {canEdit && (
-          <Link href="/admin/visits/create" style={{ textDecoration: "none" }}>
-            <button style={{
-              display: "flex", alignItems: "center", gap: "8px",
-              padding: "10px 20px", backgroundColor: "#1a1a1a", color: "#f5f0e8",
-              border: "none", borderRadius: "8px", fontSize: "14px", fontWeight: 500, cursor: "pointer"
-            }}>
-              <Plus size={16} /> Record Visit
-            </button>
-          </Link>
-        )}
       </div>
 
       <div style={{ border: "1px solid #b5bda0", boxShadow: "0 4px 12px rgba(0,0,0,0.05)", borderRadius: "8px", overflow: "hidden" }}>

@@ -435,24 +435,75 @@ export function VisitReadOnlyForm({ data, isEditable, onChange }: { data: Record
 
   return (
     <div>
-      {sectionTitle("Visit Details")}
-      <FormField label="University">
+      <FormField label="University Name">
         <DisabledInput value={data.university} isEditable={isEditable} onChange={(v) => handleChange("university", v)} />
       </FormField>
-      <FormField label="Date">
-        <DisabledDate value={data.date} isEditable={isEditable} onChange={(v) => handleChange("date", v)} />
-      </FormField>
-      <FormField label="Purpose">
-        <DisabledTextarea value={data.purpose} isEditable={isEditable} onChange={(v) => handleChange("purpose", v)} />
+      <FormField label="Visit Date">
+        <DisabledDate value={data.visitDate} isEditable={isEditable} onChange={(v) => handleChange("visitDate", v)} />
       </FormField>
       
-      {sectionTitle("Highlights")}
-      <FormField label="Highlights">
-        <DisabledDynamicList items={data.highlights || []} isEditable={isEditable} onChange={(v) => handleChange("highlights", v)} />
+      {sectionTitle("Purpose of Visit")}
+      <FormField label="">
+        <DisabledTextarea value={data.purpose} isEditable={isEditable} onChange={(v) => handleChange("purpose", v)} />
       </FormField>
 
+      {sectionTitle("Key Highlights")}
+      {(data.highlights || []).map((highlight: string, i: number) => (
+        <div key={i} style={{ marginBottom: "0.5rem" }}>
+          <DisabledInput value={highlight} isEditable={isEditable} onChange={(v) => {
+            const updated = [...(data.highlights || [])];
+            updated[i] = v;
+            handleChange("highlights", updated);
+          }} />
+        </div>
+      ))}
+      
+      {sectionTitle("Delegations")}
+      {(data.delegations || []).map((del: any, i: number) => (
+        <div key={i} style={{ border: "1px solid rgba(181, 189, 160, 0.5)", padding: "1rem", borderRadius: "8px", marginBottom: "1rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+            <FormField label="Name">
+              <DisabledInput value={del.name} isEditable={isEditable} onChange={(v) => {
+                const updated = [...(data.delegations || [])];
+                updated[i] = { ...updated[i], name: v };
+                handleChange("delegations", updated);
+              }} />
+            </FormField>
+            <FormField label="Designation">
+              <DisabledInput value={del.designation} isEditable={isEditable} onChange={(v) => {
+                const updated = [...(data.delegations || [])];
+                updated[i] = { ...updated[i], designation: v };
+                handleChange("delegations", updated);
+              }} />
+            </FormField>
+          </div>
+        </div>
+      ))}
+
+      {sectionTitle("Our POCs")}
+      {(data.ourPOCs || []).map((poc: any, i: number) => (
+        <div key={i} style={{ border: "1px solid rgba(181, 189, 160, 0.5)", padding: "1rem", borderRadius: "8px", marginBottom: "1rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+            <FormField label="Name">
+              <DisabledInput value={poc.name} isEditable={isEditable} onChange={(v) => {
+                const updated = [...(data.ourPOCs || [])];
+                updated[i] = { ...updated[i], name: v };
+                handleChange("ourPOCs", updated);
+              }} />
+            </FormField>
+            <FormField label="Email">
+              <DisabledInput value={poc.email} isEditable={isEditable} onChange={(v) => {
+                const updated = [...(data.ourPOCs || [])];
+                updated[i] = { ...updated[i], email: v };
+                handleChange("ourPOCs", updated);
+              }} />
+            </FormField>
+          </div>
+        </div>
+      ))}
+
       <div style={{ marginTop: "1.5rem" }}>
-        <FormField label="Photos/Documents">
+        <FormField label="Visit Report & Media">
           <div style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
             <p style={{ fontSize: "14px", fontWeight: 500, color: "#1a1a1a", textDecoration: "underline", margin: 0 }}>
               (Media attached in submission)
@@ -463,4 +514,3 @@ export function VisitReadOnlyForm({ data, isEditable, onChange }: { data: Record
     </div>
   );
 }
-
