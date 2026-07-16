@@ -3,7 +3,7 @@
 // Replace with API calls when backend is ready.
 // ============================================================
 
-export type ReviewType = "program" | "upcoming_event" | "past_event" | "mou";
+export type ReviewType = "program" | "upcoming_event" | "past_event" | "mou" | "visit";
 export type ReviewStatus = "pending" | "approved" | "rejected" | "changes_requested";
 
 export interface ReviewComment {
@@ -216,9 +216,34 @@ export const MOCK_REVIEWS: ReviewItem[] = [
       name: "University of London Exchange Agreement",
       partner: "University of London",
       status: "Active",
-      startDate: "2026-07-01",
-      expiryDate: "2031-06-30",
-      notes: "Covers semester exchange for up to 10 students per year.",
+      date: "2024-05-20",
+      endDate: "2029-05-19",
+      notes: "Standard agreement covering faculty exchange and joint research initiatives.",
+    },
+  },
+  {
+    id: "rev-005",
+    type: "visit",
+    title: "Visit by MIT Delegation",
+    submittedBy: {
+      name: "Shrish",
+      email: "shrish@bennett.edu.in",
+      role: "admin",
+    },
+    submittedAt: "2026-07-14T09:00:00Z",
+    status: "pending",
+    comments: [],
+    data: {
+      university: "Massachusetts Institute of Technology (MIT)",
+      visitDate: "2026-08-20",
+      purpose: "To discuss potential research collaborations and student exchange programs in AI and Robotics.",
+      highlights: ["Campus Tour", "Meeting with Vice Chancellor", "Lab demonstrations"],
+      delegations: [
+        { name: "Dr. John Doe", designation: "Dean of Engineering", email: "jdoe@mit.edu" }
+      ],
+      ourPOCs: [
+        { name: "Prof. R.S. Sharma", email: "rs.sharma@bennett.edu.in" }
+      ]
     },
   },
   {

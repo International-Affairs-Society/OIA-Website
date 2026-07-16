@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
-import * as THREE from "three";
+import { useDeviceTierContext } from "@/hooks/useDeviceTier";
 
 const GlobeGL = dynamic(() => import("react-globe.gl"), {
   ssr: false,
@@ -26,7 +26,7 @@ const CITIES = [
   { name: "Beijing", lat: 39.9042, lng: 116.4074 },
 ];
 
-const ARCS = (() => {
+const ALL_ARCS = (() => {
   const result = [];
   for (let i = 0; i < 15; i++) {
     const c1 = CITIES[i % CITIES.length];
@@ -45,6 +45,8 @@ const ARCS = (() => {
   return result;
 })();
 
+const LOW_END_ARCS = ALL_ARCS.slice(0, 5);
+
 // Dark-themed callbacks
 const POLYGON_CAP_COLOR = () => "#1a2a3a";
 const POLYGON_SIDE_COLOR = () => "rgba(30, 58, 95, 0.3)";
@@ -59,6 +61,9 @@ export default function GlobeDark() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [countries, setCountries] = useState({ features: [] });
   const [globeSize, setGlobeSize] = useState(2500);
+  const deviceTier = useDeviceTierContext();
+  const isLowEnd = deviceTier === "low";
+  const ARCS = isLowEnd ? LOW_END_ARCS : ALL_ARCS;
 
   useEffect(() => {
     const updateSize = () => {
@@ -88,51 +93,65 @@ export default function GlobeDark() {
       .catch((err) => console.warn("Failed to load map data", err));
   }, []);
 
-  // Dark glass material — deep blue-black with subtle transparency
-  const darkMaterial = useMemo(() => {
-    return new THREE.MeshPhongMaterial({
-      color: "#0d1b2a",
-      transparent: true,
-      opacity: 0.6,
-      depthWrite: true,
+  // Dark glass material — MeshBasicMaterial is cheaper (no lighting calculations)
+  const [darkMaterial, setDarkMaterial] = useState<any>(null);
+  useEffect(() => {
+    import("three").then((THREE) => {
+      setDarkMaterial(
+        new THREE.MeshBasicMaterial({
+          color: "#0d1b2a",
+          transparent: true,
+          opacity: 0.6,
+          depthWrite: true,
+        })
+      );
     });
   }, []);
 
-  // Controls — auto-rotate, no zoom
+  // Controls — setInterval at 500ms instead of rAF (60x less CPU)
   useEffect(() => {
-    let rafId: number;
+    let intervalId: ReturnType<typeof setInterval>;
     let lockedDistance = 0;
 
-    const enforceNoZoom = () => {
-      if (globeEl.current) {
-        try {
-          const controls = globeEl.current.controls();
-          if (controls) {
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = 0.4;
-            controls.enableRotate = true;
-            controls.enablePan = false;
-            controls.enableZoom = false;
+    const setupControls = () => {
+      if (!globeEl.current) return;
 
-            if (lockedDistance === 0) {
-              const dist = controls.getDistance();
-              if (dist > 0) lockedDistance = dist;
-            }
-            if (lockedDistance > 0) {
-              controls.minDistance = lockedDistance;
-              controls.maxDistance = lockedDistance;
-            }
+      try {
+        const controls = globeEl.current.controls();
+        if (controls) {
+          controls.autoRotate = true;
+          controls.autoRotateSpeed = 0.4;
+          controls.enableRotate = true;
+          controls.enablePan = false;
+          controls.enableZoom = false;
+
+          if (lockedDistance === 0) {
+            const dist = controls.getDistance();
+            if (dist > 0) lockedDistance = dist;
           }
-        } catch {
-          // controls not ready yet
+          if (lockedDistance > 0) {
+            controls.minDistance = lockedDistance;
+            controls.maxDistance = lockedDistance;
+          }
         }
+
+        // Cap pixel ratio on low-end
+        if (isLowEnd) {
+          const renderer = globeEl.current.renderer();
+          if (renderer) {
+            renderer.setPixelRatio(1);
+          }
+        }
+      } catch {
+        // controls not ready yet
       }
-      rafId = requestAnimationFrame(enforceNoZoom);
     };
 
-    rafId = requestAnimationFrame(enforceNoZoom);
-    return () => cancelAnimationFrame(rafId);
-  }, []);
+    intervalId = setInterval(setupControls, 500);
+    setupControls();
+
+    return () => clearInterval(intervalId);
+  }, [isLowEnd]);
 
   return (
     <div
@@ -145,7 +164,7 @@ export default function GlobeDark() {
         width={globeSize}
         height={globeSize}
         backgroundColor="rgba(0,0,0,0)"
-        showAtmosphere={true}
+        showAtmosphere={!isLowEnd}
         atmosphereColor="#1e3a5f"
         atmosphereAltitude={0.18}
         showGlobe={true}
@@ -167,7 +186,7 @@ export default function GlobeDark() {
         arcStroke={0.1}
         arcDashLength={0.9}
         arcDashGap={4}
-        arcDashAnimateTime={3000}
+        arcDashAnimateTime={isLowEnd ? 5000 : 3000}
         arcDashInitialGap={ARC_INITIAL_GAP}
         onArcHover={NOOP}
         arcLabel={EMPTY_LABEL}

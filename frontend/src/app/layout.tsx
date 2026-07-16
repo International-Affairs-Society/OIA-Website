@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Outfit, Space_Grotesk, Space_Mono, Roboto_Condensed, Instrument_Serif, Libre_Bodoni } from "next/font/google";
+import { Outfit, Space_Grotesk, Roboto_Condensed, Instrument_Serif, Libre_Bodoni } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import SmoothScroll from "./SmoothScroll";
@@ -33,34 +33,15 @@ const libreBodoni = Libre_Bodoni({
   variable: "--font-libre-bodoni",
 });
 
-const spaceMono = Space_Mono({
-  weight: ["400", "700"],
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-space-mono",
-});
-
 const robotoCondensed = Roboto_Condensed({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-roboto-condensed",
 });
 
-const gastonHoney = localFont({
-  src: "../../public/fonts/gaston Honey.otf",
-  variable: "--font-gaston-honey",
-  display: "swap",
-});
-
-const universo = localFont({
-  src: [
-    { path: "../../public/fonts/Fontspring-DEMO-universo-thin.otf", weight: "100" },
-    { path: "../../public/fonts/Fontspring-DEMO-universo-light.otf", weight: "300" },
-    { path: "../../public/fonts/Fontspring-DEMO-universo-regular.otf", weight: "400" },
-    { path: "../../public/fonts/Fontspring-DEMO-universo-bold.otf", weight: "700" },
-    { path: "../../public/fonts/Fontspring-DEMO-universo-black.otf", weight: "900" },
-  ],
-  variable: "--font-universo",
+const atavian = localFont({
+  src: "../../public/fonts/Atavian.otf",
+  variable: "--font-atavian",
   display: "swap",
 });
 
@@ -71,12 +52,6 @@ const gmarketSans = localFont({
     { path: "../../public/fonts/GmarketSansBold.otf", weight: "700" },
   ],
   variable: "--font-gmarket-sans",
-  display: "swap",
-});
-
-const gallery = localFont({
-  src: "../../public/fonts/Gallery.otf",
-  variable: "--font-gallery",
   display: "swap",
 });
 
@@ -102,8 +77,17 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${outfit.variable} ${spaceGrotesk.variable} ${spaceMono.variable} ${robotoCondensed.variable} ${gastonHoney.variable} ${instrumentSerif.variable} ${universo.variable} ${libreBodoni.variable} ${gmarketSans.variable} ${gallery.variable}`}
+      className={`${outfit.variable} ${instrumentSerif.variable} ${spaceGrotesk.variable} ${libreBodoni.variable} ${robotoCondensed.variable} ${atavian.variable} ${gmarketSans.variable} antialiased`}
     >
+      <head>
+        {/* DNS prefetch for external resources — saves 100-200ms of DNS lookup */}
+        <link rel="preconnect" href="https://images.unsplash.com" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+        <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+        <link rel="preconnect" href="https://raw.githubusercontent.com" />
+        <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
+      </head>
       <body className="antialiased">
         <AuthWrapper>
           <SmoothScroll>{children}</SmoothScroll>

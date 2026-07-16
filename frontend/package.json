@@ -24,6 +24,7 @@
     "react-globe.gl": "^2.38.0",
     "react-simple-maps": "^3.0.0",
     "recharts": "^3.8.1",
+    "sharp": "^0.35.3",
     "tailwind-merge": "^3.6.0",
     "three": "^0.184.0"
   },

@@ -2,8 +2,9 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
-import { AdminPageHeader, FormField, CustomDropdown } from "../../../components";
+import { AdminPageHeader, FormField, CustomDropdown, ConfirmModal } from "../../../components";
 import { AdminFormSkeleton } from "@/app/admin/optemization_component";
+import { useAuth } from "@/app/admin/roles/AuthContext";
 
 const MOU_TYPE_OPTIONS = [
   { value: "Semester Exchange", label: "Semester Exchange" },
@@ -38,6 +39,8 @@ export default function EditMOUPage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const { role } = useAuth();
+  const [showConfirm, setShowConfirm] = useState(false);
 
   // Form State
   const [name, setName] = useState("");
@@ -83,8 +86,12 @@ export default function EditMOUPage() {
     fetchMou();
   }, [id, router]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setShowConfirm(true);
+  };
+
+  const executeUpdate = async () => {
     if (!name || !partnerUniversity || !country) {
       return alert("Please fill in all required fields.");
     }
@@ -146,7 +153,7 @@ export default function EditMOUPage() {
       <AdminPageHeader title={`Edit MOU`} />
 
       <div style={{ border: "1px solid #b5bda0", padding: "2rem", backgroundColor: "#f5f0e8", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
           <FormField label="MOU Name" required>
             <input 
               type="text" 
@@ -225,7 +232,7 @@ export default function EditMOUPage() {
                 opacity: isSaving ? 0.6 : 1
               }}
             >
-              {isSaving ? "Updating..." : "Update MOU"}
+              {isSaving ? "Updating..." : (role === 'editor' || role === 'admin' ? 'Send for Approval' : 'Update MOU')}
             </button>
             <button
               type="button"
@@ -244,6 +251,22 @@ export default function EditMOUPage() {
           </div>
         </form>
       </div>
+
+      <ConfirmModal
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={async () => {
+          setShowConfirm(false);
+          await executeUpdate();
+          return true;
+        }}
+        title={role === 'editor' || role === 'admin' ? "Send for Approval" : "Confirm Update"}
+        message={role === 'editor' || role === 'admin' 
+          ? "Are you sure you want to send this MOU for approval? A Super Admin will review your changes."
+          : "Are you sure you want to update this MOU?"}
+        confirmLabel={role === 'editor' || role === 'admin' ? "Send for Approval" : "Yes, Update"}
+        cancelLabel="Cancel"
+      />
     </div>
   );
 }

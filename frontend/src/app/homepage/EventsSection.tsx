@@ -6,12 +6,14 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import CircuitPattern from "./CircuitPattern";
 import Plasma from "./Plasma";
+import { useDeviceTierContext } from "@/hooks/useDeviceTier";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function EventsSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const deviceTier = useDeviceTierContext();
   const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -77,16 +79,18 @@ export default function EventsSection() {
       <CircuitPattern />
 
       {/* Plasma Effect behind cards */}
-      <div className="absolute inset-0 z-0 opacity-40 pointer-events-none mix-blend-multiply">
-        <Plasma
-          color="#D12027"
-          speed={1.5}
-          direction="forward"
-          scale={1.2}
-          opacity={0.8}
-          mouseInteractive={false}
-        />
-      </div>
+      {deviceTier !== "low" && (
+        <div className="absolute inset-0 z-0 opacity-40 pointer-events-none mix-blend-multiply">
+          <Plasma
+            color="#D12027"
+            speed={1.5}
+            direction="forward"
+            scale={1.2}
+            opacity={0.8}
+            mouseInteractive={false}
+          />
+        </div>
+      )}
 
       {/* ── Content ── */}
       <div className="relative z-10 w-full max-w-[1400px] px-6 mx-auto flex flex-col items-center">

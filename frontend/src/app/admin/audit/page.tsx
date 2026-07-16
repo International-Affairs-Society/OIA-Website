@@ -3,6 +3,7 @@ import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader } from "@/app/admin/components";
 import CustomDropdown from "@/app/admin/components/CustomDropdown";
+import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 import { MOCK_AUDIT_LOGS, AuditAction } from "../data/mockAudit";
 
 const ROLE_OPTIONS = [
@@ -69,14 +70,16 @@ export default function AuditTrailPage() {
 
   const filteredLogs = logs;
 
-  const getActionColor = (action: AuditAction) => {
-    switch (action) {
-      case "Approved": return { bg: "#edf5e1", text: "#5C6B3F" };
-      case "Requested Changes": return { bg: "#fce8e6", text: "#c0392b" };
-      case "Rejected": return { bg: "#fce8e6", text: "#c0392b" };
-      case "Submitted": return { bg: "#e6f2ff", text: "#0066cc" };
-      case "Archived": return { bg: "#f0f0f0", text: "#666666" };
-      case "Unarchived": return { bg: "#f0f0f0", text: "#666666" };
+  const getActionColor = (action: string) => {
+    const normalized = action ? action.toUpperCase().replace(/ /g, "_") : "";
+    switch (normalized) {
+      case "APPROVED": return { bg: "#edf5e1", text: "#5C6B3F" };
+      case "REQUESTED_CHANGES": return { bg: "#fce8e6", text: "#c0392b" };
+      case "CHANGES_REQUESTED": return { bg: "#fce8e6", text: "#c0392b" };
+      case "REJECTED": return { bg: "#fce8e6", text: "#c0392b" };
+      case "SUBMITTED": return { bg: "#e6f2ff", text: "#0066cc" };
+      case "ARCHIVED": return { bg: "#f0f0f0", text: "#666666" };
+      case "UNARCHIVED": return { bg: "#f0f0f0", text: "#666666" };
       default: return { bg: "#FFFBF2", text: "#1a1a1a" };
     }
   };
@@ -187,7 +190,9 @@ export default function AuditTrailPage() {
 
       {/* Logs List */}
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-        {filteredLogs.length === 0 ? (
+        {loading ? (
+          <AdminPageSkeleton />
+        ) : filteredLogs.length === 0 ? (
           <div style={{ padding: "40px", textAlign: "center", backgroundColor: "#FFFBF2", borderRadius: "12px", border: "1px dashed #b5bda0", color: "#6b6b6b", fontSize: "15px" }}>
             No audit logs found matching your filters.
           </div>

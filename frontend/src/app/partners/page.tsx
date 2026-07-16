@@ -184,7 +184,7 @@ export default function PartnersPage() {
             margin: 0;
         }
         .editorial-hero__line {
-            font-family: var(--font-gallery), serif;
+            font-family: var(--font-instrument-serif), Georgia, serif;
             font-size: clamp(4.5rem, 13vw, 14.5rem);
             font-weight: 400;
             color: #141414;
