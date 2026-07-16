@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { AdminPageHeader, FormField, FilterBar, ProgramReadOnlyForm, UpcomingEventReadOnlyForm, PastEventReadOnlyForm, MOUReadOnlyForm, ConfirmModal } from "@/app/admin/components";
+import { AdminPageHeader, FormField, FilterBar, ProgramReadOnlyForm, UpcomingEventReadOnlyForm, PastEventReadOnlyForm, MOUReadOnlyForm, ConfirmModal, VisitReadOnlyForm } from "@/app/admin/components";
 import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 import { MOCK_REVIEWS, ReviewItem, ReviewType, ReviewComment } from "@/app/admin/data/mockReviews";
 
@@ -12,6 +12,7 @@ function getTypeLabel(type: ReviewType): string {
     case "upcoming_event": return "Upcoming Event";
     case "past_event": return "Past Event";
     case "mou": return "MOU";
+    case "visit": return "Visit";
     default: return type;
   }
 }
@@ -22,6 +23,7 @@ function getTypeBadgeColor(type: ReviewType): string {
     case "upcoming_event": return "#2563EB";
     case "past_event": return "#7C3AED";
     case "mou": return "#D97706";
+    case "visit": return "#10B981";
     default: return "#6b6b6b";
   }
 }
@@ -237,6 +239,7 @@ function ReviewsContent() {
                 { label: "Upcoming Event", value: "upcoming_event" },
                 { label: "Past Event", value: "past_event" },
                 { label: "MOU", value: "mou" },
+                { label: "Visit", value: "visit" },
               ],
             },
             {
@@ -354,6 +357,7 @@ function ReviewsContent() {
         {selected.type === "upcoming_event" && <UpcomingEventReadOnlyForm data={selected.data?.payload || selected.data} />}
         {selected.type === "past_event" && <PastEventReadOnlyForm data={selected.data?.payload || selected.data} />}
         {selected.type === "mou" && <MOUReadOnlyForm data={selected.data?.payload || selected.data} />}
+        {selected.type === "visit" && <VisitReadOnlyForm data={selected.data?.payload || selected.data} />}
       </div>
 
       {/* ── Comment Section ── */}

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { AdminPageHeader, FilterBar, ProgramReadOnlyForm, UpcomingEventReadOnlyForm, PastEventReadOnlyForm, MOUReadOnlyForm } from "@/app/admin/components";
+import { AdminPageHeader, FilterBar, ProgramReadOnlyForm, UpcomingEventReadOnlyForm, PastEventReadOnlyForm, MOUReadOnlyForm, VisitReadOnlyForm } from "@/app/admin/components";
 import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 import { ReviewItem, ReviewType, ReviewComment, ReviewStatus } from "@/app/admin/data/mockReviews";
 
@@ -12,6 +12,7 @@ function getTypeLabel(type: ReviewType): string {
     case "upcoming_event": return "Upcoming Event";
     case "past_event": return "Past Event";
     case "mou": return "MOU";
+    case "visit": return "Visit";
     default: return type;
   }
 }
@@ -22,6 +23,7 @@ function getTypeBadgeColor(type: ReviewType): string {
     case "upcoming_event": return "#2563EB";
     case "past_event": return "#7C3AED";
     case "mou": return "#D97706";
+    case "visit": return "#10B981";
     default: return "#6b6b6b";
   }
 }
@@ -234,7 +236,7 @@ function SubmissionsContent() {
   
   React.useEffect(() => {
     if (selected) {
-      setEditableData(selected.data);
+      setEditableData(selected.data?.payload || selected.data);
     }
   }, [selected]);
 
@@ -328,6 +330,7 @@ function SubmissionsContent() {
               { label: "Upcoming Event", value: "upcoming_event" },
               { label: "Past Event", value: "past_event" },
               { label: "MOU", value: "mou" },
+              { label: "Visit", value: "visit" },
             ],
           }]}
           onFilterChange={(_, val) => setTypeFilter(val)}
@@ -417,6 +420,7 @@ function SubmissionsContent() {
       case "upcoming_event": return <UpcomingEventReadOnlyForm data={editableData} isEditable={isEditable} onChange={handleChange} />;
       case "past_event": return <PastEventReadOnlyForm data={editableData} isEditable={isEditable} onChange={handleChange} />;
       case "mou": return <MOUReadOnlyForm data={editableData} isEditable={isEditable} onChange={handleChange} />;
+      case "visit": return <VisitReadOnlyForm data={editableData} isEditable={isEditable} onChange={handleChange} />;
       default: return null;
     }
   };

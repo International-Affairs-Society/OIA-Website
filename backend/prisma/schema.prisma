@@ -63,6 +63,7 @@ enum ReviewType {
   upcoming_event
   past_event
   mou
+  visit
 }
 
 enum ReviewStatus {
@@ -90,6 +91,7 @@ enum AuditItemType {
   Event
   Program
   MOU
+  Visit
 }
 
 enum MOUType {

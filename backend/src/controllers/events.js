@@ -12,7 +12,7 @@ const eventSchema = z.object({
   eventType: z.enum(['upcoming', 'past']),
   description: z.string().optional().nullable(),
   location: z.string().optional().nullable(),
-  date: z.string(),
+  date: z.string().min(1, 'Date is required'),
   endDate: z.string().optional().nullable(),
   highlights: z.array(z.string()).optional().default([]),
   posterRatio: z.number().optional().nullable(),
@@ -271,8 +271,18 @@ export const updateEvent = asyncHandler(async (req, res) => {
   if (parsed.eventType !== undefined) dbData.event_type = parsed.eventType
   if (parsed.description !== undefined) dbData.description = parsed.description
   if (parsed.location !== undefined) dbData.location = parsed.location
-  if (parsed.date !== undefined) dbData.date = new Date(parsed.date)
-  if (parsed.endDate !== undefined) dbData.end_date = parsed.endDate ? new Date(parsed.endDate) : null
+  if (parsed.date !== undefined && parsed.date !== '') {
+    const d = new Date(parsed.date)
+    if (!isNaN(d.valueOf())) dbData.date = d
+  }
+  if (parsed.endDate !== undefined) {
+    if (parsed.endDate) {
+      const d = new Date(parsed.endDate)
+      if (!isNaN(d.valueOf())) dbData.end_date = d
+    } else {
+      dbData.end_date = null
+    }
+  }
   if (parsed.highlights !== undefined) dbData.highlights = parsed.highlights
   if (parsed.posterRatio !== undefined) dbData.poster_ratio = parsed.posterRatio
   if (linked_mou_id !== undefined) dbData.linked_mou_id = linked_mou_id

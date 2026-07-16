@@ -54,7 +54,33 @@ export default function ApplyProgramPage({ params }: { params: Promise<{ id: str
 
         <div style={{ border: "1px solid #b5bda0", padding: "2.5rem", backgroundColor: "#f5f0e8", boxShadow: "0 4px 12px rgba(0,0,0,0.05)", borderRadius: "8px" }}>
           <DefaultApplicationForm 
-            onSubmit={() => { alert("Application Submitted!"); router.push(`/programs/other/${id}`); }}
+            onSubmit={async () => {
+              try {
+                const token = localStorage.getItem("access_token");
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/applications`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {})
+                  },
+                  body: JSON.stringify({
+                    programId: id,
+                    customFieldResponses: {}
+                  })
+                });
+                
+                if (res.ok) {
+                  alert("Application Submitted successfully!"); 
+                  router.push(`/student/profile`); 
+                } else {
+                  const data = await res.json();
+                  alert(`Failed to submit application: ${data.error?.message || 'Unknown error'}`);
+                }
+              } catch (err) {
+                console.error("Failed to submit application:", err);
+                alert("An error occurred while submitting the application.");
+              }
+            }}
             onCancel={() => router.push(`/programs/other/${id}`)}
           />
         </div>

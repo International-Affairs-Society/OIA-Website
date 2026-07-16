@@ -168,6 +168,39 @@ export const createMou = asyncHandler(async (req, res) => {
 
   const duration = calculateDuration(parsed.start_date, parsed.expiry_date)
 
+  // Intercept Admin/Editor requests and route to reviews queue
+  if (['admin', 'editor'].includes(req.user.role)) {
+    const review = await prisma.reviews.create({
+      data: {
+        type: 'mou',
+        title: parsed.name,
+        submitted_by: req.user.id,
+        submitted_by_name: req.user.name || req.user.email.split('@')[0],
+        submitted_by_email: req.user.email,
+        submitted_by_role: req.user.role,
+        status: 'pending',
+        data: {
+          action: 'CREATE',
+          payload: {
+            ...rest,
+            duration,
+            type: rest.type ? rest.type.replace(/ /g, '_') : rest.type,
+            start_date: parsed.start_date,
+            expiry_date: parsed.expiry_date,
+            our_pocs: our_pocs ? { create: our_pocs } : undefined,
+            partner_pocs: partner_pocs ? { create: partner_pocs } : undefined,
+            documents: documents ? { create: documents } : undefined
+          }
+        }
+      }
+    })
+    return res.status(202).json({
+      message: 'MOU creation submitted for review',
+      reviewId: review.id,
+      status: 'pending'
+    })
+  }
+
   const created = await prisma.mous.create({
     data: {
       ...rest,
@@ -197,9 +230,10 @@ export const updateMou = asyncHandler(async (req, res) => {
   const dataToUpdate = { ...rest }
   if (dataToUpdate.type) dataToUpdate.type = dataToUpdate.type.replace(/ /g, '_')
   
-  if (parsed.start_date || parsed.expiry_date) {
-    const existing = await prisma.mous.findUnique({ where: { id } })
-    if (existing) {
+  let existing = null
+  if (parsed.start_date || parsed.expiry_date || ['admin', 'editor'].includes(req.user.role)) {
+    existing = await prisma.mous.findUnique({ where: { id } })
+    if (existing && (parsed.start_date || parsed.expiry_date)) {
       const startDate = parsed.start_date || existing.start_date
       const expiryDate = parsed.expiry_date || existing.expiry_date
       dataToUpdate.duration = calculateDuration(startDate, expiryDate)
@@ -230,6 +264,35 @@ export const updateMou = asyncHandler(async (req, res) => {
       deleteMany: {},
       create: documents
     }
+  }
+
+  // Intercept Admin/Editor requests and route to reviews queue
+  if (['admin', 'editor'].includes(req.user.role)) {
+    const reviewPayload = { ...dataToUpdate }
+    if (parsed.start_date) reviewPayload.start_date = parsed.start_date
+    if (parsed.expiry_date) reviewPayload.expiry_date = parsed.expiry_date
+
+    const review = await prisma.reviews.create({
+      data: {
+        type: 'mou',
+        title: parsed.name || existing?.name || id,
+        submitted_by: req.user.id,
+        submitted_by_name: req.user.name || req.user.email.split('@')[0],
+        submitted_by_email: req.user.email,
+        submitted_by_role: req.user.role,
+        status: 'pending',
+        data: {
+          action: 'UPDATE',
+          targetId: id,
+          payload: reviewPayload
+        }
+      }
+    })
+    return res.status(202).json({
+      message: 'MOU update submitted for review',
+      reviewId: review.id,
+      status: 'pending'
+    })
   }
 
   const updated = await prisma.mous.update({

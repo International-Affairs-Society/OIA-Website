@@ -4,7 +4,7 @@ import asyncHandler from '../middleware/asyncHandler.js'
 import { paginate } from '../utils/paginate.js'
 
 const createReviewSchema = z.object({
-  type: z.enum(['program', 'upcoming_event', 'past_event', 'mou']),
+  type: z.enum(['program', 'upcoming_event', 'past_event', 'mou', 'visit']),
   title: z.string().min(1),
   data: z.record(z.any())
 })
@@ -122,10 +122,20 @@ export const approveReview = asyncHandler(async (req, res) => {
 
   // Apply changes to the target table based on type
   if (review.type === 'upcoming_event' || review.type === 'past_event') {
+    const dbPayload = { ...payload }
+    if (dbPayload.date) dbPayload.date = new Date(dbPayload.date)
+    else delete dbPayload.date
+
+    if (dbPayload.end_date) dbPayload.end_date = new Date(dbPayload.end_date)
+    else if (dbPayload.end_date === null) dbPayload.end_date = null
+    else delete dbPayload.end_date
+    if (dbPayload.updated_at) delete dbPayload.updated_at
+
     if (action === 'CREATE') {
       await prisma.events.create({
         data: {
-          ...payload,
+          created_by: review.submitted_by,
+          ...dbPayload,
           status: 'published' // Ensure approved event is published
         }
       })
@@ -133,8 +143,9 @@ export const approveReview = asyncHandler(async (req, res) => {
       await prisma.events.update({
         where: { id: targetId },
         data: {
-          ...payload,
-          status: 'published' // Ensure approved event is published
+          ...dbPayload,
+          status: 'published',
+          updated_at: new Date()
         }
       })
     }
@@ -148,6 +159,7 @@ export const approveReview = asyncHandler(async (req, res) => {
     if (action === 'CREATE') {
       await prisma.programs.create({
         data: {
+          created_by: review.submitted_by,
           ...dbPayload,
           status: 'published'
         }
@@ -163,10 +175,16 @@ export const approveReview = asyncHandler(async (req, res) => {
       })
     }
   } else if (review.type === 'mou') {
+    const dbPayload = { ...payload }
+    if (dbPayload.start_date) dbPayload.start_date = new Date(dbPayload.start_date)
+    if (dbPayload.expiry_date) dbPayload.expiry_date = new Date(dbPayload.expiry_date)
+    if (dbPayload.updated_at) delete dbPayload.updated_at
+
     if (action === 'CREATE') {
       await prisma.mous.create({
         data: {
-          ...payload,
+          created_by: review.submitted_by,
+          ...dbPayload,
           review_status: 'published'
         }
       })
@@ -174,8 +192,32 @@ export const approveReview = asyncHandler(async (req, res) => {
       await prisma.mous.update({
         where: { id: targetId },
         data: {
-          ...payload,
-          review_status: 'published'
+          ...dbPayload,
+          review_status: 'published',
+          updated_at: new Date()
+        }
+      })
+    }
+  } else if (review.type === 'visit') {
+    const dbPayload = { ...payload }
+    if (dbPayload.date) dbPayload.date = new Date(dbPayload.date)
+    if (dbPayload.updated_at) delete dbPayload.updated_at
+
+    if (action === 'CREATE') {
+      await prisma.visits.create({
+        data: {
+          created_by: review.submitted_by,
+          ...dbPayload,
+          status: 'approved'
+        }
+      })
+    } else if (action === 'UPDATE' && targetId) {
+      await prisma.visits.update({
+        where: { id: targetId },
+        data: {
+          ...dbPayload,
+          status: 'approved',
+          updated_at: new Date()
         }
       })
     }
@@ -281,5 +323,6 @@ export const requestChanges = asyncHandler(async (req, res) => {
 function mapReviewTypeToAuditType(reviewType) {
   if (reviewType === 'program') return 'Program'
   if (reviewType === 'mou') return 'MOU'
+  if (reviewType === 'visit') return 'Visit'
   return 'Event'
 }

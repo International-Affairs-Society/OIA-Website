@@ -427,3 +427,40 @@ export function MOUReadOnlyForm({ data, isEditable, onChange }: { data: Record<s
     </div>
   );
 }
+
+export function VisitReadOnlyForm({ data, isEditable, onChange }: { data: Record<string, any>; isEditable?: boolean; onChange?: (key: string, val: any) => void }) {
+  const handleChange = (key: string, val: any) => {
+    if (onChange) onChange(key, val);
+  };
+
+  return (
+    <div>
+      {sectionTitle("Visit Details")}
+      <FormField label="University">
+        <DisabledInput value={data.university} isEditable={isEditable} onChange={(v) => handleChange("university", v)} />
+      </FormField>
+      <FormField label="Date">
+        <DisabledDate value={data.date} isEditable={isEditable} onChange={(v) => handleChange("date", v)} />
+      </FormField>
+      <FormField label="Purpose">
+        <DisabledTextarea value={data.purpose} isEditable={isEditable} onChange={(v) => handleChange("purpose", v)} />
+      </FormField>
+      
+      {sectionTitle("Highlights")}
+      <FormField label="Highlights">
+        <DisabledDynamicList items={data.highlights || []} isEditable={isEditable} onChange={(v) => handleChange("highlights", v)} />
+      </FormField>
+
+      <div style={{ marginTop: "1.5rem" }}>
+        <FormField label="Photos/Documents">
+          <div style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
+            <p style={{ fontSize: "14px", fontWeight: 500, color: "#1a1a1a", textDecoration: "underline", margin: 0 }}>
+              (Media attached in submission)
+            </p>
+          </div>
+        </FormField>
+      </div>
+    </div>
+  );
+}
+
