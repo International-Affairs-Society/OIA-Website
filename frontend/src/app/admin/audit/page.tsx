@@ -80,6 +80,9 @@ export default function AuditTrailPage() {
       case "SUBMITTED": return { bg: "#e6f2ff", text: "#0066cc" };
       case "ARCHIVED": return { bg: "#f0f0f0", text: "#666666" };
       case "UNARCHIVED": return { bg: "#f0f0f0", text: "#666666" };
+      case "CREATED": return { bg: "#edf5e1", text: "#5C6B3F" }; // Green
+      case "UPDATED": return { bg: "#fff3cd", text: "#856404" }; // Yellow/Orange
+      case "DELETED": return { bg: "#fce8e6", text: "#c0392b" }; // Red
       default: return { bg: "#FFFBF2", text: "#1a1a1a" };
     }
   };
