@@ -255,6 +255,18 @@ export const createProgram = asyncHandler(async (req, res) => {
     }
   }
 
+  await prisma.audit_logs.create({
+    data: {
+      item_id: newProgram.id,
+      action: "Created",
+      item_title: newProgram.name,
+      item_type: "Program",
+      performed_by_name: req.user.name || "Unknown",
+      performed_by_role: req.user.role || "Unknown",
+      details: "Created a new program."
+    }
+  })
+
   res.status(201).json(formatProgram(newProgram, mouMap))
   invalidateCache('programs:') // Bust cache
 })
@@ -315,6 +327,18 @@ export const updateProgram = asyncHandler(async (req, res) => {
     }
   }
 
+  await prisma.audit_logs.create({
+    data: {
+      item_id: updated.id,
+      action: "Updated",
+      item_title: updated.name,
+      item_type: "Program",
+      performed_by_name: req.user.name || "Unknown",
+      performed_by_role: req.user.role || "Unknown",
+      details: "Updated the program record."
+    }
+  })
+
   res.json(formatProgram(updated, mouMap))
   invalidateCache('programs:') // Bust cache
   invalidateCache(`program:${id}`)
@@ -334,6 +358,18 @@ export const deleteProgram = asyncHandler(async (req, res) => {
   // Hard delete since programs table does not have deleted_at
   await prisma.programs.delete({
     where: { id }
+  })
+
+  await prisma.audit_logs.create({
+    data: {
+      item_id: id,
+      action: "Deleted",
+      item_title: prog.name,
+      item_type: "Program",
+      performed_by_name: req.user.name || "Unknown",
+      performed_by_role: req.user.role || "Unknown",
+      details: "Deleted the program."
+    }
   })
 
   res.json({ message: 'Program deleted successfully' })

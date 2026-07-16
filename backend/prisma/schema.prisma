@@ -83,6 +83,9 @@ enum AuditAction {
   Rejected
   Archived
   Unarchived
+  Created
+  Updated
+  Deleted
 }
 
 enum AuditItemType {
@@ -90,6 +93,7 @@ enum AuditItemType {
   Program
   MOU
   Visit
+  University
 }
 
 enum MOUType {
