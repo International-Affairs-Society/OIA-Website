@@ -28,36 +28,58 @@ export default function ArchivedPage() {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [itemToView, setItemToView] = useState<ArchiveItem | null>(null);
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  
+  const fetchArchivedItems = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      const [resEvents, resPrograms, resMous] = await Promise.all([
+        fetch(`${API_URL}/api/v1/events?is_archived=true`, { headers }),
+        fetch(`${API_URL}/api/v1/programs?is_archived=true`, { headers }),
+        fetch(`${API_URL}/api/v1/mous?is_archived=true`, { headers })
+      ]);
+
+      const eventsData = resEvents.ok ? await resEvents.json() : { data: [] };
+      const programsData = resPrograms.ok ? await resPrograms.json() : { data: [] };
+      const mousData = resMous.ok ? await resMous.json() : { data: [] };
+
+      const events: ArchiveItem[] = (eventsData.data || []).map((e: any) => ({
+        id: `event-${e.id}`,
+        originalId: e.id,
+        title: e.title,
+        type: "Event",
+        dateOrDuration: e.date,
+        data: e,
+      }));
+
+      const programs: ArchiveItem[] = (programsData.data || []).map((p: any) => ({
+        id: `program-${p.id}`,
+        originalId: p.id,
+        title: p.name,
+        type: "Program",
+        dateOrDuration: p.duration,
+        data: p,
+      }));
+
+      const mous: ArchiveItem[] = (mousData.data || []).map((m: any) => ({
+        id: `mou-${m.id}`,
+        originalId: m.id,
+        title: m.name,
+        type: "MOU",
+        dateOrDuration: `${m.start_date ? m.start_date.split('T')[0] : ''} to ${m.expiry_date ? m.expiry_date.split('T')[0] : ''}`,
+        data: m,
+      }));
+
+      setItems([...events, ...programs, ...mous]);
+    } catch (err) {
+      console.error("Failed to fetch archived items:", err);
+    }
+  };
+
   useEffect(() => {
-    // Collect all archived items
-    const events: ArchiveItem[] = MOCK_EVENTS_LIST.filter(e => e.is_archived).map(e => ({
-      id: `event-${e.id}`,
-      originalId: e.id,
-      title: e.title,
-      type: "Event",
-      dateOrDuration: e.date,
-      data: e,
-    }));
-
-    const programs: ArchiveItem[] = MOCK_PROGRAMS_LIST.filter(p => p.is_archived).map(p => ({
-      id: `program-${p.id}`,
-      originalId: p.id,
-      title: p.name,
-      type: "Program",
-      dateOrDuration: p.duration,
-      data: p,
-    }));
-
-    const mous: ArchiveItem[] = MOCK_MOUS_LIST.filter(m => m.is_archived).map(m => ({
-      id: `mou-${m.id}`,
-      originalId: m.id,
-      title: m.name,
-      type: "MOU",
-      dateOrDuration: `${m.startDate} to ${m.expiryDate}`,
-      data: m,
-    }));
-
-    setItems([...events, ...programs, ...mous]);
+    fetchArchivedItems();
   }, []);
 
   const handleActionClick = (item: ArchiveItem, action: "unarchive" | "delete") => {
@@ -71,11 +93,38 @@ export default function ArchivedPage() {
     setViewModalOpen(true);
   };
 
-  const executeAction = () => {
+  const executeAction = async () => {
     if (!selectedItem || !modalAction) return;
 
-    // Simulate removing it from the archived list
-    setItems(items.filter(i => i.id !== selectedItem.id));
+    try {
+      const token = localStorage.getItem("access_token");
+      const headers = { 
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}) 
+      };
+
+      let endpoint = "";
+      if (selectedItem.type === "Event") endpoint = `/api/v1/events/${selectedItem.originalId}`;
+      else if (selectedItem.type === "Program") endpoint = `/api/v1/programs/${selectedItem.originalId}`;
+      else if (selectedItem.type === "MOU") endpoint = `/api/v1/mous/${selectedItem.originalId}`;
+
+      if (modalAction === "unarchive") {
+        await fetch(`${API_URL}${endpoint}`, {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify({ is_archived: false, isArchived: false })
+        });
+      } else if (modalAction === "delete") {
+        await fetch(`${API_URL}${endpoint}`, {
+          method: "DELETE",
+          headers
+        });
+      }
+
+      fetchArchivedItems();
+    } catch (err) {
+      console.error(`Failed to ${modalAction} item:`, err);
+    }
     
     // Close modal
     setConfirmModalOpen(false);

@@ -131,6 +131,36 @@ export const createVisit = asyncHandler(async (req, res) => {
     contact_number: poc.contactNumber || poc.contact_number || ""
   }))
 
+  // Intercept Admin/Editor requests and route to reviews queue
+  if (['admin', 'editor'].includes(req.user.role)) {
+    const review = await prisma.reviews.create({
+      data: {
+        type: 'visit',
+        title: parsed.university,
+        submitted_by: req.user.id,
+        submitted_by_name: req.user.name || req.user.email.split('@')[0],
+        submitted_by_email: req.user.email,
+        submitted_by_role: req.user.role,
+        status: 'pending',
+        data: {
+          action: 'CREATE',
+          payload: {
+            ...rest,
+            date: parsed.date,
+            delegations: delegationsData ? { create: delegationsData } : undefined,
+            our_pocs: ourPocsData ? { create: ourPocsData } : undefined,
+            reports: reports ? { create: reports } : undefined
+          }
+        }
+      }
+    })
+    return res.status(202).json({
+      message: 'Visit creation submitted for review',
+      reviewId: review.id,
+      status: 'pending'
+    })
+  }
+
   const status = req.user.role === 'super_admin' ? 'approved' : 'pending'
 
   const created = await prisma.visits.create({

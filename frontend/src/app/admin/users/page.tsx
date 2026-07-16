@@ -219,9 +219,9 @@ export default function UsersPage() {
               <ActionButtons
                 rowId={row.id}
                 confirmingDeleteId={confirmingId}
-                setConfirmingDeleteId={role === 'super_admin' ? setConfirmingId : undefined}
-                onUpdateRole={role === 'super_admin' ? () => handleOpenEditModal(row) : undefined}
-                onConfirmDelete={role === 'super_admin' ? () => handleDelete(row.id) : undefined}
+                setConfirmingDeleteId={(role === 'super_admin' && row.role !== 'Super Admin') ? setConfirmingId : undefined}
+                onUpdateRole={(role === 'super_admin' && row.role !== 'Super Admin') ? () => handleOpenEditModal(row) : undefined}
+                onConfirmDelete={(role === 'super_admin' && row.role !== 'Super Admin') ? () => handleDelete(row.id) : undefined}
                 onCancelDelete={role === 'super_admin' ? () => setConfirmingId(null) : undefined}
               />
             )}

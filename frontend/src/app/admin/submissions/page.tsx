@@ -236,7 +236,7 @@ function SubmissionsContent() {
   
   React.useEffect(() => {
     if (selected) {
-      setEditableData(selected.data);
+      setEditableData(selected.data?.payload || selected.data);
     }
   }, [selected]);
 
@@ -330,6 +330,7 @@ function SubmissionsContent() {
               { label: "Upcoming Event", value: "upcoming_event" },
               { label: "Past Event", value: "past_event" },
               { label: "MOU", value: "mou" },
+              { label: "Visit", value: "visit" },
             ],
           }]}
           onFilterChange={(_, val) => setTypeFilter(val)}
