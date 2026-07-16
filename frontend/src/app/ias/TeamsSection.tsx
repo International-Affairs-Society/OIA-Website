@@ -13,15 +13,7 @@ const DEPARTMENTS = [
       { name: "Raman Gupta", role: "President", size: "lg" as const, img: "https://randomuser.me/api/portraits/men/41.jpg" },
     ],
   },
-  {
-    name: "Interns of OIA",
-    accent: "#D12027",
-    footerText: "THIS WEBSITE IS DESIGNED AND DEVELOPED BY SHRISH AND SHIVAM",
-    members: [
-      { name: "Shrish", role: "Developer", img: "https://randomuser.me/api/portraits/men/33.jpg" },
-      { name: "Shivam", role: "Developer", img: "https://randomuser.me/api/portraits/men/34.jpg" },
-    ],
-  },
+
   {
     name: "Tech",
     accent: "#D12027",

@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 
 export interface ActionButtonsProps {
   onView?: () => void;
@@ -11,7 +11,7 @@ export interface ActionButtonsProps {
   isArchived?: boolean;
   rowId?: string;
   confirmingDeleteId?: string | null;
-  onConfirmDelete?: (id: string) => void;
+  onConfirmDelete?: (id: string) => void | Promise<void>;
   onCancelDelete?: () => void;
   setConfirmingDeleteId?: (id: string | null) => void;
 }
@@ -30,6 +30,7 @@ export default function ActionButtons({
   onCancelDelete,
   setConfirmingDeleteId,
 }: ActionButtonsProps) {
+  const [isDeleting, setIsDeleting] = useState(false);
   const isConfirming = confirmingDeleteId && confirmingDeleteId === rowId;
 
   const buttonStyle = (color: string): React.CSSProperties => ({
@@ -46,27 +47,43 @@ export default function ActionButtons({
 
   if (isConfirming) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", fontSize: "13px", color: "#6b6b6b" }}>
-        <span>Confirm delete?</span>
-        <button
-          style={buttonStyle("#c0392b")}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (onConfirmDelete && rowId) onConfirmDelete(rowId);
-          }}
-        >
-          Yes
-        </button>
-        {divider}
-        <button
-          style={buttonStyle("#6b6b6b")}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (onCancelDelete) onCancelDelete();
-          }}
-        >
-          Cancel
-        </button>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", fontSize: "13px", color: "#6b6b6b", minWidth: "140px" }}>
+        {isDeleting ? (
+          <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span className="animate-spin inline-block w-3 h-3 border-2 border-t-transparent border-[#c0392b] rounded-full"></span>
+            Deleting...
+          </span>
+        ) : (
+          <>
+            <span>Confirm delete?</span>
+            <button
+              style={buttonStyle("#c0392b")}
+              onClick={async (e) => {
+                e.stopPropagation();
+                if (onConfirmDelete && rowId) {
+                  setIsDeleting(true);
+                  try {
+                    await onConfirmDelete(rowId);
+                  } finally {
+                    setIsDeleting(false);
+                  }
+                }
+              }}
+            >
+              Yes
+            </button>
+            {divider}
+            <button
+              style={buttonStyle("#6b6b6b")}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onCancelDelete) onCancelDelete();
+              }}
+            >
+              Cancel
+            </button>
+          </>
+        )}
       </div>
     );
   }

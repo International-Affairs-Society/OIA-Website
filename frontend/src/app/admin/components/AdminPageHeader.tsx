@@ -45,7 +45,7 @@ export default function AdminPageHeader({
             margin: 0,
             fontSize: isMobile ? "2.6rem" : "4.2rem",
             fontWeight: 400,
-            fontFamily: "var(--font-gaston-honey), serif",
+            fontFamily: "var(--font-atavian), serif",
             color: "#1a1a1a",
           }}
         >

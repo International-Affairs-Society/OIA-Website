@@ -691,8 +691,8 @@ export default function AdminDashboardPage() {
       }}>
         <div>
           <h1 style={{
-            margin: 0, fontSize: isMobile ? "2.4rem" : "4.2rem", fontWeight: 400,
-            fontFamily: "var(--font-gaston-honey), serif", color: "#1a1a1a", lineHeight: 1.1,
+            fontFamily: "var(--font-atavian), serif", color: "#1a1a1a", lineHeight: 1.1,
+            margin: 0, fontSize: isMobile ? "2.6rem" : "3.5rem", fontWeight: 400
           }}>
             Analytics
           </h1>

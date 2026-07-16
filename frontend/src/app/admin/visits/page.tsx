@@ -76,7 +76,7 @@ export default function VisitsPage() {
       <span style={{ color: "#b5bda0" }}>|</span>
       {canEdit ? (
         <>
-          <Link href={`/admin/visits/${row.id}/edit`} style={{ color: "#6b6b6b", textDecoration: "none" }}>
+          <Link href={`/admin/visits/edit/${row.id}`} style={{ color: "#6b6b6b", textDecoration: "none" }}>
             Edit
           </Link>
           <span style={{ color: "#b5bda0" }}>|</span>
