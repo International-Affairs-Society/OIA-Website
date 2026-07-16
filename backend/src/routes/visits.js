@@ -13,6 +13,8 @@ const router = Router()
 router.get('/', authenticate, getVisits)
 router.get('/:id', authenticate, getVisitById)
 router.post('/', authenticate, requireRole('super_admin', 'admin', 'editor'), createVisit)
+router.patch('/:id', authenticate, requireRole('super_admin', 'admin', 'editor'), updateVisit)
+router.delete('/:id', authenticate, requireRole('super_admin', 'admin', 'editor'), deleteVisit)
 router.patch('/:id/approve', authenticate, requireRole('super_admin'), approveVisit)
 
 export default router
