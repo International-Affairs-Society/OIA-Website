@@ -3,7 +3,9 @@ import {
   getVisits,
   getVisitById,
   createVisit,
-  approveVisit
+  approveVisit,
+  updateVisit,
+  deleteVisit
 } from '../controllers/visits.js'
 import { authenticate } from '../middleware/authenticate.js'
 import { requireRole } from '../middleware/requireRole.js'
