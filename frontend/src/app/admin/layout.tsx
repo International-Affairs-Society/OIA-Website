@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
@@ -35,16 +35,22 @@ export default function AdminLayout({
     setSidebarOpen(false);
   }, [pathname]);
 
-  const { role } = useAuth();
-  const allowedPaths = getAllowedAdminPaths(role);
+  const { role, isLoading } = useAuth();
+  const allowedPaths = useMemo(() => getAllowedAdminPaths(role), [role]);
   const isReadOnly = !PERMISSIONS[role].admin.canEdit;
 
   // Redirect to first allowed section if user lands on /admin but doesn't have analytics access
+  // Or redirect to home if they have no admin access at all
   useEffect(() => {
+    if (isLoading) return;
+    if (!PERMISSIONS[role].navbar.admin) {
+      router.replace("/");
+      return;
+    }
     if (pathname === "/admin" && !allowedPaths.includes("/admin") && allowedPaths.length > 0) {
       router.replace(allowedPaths[0]);
     }
-  }, [pathname, allowedPaths, router]);
+  }, [pathname, allowedPaths, router, role, isLoading]);
 
   const allNavItems = [
     { label: "Analytics", path: "/admin", icon: PieChart },
@@ -66,6 +72,14 @@ export default function AdminLayout({
   const navItems = allNavItems.filter((item) => allowedPaths.includes(item.path));
 
   const sidebarWidth = isMobile ? "260px" : collapsed ? "56px" : "220px";
+
+  if (isLoading) {
+    return (
+      <div style={{ height: "100vh", display: "flex", justifyContent: "center", alignItems: "center", backgroundColor: "#f5f0e8" }}>
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div style={{ height: "100vh", overflow: "hidden", backgroundColor: "#f5f0e8", display: "flex", flexDirection: "column" }}>

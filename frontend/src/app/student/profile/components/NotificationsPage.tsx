@@ -14,6 +14,10 @@ interface Props {
 export default function NotificationsPage({ notifications: initialNotifications, onNotificationClick }: Props) {
   const [notifications, setNotifications] = useState(initialNotifications);
 
+  React.useEffect(() => {
+    setNotifications(initialNotifications);
+  }, [initialNotifications]);
+
   const handleMarkAsRead = (id: string) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))

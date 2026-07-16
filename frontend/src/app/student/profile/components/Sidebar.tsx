@@ -51,6 +51,7 @@ export default function Sidebar({
 
     return (
       <button
+        type="button"
         onClick={() => onTabChange(id)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -238,6 +239,7 @@ export default function Sidebar({
 
 
         <button
+          type="button"
           onClick={() => logout()}
           className="flex items-center justify-center gap-2 w-full py-2 transition-colors"
           onMouseEnter={() => setIsLogoutHovered(true)}

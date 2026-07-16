@@ -11,17 +11,15 @@ import ApplicationList from "./components/ApplicationList";
 import { AnimatePresence } from "framer-motion";
 import { CheckCircle2, FileText, Bell } from "lucide-react";
 
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAuth } from "../../admin/roles/AuthContext";
 import { PERMISSIONS } from "../../admin/roles/permissions";
 
 type Tab = "status" | "notifications";
 
 function ProfileContent() {
-  const searchParams = useSearchParams();
   const router = useRouter();
   const { user, role, isAuthenticated, isLoading } = useAuth();
-  const initialTab = (searchParams?.get("tab") as Tab) || "status";
 
   React.useEffect(() => {
     if (isLoading) return;
@@ -30,10 +28,13 @@ function ProfileContent() {
       router.replace("/");
     }
   }, [isLoading, isAuthenticated, role, router]);
-  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
+  const [activeTab, setActiveTab] = useState<Tab>("status");
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
   const [applications, setApplications] = useState<any[]>([]);
   const [appsLoading, setAppsLoading] = useState(true);
+
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifsLoading, setNotifsLoading] = useState(true);
 
   React.useEffect(() => {
     if (isLoading || !isAuthenticated || !PERMISSIONS[role].canAccessProfile) return;
@@ -54,70 +55,33 @@ function ProfileContent() {
       }
     };
 
+    const fetchNotifications = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/notifications/me`, {
+          credentials: "include"
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setNotifications(data.data || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch notifications:", err);
+      } finally {
+        setNotifsLoading(false);
+      }
+    };
+
     fetchApplications();
+    fetchNotifications();
   }, [isLoading, isAuthenticated, role]);
 
-  const dynamicNotifications = React.useMemo<any[]>(() => {
-    return [];
-  }, []);
-
-  React.useEffect(() => {
-    const tab = searchParams?.get("tab") as Tab;
-    if (tab && ["status", "notifications"].includes(tab)) {
-      setActiveTab(tab);
-      setSelectedAppId(null);
-    }
-  }, [searchParams]);
 
   const handleTabChange = (tabId: Tab) => {
     setActiveTab(tabId);
     setSelectedAppId(null);
   };
 
-  // Bottom tab bar for mobile
-  const MobileTabBar = () => {
-    const unreadCount = dynamicNotifications.filter((n) => !n.read).length;
 
-    const TabButton = ({ id, icon: Icon, label, hasDot }: { id: Tab; icon: any; label: string; hasDot?: boolean }) => {
-      const isActive = activeTab === id;
-      return (
-        <button
-          onClick={() => handleTabChange(id)}
-          className="flex-1 flex flex-col items-center justify-center gap-1 relative py-3 transition-colors"
-          style={{ color: isActive ? "#404040" : "rgba(57, 57, 57, 0.6)" }}
-        >
-          <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-          <span
-            className="text-[10px] uppercase tracking-wider"
-            style={{ fontFamily: "var(--font-space-grotesk)", fontWeight: isActive ? 600 : 500 }}
-          >
-            {label}
-          </span>
-          {hasDot && unreadCount > 0 && (
-            <span className="absolute top-2.5 right-[calc(50%-14px)] w-2 h-2 rounded-full bg-[#404040]"></span>
-          )}
-        </button>
-      );
-    };
-
-    return (
-      <div
-        className="md:hidden fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl border-t"
-        style={{
-          background: "rgba(57, 57, 57, 0.1)",
-          backdropFilter: "blur(24px) saturate(180%)",
-          WebkitBackdropFilter: "blur(24px) saturate(180%)",
-          borderColor: "var(--muted-3)",
-          boxShadow: "0 -8px 32px rgba(0,0,0,0.1)",
-        }}
-      >
-        <div className="flex items-center justify-between px-2 pb-safe">
-          <TabButton id="status" icon={CheckCircle2} label="Status" />
-          <TabButton id="notifications" icon={Bell} label="Notifs" hasDot />
-        </div>
-      </div>
-    );
-  };
 
   if (isLoading) {
     return (
@@ -196,7 +160,7 @@ function ProfileContent() {
               departure_date: "",
               applied_at: applications[0].submittedAt
             } : (null as any)}
-            notifications={dynamicNotifications}
+            notifications={notifications}
             activeTab={activeTab}
             onTabChange={(tab: string) => handleTabChange(tab as Tab)}
           />
@@ -209,9 +173,9 @@ function ProfileContent() {
           padding: '0',
           overflowX: 'hidden'
         }}>
-          <AnimatePresence mode="wait">
-            {activeTab === "status" && (
-              selectedAppId ? (
+          <div style={{ position: "relative", width: "100%" }}>
+            <div style={{ display: activeTab === "status" ? "block" : "none", width: "100%" }}>
+              {selectedAppId ? (
                 <ApplicationStatus
                   key="status-detail"
                   application={{
@@ -239,33 +203,44 @@ function ProfileContent() {
               ) : (
                 <ApplicationList
                   key="status-list"
-                  applications={applications.map(app => ({
-                    id: app.id,
-                    program_title: app.programName,
-                    status: app.status,
-                    applied_at: app.submittedAt
-                  }))}
+                  applications={applications.map(app => {
+                    let mappedStatus = "In Process";
+                    if (app.pipelineStage === "completed") mappedStatus = "Completed";
+                    else if (app.pipelineStage === "accepted" || app.status === "approved") mappedStatus = "Accepted";
+                    else if (app.status === "rejected") mappedStatus = "Rejected";
+
+                    return {
+                      id: app.id,
+                      program_title: app.programName || "Unknown Program",
+                      status: mappedStatus,
+                      applied_at: app.submittedAt
+                    };
+                  })}
                   onSelect={(id) => setSelectedAppId(id)}
                 />
-              )
-            )}
+              )}
+            </div>
 
-            {activeTab === "notifications" && (
+            <div style={{ display: activeTab === "notifications" ? "block" : "none", width: "100%" }}>
               <NotificationsPage
                 key="notifications"
-                notifications={dynamicNotifications}
+                notifications={notifications}
                 onNotificationClick={(appId) => {
                   setActiveTab("status");
                   setSelectedAppId(appId);
                 }}
               />
-            )}
-          </AnimatePresence>
+            </div>
+          </div>
         </main>
 
       </div>
 
-      <MobileTabBar />
+      <MobileTabBar 
+        activeTab={activeTab} 
+        handleTabChange={handleTabChange} 
+        unreadCount={notifications.filter((n) => !n.read).length} 
+      />
     </div>
   );
 }
@@ -275,5 +250,48 @@ export default function ProfilePage() {
     <React.Suspense fallback={<div className="min-h-screen bg-[#FFFBF2]" />}>
       <ProfileContent />
     </React.Suspense>
+  );
+}
+
+function MobileTabBar({ activeTab, handleTabChange, unreadCount }: { activeTab: Tab, handleTabChange: (id: Tab) => void, unreadCount: number }) {
+  return (
+    <div
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl border-t"
+      style={{
+        background: "rgba(57, 57, 57, 0.1)",
+        backdropFilter: "blur(24px) saturate(180%)",
+        WebkitBackdropFilter: "blur(24px) saturate(180%)",
+        borderColor: "var(--muted-3)",
+        boxShadow: "0 -8px 32px rgba(0,0,0,0.1)",
+      }}
+    >
+      <div className="flex items-center justify-between px-2 pb-safe">
+        <MobileTabButton id="status" activeTab={activeTab} icon={CheckCircle2} label="Status" onClick={() => handleTabChange("status")} />
+        <MobileTabButton id="notifications" activeTab={activeTab} icon={Bell} label="Notifs" hasDot={unreadCount > 0} onClick={() => handleTabChange("notifications")} />
+      </div>
+    </div>
+  );
+}
+
+function MobileTabButton({ id, activeTab, icon: Icon, label, hasDot, onClick }: any) {
+  const isActive = activeTab === id;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex-1 flex flex-col items-center justify-center gap-1 relative py-3 transition-colors"
+      style={{ color: isActive ? "#404040" : "rgba(57, 57, 57, 0.6)" }}
+    >
+      <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+      <span
+        className="text-[10px] uppercase tracking-wider"
+        style={{ fontFamily: "var(--font-space-grotesk)", fontWeight: isActive ? 600 : 500 }}
+      >
+        {label}
+      </span>
+      {hasDot && (
+        <span className="absolute top-2.5 right-[calc(50%-14px)] w-2 h-2 rounded-full bg-[#404040]"></span>
+      )}
+    </button>
   );
 }
