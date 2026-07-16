@@ -72,9 +72,16 @@ function detectDeviceTier(): DeviceTier {
   let finalTier: DeviceTier = "high";
 
   // ── Decision ──
-  // If ANY signal says low, classify as low
-  if (cores <= 4 || (memory !== undefined && memory <= 4) || isLowGPU) {
+  // A machine with 8+ cores and 12GB+ RAM is powerful enough to handle the 
+  // WebGL effects via software/integrated graphics without dropping frames.
+  const isPowerfulMachine = cores >= 8 && (memory === undefined || memory >= 12);
+
+  // Classify as low if it has weak CPU, weak RAM, or a weak GPU
+  // BUT override that if the machine is otherwise highly powerful
+  if ((cores <= 4 || (memory !== undefined && memory <= 4) || isLowGPU) && !isPowerfulMachine) {
     finalTier = "low";
+  } else if (cores <= 6 || (memory !== undefined && memory <= 8)) {
+    finalTier = "mid";
   }
 
   // Log to console so developer can see the detected specs
