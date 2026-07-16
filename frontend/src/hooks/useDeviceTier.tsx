@@ -69,14 +69,24 @@ function detectDeviceTier(): DeviceTier {
     gpuRenderer === "" ||
     LOW_GPU_PATTERNS.some((pattern) => gpuRenderer.includes(pattern));
 
+  let finalTier: DeviceTier = "high";
+
   // ── Decision ──
   // If ANY signal says low, classify as low
   if (cores <= 4 || (memory !== undefined && memory <= 4) || isLowGPU) {
-    return "low";
+    finalTier = "low";
   }
 
-  // Mid and High have nearly identical settings per user request
-  return "high";
+  // Log to console so developer can see the detected specs
+  console.log("🖥️ --- Hardware Detection ---");
+  console.table({
+    "CPU Cores": cores,
+    "RAM (GB)": memory || "Unknown (Firefox/Safari)",
+    "GPU Model": gpuRenderer || "Unknown",
+    "Assigned Tier": finalTier.toUpperCase(),
+  });
+
+  return finalTier;
 }
 
 // ── React Hook ──
