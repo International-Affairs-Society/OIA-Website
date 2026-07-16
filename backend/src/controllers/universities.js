@@ -4,6 +4,7 @@ import asyncHandler from '../middleware/asyncHandler.js'
 import { getSignedR2Url } from '../utils/r2Sign.js'
 import pick from '../utils/pick.js'
 import { paginate } from '../utils/paginate.js'
+import { getCached, setCached, invalidateCache } from '../lib/cache.js'
 
 // Validation Schema for creation
 const universityCreateSchema = z.object({
@@ -35,6 +36,10 @@ async function formatUniversity(uni) {
 export const getUniversities = asyncHandler(async (req, res) => {
   const { search } = req.query
 
+  const cacheKey = `universities:${req.url}`
+  const cached = getCached(cacheKey)
+  if (cached) return res.json(cached)
+
   const where = {}
   if (search) {
     where.OR = [
@@ -51,17 +56,24 @@ export const getUniversities = asyncHandler(async (req, res) => {
   // Format with async signed URLs
   const formattedData = await Promise.all(paginatedResult.data.map(formatUniversity))
 
-  res.json({
+  const response = {
     data: formattedData,
     page: paginatedResult.page,
     limit: paginatedResult.limit,
     total: paginatedResult.total
-  })
+  }
+
+  setCached(cacheKey, response, 60_000)
+  res.json(response)
 })
 
 // GET /universities/:id (Public)
 export const getUniversityById = asyncHandler(async (req, res) => {
   const { id } = req.params
+
+  const cacheKey = `university:${id}`
+  const cached = getCached(cacheKey)
+  if (cached) return res.json(cached)
 
   const uni = await prisma.universities.findUnique({
     where: { id }
@@ -73,7 +85,9 @@ export const getUniversityById = asyncHandler(async (req, res) => {
     })
   }
 
-  res.json(await formatUniversity(uni))
+  const response = await formatUniversity(uni)
+  setCached(cacheKey, response, 60_000)
+  res.json(response)
 })
 
 // POST /universities (LEADERSHIP only)
@@ -96,6 +110,7 @@ export const createUniversity = asyncHandler(async (req, res) => {
   })
 
   res.status(201).json(await formatUniversity(created))
+  invalidateCache('universities:')
 })
 
 // PATCH /universities/:id (LEADERSHIP only)
@@ -128,4 +143,6 @@ export const updateUniversity = asyncHandler(async (req, res) => {
   })
 
   res.json(await formatUniversity(updated))
+  invalidateCache('universities:')
+  invalidateCache(`university:${id}`)
 })

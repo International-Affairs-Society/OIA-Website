@@ -1,17 +1,24 @@
 import { PrismaClient } from '@prisma/client'
+import pkg from 'pg'
+const { Pool } = pkg
+import { PrismaPg } from '@prisma/adapter-pg'
+import dotenv from 'dotenv'
 
-// Prevent multiple PrismaClient instances in development hot-reload cycles.
-// In production, a single instance is always created.
+dotenv.config()
+
+const connectionString = process.env.DATABASE_URL
+
+const prismaClientSingleton = () => {
+  const pool = new Pool({ connectionString })
+  const adapter = new PrismaPg(pool)
+  return new PrismaClient({ adapter })
+}
+
 const globalForPrisma = globalThis
 
 const prisma =
   globalForPrisma.__prisma ??
-  new PrismaClient({
-    log:
-      process.env.NODE_ENV === 'development'
-        ? ['warn', 'error']
-        : ['error'],
-  })
+  prismaClientSingleton()
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.__prisma = prisma

@@ -4,6 +4,7 @@ import asyncHandler from '../middleware/asyncHandler.js'
 import pick from '../utils/pick.js'
 import { paginate } from '../utils/paginate.js'
 import supabase from '../lib/supabase.js'
+import { getCached, setCached, invalidateCache } from '../lib/cache.js'
 
 const programBaseSchema = z.object({
   name: z.string().min(1),
@@ -101,6 +102,10 @@ export const getPrograms = asyncHandler(async (req, res) => {
 
   // Public can only see published programs by default
   if (!isStaffOrLeadership) {
+    const cacheKey = `programs:${programType || 'all'}:${req.url}`
+    const cached = getCached(cacheKey)
+    if (cached) return res.json(cached)
+
     where.status = 'published'
     where.is_archived = false
   } else {
@@ -138,17 +143,36 @@ export const getPrograms = asyncHandler(async (req, res) => {
     mouMap = new Map(linkedMous.map(m => [m.id, m.name]))
   }
 
-  res.json({
+  const response = {
     data: paginatedResult.data.map(p => formatProgram(p, mouMap)),
     page: paginatedResult.page,
     limit: paginatedResult.limit,
     total: paginatedResult.total
-  })
+  }
+
+  if (!isStaffOrLeadership) {
+    const cacheKey = `programs:${programType || 'all'}:${req.url}`
+    setCached(cacheKey, response, 60_000)
+  }
+
+  res.json(response)
 })
 
 // GET /programs/:id (Public)
 export const getProgramById = asyncHandler(async (req, res) => {
   const { id } = req.params
+
+  let isStaffOrLeadership = false
+  const authHeader = req.headers.authorization
+  if (authHeader?.startsWith('Bearer ')) {
+    isStaffOrLeadership = true
+  }
+
+  if (!isStaffOrLeadership) {
+    const cacheKey = `program:${id}`
+    const cached = getCached(cacheKey)
+    if (cached) return res.json(cached)
+  }
 
   const prog = await prisma.programs.findUnique({
     where: { id },
@@ -172,7 +196,14 @@ export const getProgramById = asyncHandler(async (req, res) => {
     }
   }
 
-  res.json(formatProgram(prog, mouMap))
+  const response = formatProgram(prog, mouMap)
+
+  if (!isStaffOrLeadership) {
+    const cacheKey = `program:${id}`
+    setCached(cacheKey, response, 60_000)
+  }
+
+  res.json(response)
 })
 
 // POST /programs (STAFF, LEADERSHIP only)
@@ -225,6 +256,7 @@ export const createProgram = asyncHandler(async (req, res) => {
   }
 
   res.status(201).json(formatProgram(newProgram, mouMap))
+  invalidateCache('programs:') // Bust cache
 })
 
 // PATCH /programs/:id (STAFF, LEADERSHIP only)
@@ -284,6 +316,8 @@ export const updateProgram = asyncHandler(async (req, res) => {
   }
 
   res.json(formatProgram(updated, mouMap))
+  invalidateCache('programs:') // Bust cache
+  invalidateCache(`program:${id}`)
 })
 
 // DELETE /programs/:id (LEADERSHIP only)
@@ -303,4 +337,6 @@ export const deleteProgram = asyncHandler(async (req, res) => {
   })
 
   res.json({ message: 'Program deleted successfully' })
+  invalidateCache('programs:') // Bust cache
+  invalidateCache(`program:${id}`)
 })

@@ -33,7 +33,7 @@ export default function ArchivedPage() {
   const fetchArchivedItems = async () => {
     try {
       const token = localStorage.getItem("access_token");
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
 
       const [resEvents, resPrograms, resMous] = await Promise.all([
         fetch(`${API_URL}/api/v1/events?is_archived=true`, { headers }),
