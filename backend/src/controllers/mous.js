@@ -216,6 +216,18 @@ export const createMou = asyncHandler(async (req, res) => {
     include: { our_pocs: true, partner_pocs: true, documents: true }
   })
 
+  await prisma.audit_logs.create({
+    data: {
+      item_id: created.id,
+      action: "Created",
+      item_title: created.name,
+      item_type: "MOU",
+      performed_by_name: req.user.name || "Unknown",
+      performed_by_role: req.user.role || "Unknown",
+      details: "Created a new MOU."
+    }
+  })
+
   res.status(201).json(await formatMou(created))
 })
 
@@ -301,6 +313,18 @@ export const updateMou = asyncHandler(async (req, res) => {
     include: { our_pocs: true, partner_pocs: true, documents: true }
   })
 
+  await prisma.audit_logs.create({
+    data: {
+      item_id: updated.id,
+      action: "Updated",
+      item_title: updated.name,
+      item_type: "MOU",
+      performed_by_name: req.user.name || "Unknown",
+      performed_by_role: req.user.role || "Unknown",
+      details: "Updated the MOU record."
+    }
+  })
+
   res.json(await formatMou(updated))
 })
 
@@ -318,6 +342,18 @@ export const deleteMou = asyncHandler(async (req, res) => {
   // Hard delete since mou table does not have deleted_at
   await prisma.mous.delete({
     where: { id }
+  })
+
+  await prisma.audit_logs.create({
+    data: {
+      item_id: id,
+      action: "Deleted",
+      item_title: mou.name,
+      item_type: "MOU",
+      performed_by_name: req.user.name || "Unknown",
+      performed_by_role: req.user.role || "Unknown",
+      details: "Deleted the MOU."
+    }
   })
 
   res.json({ message: 'MOU deleted successfully' })

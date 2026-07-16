@@ -109,6 +109,18 @@ export const createUniversity = asyncHandler(async (req, res) => {
     data: dbData
   })
 
+  await prisma.audit_logs.create({
+    data: {
+      item_id: created.id,
+      action: "Created",
+      item_title: created.name,
+      item_type: "University",
+      performed_by_name: req.user.name || "Unknown",
+      performed_by_role: req.user.role || "Unknown",
+      details: "Created a new university record."
+    }
+  })
+
   res.status(201).json(await formatUniversity(created))
   invalidateCache('universities:')
 })
@@ -140,6 +152,18 @@ export const updateUniversity = asyncHandler(async (req, res) => {
   const updated = await prisma.universities.update({
     where: { id },
     data: dbData
+  })
+
+  await prisma.audit_logs.create({
+    data: {
+      item_id: updated.id,
+      action: "Updated",
+      item_title: updated.name,
+      item_type: "University",
+      performed_by_name: req.user.name || "Unknown",
+      performed_by_role: req.user.role || "Unknown",
+      details: "Updated the university record."
+    }
   })
 
   res.json(await formatUniversity(updated))

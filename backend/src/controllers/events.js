@@ -234,6 +234,18 @@ export const createEvent = asyncHandler(async (req, res) => {
     include: { mou: { select: { id: true, name: true } } }
   })
 
+  await prisma.audit_logs.create({
+    data: {
+      item_id: created.id,
+      action: "Created",
+      item_title: created.title,
+      item_type: "Event",
+      performed_by_name: req.user.name || "Unknown",
+      performed_by_role: req.user.role || "Unknown",
+      details: "Created a new event."
+    }
+  })
+
   invalidateCache('events:') // Bust public cache after write
   res.status(201).json(formatEvent(created))
 })
@@ -330,6 +342,18 @@ export const updateEvent = asyncHandler(async (req, res) => {
     include: { mou: { select: { id: true, name: true } } }
   })
 
+  await prisma.audit_logs.create({
+    data: {
+      item_id: updated.id,
+      action: "Updated",
+      item_title: updated.title,
+      item_type: "Event",
+      performed_by_name: req.user.name || "Unknown",
+      performed_by_role: req.user.role || "Unknown",
+      details: "Updated the event record."
+    }
+  })
+
   invalidateCache('events:') // Bust public cache after write
   res.json(formatEvent(updated))
 })
@@ -346,6 +370,18 @@ export const deleteEvent = asyncHandler(async (req, res) => {
   }
 
   await prisma.events.delete({ where: { id } })
+
+  await prisma.audit_logs.create({
+    data: {
+      item_id: id,
+      action: "Deleted",
+      item_title: ev.title,
+      item_type: "Event",
+      performed_by_name: req.user.name || "Unknown",
+      performed_by_role: req.user.role || "Unknown",
+      details: "Deleted the event."
+    }
+  })
 
   invalidateCache('events:') // Bust public cache after write
   res.json({ message: 'Event deleted successfully' })

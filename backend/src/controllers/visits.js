@@ -184,12 +184,12 @@ export const createVisit = asyncHandler(async (req, res) => {
   await prisma.audit_logs.create({
     data: {
       item_id: created.id,
-      action: status === 'approved' ? 'Approved' : 'Submitted',
+      action: 'Created',
       item_title: created.university,
-      item_type: 'MOU', // Using MOU as a generic category in enum since Visit is not in AuditItemType enum
+      item_type: 'Visit',
       performed_by_name: req.user.name || req.user.email,
       performed_by_role: req.user.role,
-      details: status === 'approved' ? 'Visit recorded and approved' : 'Visit submitted for approval'
+      details: 'Created a new visit.'
     }
   }).catch(err => console.error('Failed to create audit log for visit:', err))
 
@@ -273,10 +273,10 @@ export const updateVisit = asyncHandler(async (req, res) => {
       item_id: updated.id,
       action: 'Updated',
       item_title: updated.university,
-      item_type: 'MOU', // Reusing generic MOU category for now as in create
+      item_type: 'Visit',
       performed_by_name: req.user.name || req.user.email,
       performed_by_role: req.user.role,
-      details: 'Visit updated'
+      details: 'Updated the visit.'
     }
   }).catch(err => console.error('Failed to create audit log for visit update:', err))
 
@@ -325,10 +325,10 @@ export const deleteVisit = asyncHandler(async (req, res) => {
       item_id: id,
       action: 'Deleted',
       item_title: visit.university,
-      item_type: 'MOU',
+      item_type: 'Visit',
       performed_by_name: req.user.name || req.user.email,
       performed_by_role: req.user.role,
-      details: 'Visit deleted'
+      details: 'Deleted the visit.'
     }
   }).catch(err => console.error('Failed to create audit log for visit deletion:', err))
 
@@ -366,7 +366,7 @@ export const approveVisit = asyncHandler(async (req, res) => {
       item_id: updated.id,
       action: 'Approved',
       item_title: updated.university,
-      item_type: 'MOU',
+      item_type: 'Visit',
       performed_by_name: req.user.name || req.user.email,
       performed_by_role: req.user.role,
       details: 'Visit approved by Super Admin'
