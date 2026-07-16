@@ -220,6 +220,10 @@ export const approveReview = asyncHandler(async (req, res) => {
           updated_at: new Date()
         }
       })
+    } else if (action === 'DELETE' && targetId) {
+      await prisma.visits.delete({
+        where: { id: targetId }
+      })
     }
   }
 
