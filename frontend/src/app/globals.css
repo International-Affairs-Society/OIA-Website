@@ -23,6 +23,8 @@
   --font-sans: var(--font-space-grotesk);
   --font-display: var(--font-space-grotesk);
   --font-roboto: var(--font-roboto-condensed);
+  --font-boska: var(--font-boska), serif;
+  --font-zodiak: var(--font-zodiak), serif;
 }
 
 /* ===== GLOBAL RESETS ===== */

@@ -300,7 +300,7 @@ export default function CreateVisitPage() {
 
       <AdminPageHeader title="Record a New Visit" />
 
-      <div style={{ border: "1px solid #b5bda0", padding: "2rem", backgroundColor: "#f5f0e8", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
+      <div className="admin-form-container" style={{ border: "1px solid #b5bda0", padding: "2rem", backgroundColor: "#f5f0e8", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
         <form onSubmit={(e) => { e.preventDefault(); setShowConfirmDialog(true); }}>
           
           {/* Basic Info */}
@@ -351,7 +351,7 @@ export default function CreateVisitPage() {
             </div>
           </div>
           
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+          <div className="admin-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
             <FormField label="University Visited" required>
               <input type="text" placeholder="e.g. Harvard University" value={university} onChange={e => setUniversity(e.target.value)} required />
             </FormField>
@@ -432,7 +432,7 @@ export default function CreateVisitPage() {
                     <Trash2 size={16} />
                   </button>
                 )}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                <div className="admin-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                   <FormField label="Full Name"><input type="text" value={del.name} onChange={e => updateDelegation(index, 'name', e.target.value)} /></FormField>
                   <FormField label="Designation"><input type="text" value={del.designation} onChange={e => updateDelegation(index, 'designation', e.target.value)} /></FormField>
                   <FormField label="Email"><input type="email" value={del.email} onChange={e => updateDelegation(index, 'email', e.target.value)} /></FormField>
@@ -512,7 +512,7 @@ export default function CreateVisitPage() {
                     <Trash2 size={16} />
                   </button>
                 )}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                <div className="admin-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                   <FormField label="Full Name"><input type="text" value={poc.name} onChange={e => updatePOC(index, 'name', e.target.value)} /></FormField>
                   <FormField label="Designation"><input type="text" value={poc.designation} onChange={e => updatePOC(index, 'designation', e.target.value)} /></FormField>
                   <FormField label="Email"><input type="email" value={poc.email} onChange={e => updatePOC(index, 'email', e.target.value)} /></FormField>

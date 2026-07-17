@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { AdminPageHeader, AdminTable, ActionButtons, FilterBar } from "@/app/admin/components";
+import { AdminPageHeader, AdminTable, ActionButtons, FilterBar, CustomDropdown } from "@/app/admin/components";
 import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 
@@ -241,22 +241,24 @@ export default function UsersPage() {
           alignItems: "center"
         }}>
           <div style={{
-            width: "50%",
-            minWidth: "600px",
+            width: "90%",
+            maxWidth: "600px",
             backgroundColor: "#f5f0e8",
             boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
-            padding: "40px",
+            padding: "32px",
             display: "flex",
             flexDirection: "column",
             borderTop: "8px solid #b5bda0",
-            borderRadius: "8px"
+            borderRadius: "8px",
+            maxHeight: "90vh",
+            overflowY: "auto"
           }}>
             <h2 style={{ color: "#1a1a1a", fontSize: "24px", fontWeight: 600, margin: "0 0 24px 0", borderBottom: "1px solid #b5bda0", paddingBottom: "12px" }}>
               {modalMode === "add" ? "Add a new role" : "Update user role"}
             </h2>
 
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "20px" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+              <div className="admin-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
                 <div>
                   <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#6b6b6b", marginBottom: "6px" }}>NAME</label>
                   <input 
@@ -302,16 +304,16 @@ export default function UsersPage() {
 
                 <div>
                   <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#6b6b6b", marginBottom: "6px" }}>SELECT ROLE</label>
-                  <select 
+                  <CustomDropdown
                     value={newRoleData.role}
-                    onChange={(e) => setNewRoleData({...newRoleData, role: e.target.value})}
-                    style={{ width: "100%", padding: "10px", border: "1px solid #b5bda0", backgroundColor: "#fff", outline: "none", cursor: "pointer", borderRadius: "4px" }}
-                  >
-                    <option value="admin">Admin</option>
-                    <option value="super_admin">Super Admin</option>
-                    <option value="viewer">Viewer</option>
-                    <option value="editor">Editor</option>
-                  </select>
+                    onChange={(val) => setNewRoleData({...newRoleData, role: val})}
+                    options={[
+                      { label: "Admin", value: "admin" },
+                      { label: "Super Admin", value: "super_admin" },
+                      { label: "Viewer", value: "viewer" },
+                      { label: "Editor", value: "editor" }
+                    ]}
+                  />
                 </div>
               </div>
 

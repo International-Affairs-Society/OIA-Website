@@ -61,7 +61,7 @@ export default function FilterBar({
         />
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "12px", height: "100%" }}>
+      <div className="admin-filter-right" style={{ display: "flex", alignItems: "center", gap: "12px", height: "100%" }}>
         {filters.map((filter) => (
           <CustomDropdown
             key={filter.key}

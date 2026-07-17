@@ -14,25 +14,31 @@ export default function TeamFooter() {
     
     if (!footerRef.current) return;
 
-    const elements = gsap.utils.toArray(".animate-footer", footerRef.current);
-    
-    gsap.fromTo(
-      elements,
-      { opacity: 0, y: 50 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        delay: 0.5,
-        stagger: 0.05,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: footerRef.current,
-          start: "top 85%",
-          toggleActions: "play none none reverse"
-        },
-      }
-    );
+    let mm = gsap.matchMedia();
+
+    mm.add("(min-width: 768px)", () => {
+      const elements = gsap.utils.toArray(".animate-footer", footerRef.current);
+      
+      gsap.fromTo(
+        elements,
+        { opacity: 0, y: 50 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          delay: 0.5,
+          stagger: 0.05,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: footerRef.current,
+            start: "top 85%",
+            toggleActions: "play none none reverse"
+          },
+        }
+      );
+    });
+
+    return () => mm.revert();
   }, []);
 
   return (
@@ -63,8 +69,8 @@ export default function TeamFooter() {
         <div className="flex flex-col md:flex-row justify-between gap-12 md:gap-8 mb-20 md:mb-28">
 
           {/* Left — Stay up to date */}
-          <div className="flex flex-col gap-4">
-            <p className="animate-footer font-sans text-[0.8rem] text-[#D12027] font-medium tracking-widest uppercase">
+          <div className="flex flex-col items-center md:items-start gap-4">
+            <p className="animate-footer font-sans text-[0.8rem] text-[#D12027] font-medium tracking-widest uppercase text-center md:text-left">
               Stay up to date
             </p>
             <div className="flex items-center gap-4">
@@ -84,8 +90,8 @@ export default function TeamFooter() {
           </div>
 
           {/* Right — Write to */}
-          <div className="flex flex-col gap-3">
-            <p className="animate-footer font-sans text-[0.8rem] text-[#D12027] font-medium tracking-widest uppercase">
+          <div className="flex flex-col items-center md:items-start gap-3">
+            <p className="animate-footer font-sans text-[0.8rem] text-[#D12027] font-medium tracking-widest uppercase text-center md:text-left">
               Write to
             </p>
             <a
@@ -101,7 +107,7 @@ export default function TeamFooter() {
         <div className="flex flex-col md:flex-row justify-between gap-12 md:gap-8 mb-20 md:mb-28">
 
           {/* Left — Copyright / OIA Info */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col items-center md:items-start gap-2 text-center md:text-left">
             <p className="animate-footer font-sans text-[0.8rem] text-[#D12027] font-semibold tracking-widest uppercase mb-2">
               Office of International Affairs
             </p>
@@ -128,7 +134,7 @@ export default function TeamFooter() {
           </div>
 
           {/* Right — Developers */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col items-center md:items-start gap-2 text-center md:text-left">
             <button 
               onClick={() => setShowDevs(!showDevs)}
               className="animate-footer text-left focus:outline-none flex items-center gap-2"

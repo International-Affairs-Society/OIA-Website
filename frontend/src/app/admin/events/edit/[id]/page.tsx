@@ -258,7 +258,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
 
       <AdminPageHeader title={`Edit ${eventType === "past" ? "Past" : "Upcoming"} Event`} />
 
-      <div style={{ border: "1px solid #b5bda0", padding: "2rem", backgroundColor: "#f5f0e8", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
+      <div className="admin-form-container" style={{ border: "1px solid #b5bda0", padding: "2rem", backgroundColor: "#f5f0e8", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
         <form onSubmit={(e) => { e.preventDefault(); setShowConfirm(true); }}>
           <FormField label="Title" required>
             <input type="text" placeholder="Enter title" value={title} onChange={(e) => setTitle(e.target.value)} required />
@@ -367,7 +367,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                     </button>
                   </div>
                 ) : (
-                  <div style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
+                  <div className="admin-upload-box" style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
                     <input
                       type="file"
                       accept="image/png,image/jpeg,image/webp"
@@ -391,7 +391,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
             <>
               <div style={{ marginTop: "1.5rem" }}>
                 <FormField label="Event Gallery (Images / Documents)">
-                  <div style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
+                  <div className="admin-upload-box" style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
                     <input
                       type="file"
                       accept="image/png,image/jpeg,image/webp"
@@ -484,7 +484,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                           </button>
                         </div>
                       ) : (
-                        <div style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
+                        <div className="admin-upload-box" style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
                           <input
                             type="file"
                             accept="image/png,image/jpeg,image/webp"

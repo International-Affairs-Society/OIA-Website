@@ -73,6 +73,7 @@ const timelineEvents = [
 export default function TimelineSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const pathRef = useRef<SVGPathElement>(null);
+  const mobileLineRef = useRef<HTMLDivElement>(null);
   const eventsRef = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
@@ -99,6 +100,23 @@ export default function TimelineSection() {
             scrub: 2,
           },
         });
+
+        if (mobileLineRef.current) {
+          gsap.fromTo(
+            mobileLineRef.current,
+            { scaleY: 0 },
+            {
+              scaleY: 1,
+              ease: "none",
+              scrollTrigger: {
+                trigger: sectionRef.current,
+                start: "top 50%",
+                end: "bottom 50%",
+                scrub: 1,
+              },
+            }
+          );
+        }
 
         // Animate each event entry
         eventsRef.current.forEach((el, i) => {
@@ -180,6 +198,70 @@ export default function TimelineSection() {
         padding: "0 0 120px 0",
       }}
     >
+      <style>{`
+        @media (max-width: 768px) {
+          .timeline-svg {
+            display: none !important;
+          }
+          .timeline-container {
+            min-height: auto !important;
+            padding: 0 20px !important;
+          }
+          .timeline-mobile-group {
+            position: relative !important;
+            border-left: none !important;
+            padding-left: 24px !important;
+            padding-bottom: 80px !important;
+            margin-bottom: 0 !important;
+            margin-left: 0 !important;
+          }
+          .timeline-mobile-group::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #D12027;
+            box-shadow: 0 0 10px rgba(209,32,39,0.8);
+            z-index: 3;
+          }
+          .timeline-event-wrapper {
+            position: relative !important;
+            top: auto !important;
+            left: 0 !important;
+            right: auto !important;
+            width: 100% !important;
+            transform: none !important;
+          }
+          .timeline-phase {
+            position: relative !important;
+            top: auto !important;
+            left: 0 !important;
+            right: auto !important;
+            text-align: left !important;
+            margin-bottom: 10px !important;
+          }
+          .timeline-phase span {
+            font-size: 2.5rem !important;
+          }
+          .timeline-mobile-line-bg, .timeline-mobile-line-active {
+            display: block !important;
+          }
+          .timeline-image {
+            position: relative !important;
+            top: auto !important;
+            left: 0 !important;
+            right: auto !important;
+            width: 100% !important;
+            height: auto !important;
+            aspect-ratio: 16/9 !important;
+            margin-top: 24px !important;
+            border-radius: 4px !important;
+          }
+        }
+      `}</style>
       {/* ── Top Fade Overlay to blend the grid ── */}
       <div 
         style={{ 
@@ -220,6 +302,7 @@ export default function TimelineSection() {
 
       {/* ── Timeline Container ── */}
       <div
+        className="timeline-container"
         style={{
           position: "relative",
           maxWidth: "1200px",
@@ -227,8 +310,26 @@ export default function TimelineSection() {
           minHeight: `${svgH}px`,
         }}
       >
+        <style>{`
+          .timeline-mobile-line-bg, .timeline-mobile-line-active {
+            display: none;
+          }
+        `}</style>
+        
+        {/* Mobile vertical line (hidden on desktop) */}
+        <div 
+          className="timeline-mobile-line-bg"
+          style={{ position: "absolute", top: "0", bottom: "0", left: "19px", width: "2px", backgroundColor: "rgba(255,255,255,0.08)", zIndex: 1 }}
+        />
+        <div 
+          ref={mobileLineRef}
+          className="timeline-mobile-line-active"
+          style={{ position: "absolute", top: "0", bottom: "0", left: "19px", width: "2px", backgroundColor: "#D12027", zIndex: 2, transformOrigin: "top", transform: "scaleY(0)" }}
+        />
+
         {/* SVG wavy line */}
         <svg
+          className="timeline-svg"
           viewBox={`0 0 ${svgW} ${svgH}`}
           style={{
             position: "absolute",
@@ -283,15 +384,16 @@ export default function TimelineSection() {
           ))}
         </svg>
 
-        {/* ── Event Cards ── */}
+        {/* ── Event Cards and Images ── */}
         {timelineEvents.map((event, i) => {
           const node = nodePositions[i];
           const isRight = node.side === "right";
 
           return (
-            <div
-              key={i}
-              ref={(el) => { eventsRef.current[i] = el; }}
+            <div key={i} className="timeline-mobile-group">
+              <div
+                ref={(el) => { eventsRef.current[i] = el; }}
+              className="timeline-event-wrapper"
               style={{
                 position: "absolute",
                 top: `${node.y + 90}px`,
@@ -304,6 +406,7 @@ export default function TimelineSection() {
             >
               {/* Phase label */}
               <div
+                className="timeline-phase"
                 style={{
                   position: "absolute",
                   top: "-100px",
@@ -386,42 +489,35 @@ export default function TimelineSection() {
               </p>
 
 
-            </div>
-          );
-        })}
+              </div>
 
-        {/* ── Floating images on the opposite side of text ── */}
-        {timelineEvents.map((event, i) => {
-          const node = nodePositions[i];
-          const isRight = node.side === "right";
-
-          // Don't render an empty box if there's no image
-          if (!event.image) return null;
-
-          return (
-            <div
-              key={`img-${i}`}
-              style={{
-                position: "absolute",
-                top: `${node.y - 30}px`,
-                left: isRight ? "5%" : undefined,
-                right: isRight ? undefined : "5%",
-                width: "354px",
-                height: "253px",
-                borderRadius: "0px",
-                overflow: "hidden",
-                boxShadow: "0 40px 80px rgba(0,0,0,1)",
-                border: "1px solid rgba(255,255,255,0.15)",
-                zIndex: 2,
-              }}
-            >
-              <Image
-                src={event.image}
-                alt={event.imageAlt}
-                fill
-                sizes="354px"
-                style={{ objectFit: "cover" }}
-              />
+              {/* ── Floating image on the opposite side of text ── */}
+              {event.image && (
+                <div
+                  className="timeline-image"
+                  style={{
+                    position: "absolute",
+                    top: `${node.y - 30}px`,
+                    left: isRight ? "5%" : undefined,
+                    right: isRight ? undefined : "5%",
+                    width: "354px",
+                    height: "253px",
+                    borderRadius: "0px",
+                    overflow: "hidden",
+                    boxShadow: "0 40px 80px rgba(0,0,0,1)",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    zIndex: 2,
+                  }}
+                >
+                  <Image
+                    src={event.image}
+                    alt={event.imageAlt}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 354px"
+                    style={{ objectFit: "cover" }}
+                  />
+                </div>
+              )}
             </div>
           );
         })}

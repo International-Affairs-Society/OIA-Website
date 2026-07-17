@@ -63,7 +63,7 @@ export default function HeroSection() {
         {/* Heading — top center */}
         <h1
           style={{
-            fontFamily: '"TanPearl", serif',
+            fontFamily: "var(--font-tan-pearl), serif",
             fontSize: "clamp(1.75rem, 6.2vw, 5.5rem)",
             fontWeight: 400,
             lineHeight: 1.4,

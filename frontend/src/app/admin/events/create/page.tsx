@@ -19,7 +19,7 @@ export default function CreateEventPage() {
 
       <AdminPageHeader title="Create Event" />
 
-      <div style={{ border: "1px solid #b5bda0", padding: "2rem", backgroundColor: "#f5f0e8", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
+      <div className="admin-form-container" style={{ border: "1px solid #b5bda0", padding: "2rem", backgroundColor: "#f5f0e8", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
         <form onSubmit={(e) => { e.preventDefault(); router.push("/admin/events"); }}>
           <FormField label="Title" required>
             <input type="text" placeholder="Enter here" />
@@ -50,7 +50,7 @@ export default function CreateEventPage() {
 
           <div style={{ marginTop: "1.5rem" }}>
             <FormField label="Add Media (Images/Documents)">
-              <div style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
+              <div className="admin-upload-box" style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
                 <input type="file" multiple id="media-upload" style={{ display: "none" }} />
                 <label htmlFor="media-upload" style={{ cursor: "pointer", color: "#1a1a1a", fontSize: "14px", fontWeight: 500, textDecoration: "underline" }}>
                   Click to upload media files

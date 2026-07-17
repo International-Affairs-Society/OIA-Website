@@ -45,6 +45,12 @@ const atavian = localFont({
   display: "swap",
 });
 
+const tanPearl = localFont({
+  src: "../../public/fonts/TAN-Pearl-Regular.otf",
+  variable: "--font-tan-pearl",
+  display: "swap",
+});
+
 const gmarketSans = localFont({
   src: [
     { path: "../../public/fonts/GmarketSansLight.otf", weight: "300" },
@@ -54,6 +60,21 @@ const gmarketSans = localFont({
   variable: "--font-gmarket-sans",
   display: "swap",
 });
+
+const boska = localFont({
+  src: [
+    { path: "../../public/fonts/Boska-Regular.ttf", weight: "400" },
+    { path: "../../public/fonts/Boska-Bold.ttf", weight: "700" },
+  ],
+  variable: "--font-boska",
+  display: "swap",
+});
+
+const zodiak = localFont({
+  src: "../../public/fonts/Zodiak-Regular.otf",
+  variable: "--font-zodiak",
+  display: "swap",
+}); // Force HMR
 
 export const metadata: Metadata = {
   title: "Office of International Affairs | Bennett University",
@@ -77,7 +98,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${outfit.variable} ${instrumentSerif.variable} ${spaceGrotesk.variable} ${libreBodoni.variable} ${robotoCondensed.variable} ${atavian.variable} ${gmarketSans.variable} antialiased`}
+      className={`${outfit.variable} ${instrumentSerif.variable} ${spaceGrotesk.variable} ${libreBodoni.variable} ${robotoCondensed.variable} ${atavian.variable} ${tanPearl.variable} ${gmarketSans.variable} ${boska.variable} ${zodiak.variable} antialiased`}
     >
       <head>
         {/* DNS prefetch for external resources — saves 100-200ms of DNS lookup */}

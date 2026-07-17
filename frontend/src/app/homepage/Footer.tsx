@@ -15,25 +15,30 @@ export default function Footer() {
 
     if (!footerRef.current) return;
 
-    const elements = gsap.utils.toArray(".animate-footer");
+    let mm = gsap.matchMedia();
 
-    gsap.fromTo(
-      elements,
-      { opacity: 0, y: 50 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        delay: 0.5,
-        stagger: 0.05,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: footerRef.current,
-          start: "top 85%",
-          toggleActions: "play none none reverse"
-        },
-      }
-    );
+    mm.add("(min-width: 768px)", () => {
+      const elements = gsap.utils.toArray(".animate-footer");
+      gsap.fromTo(
+        elements,
+        { opacity: 0, y: 50 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          delay: 0.5,
+          stagger: 0.05,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: footerRef.current,
+            start: "top 85%",
+            toggleActions: "play none none reverse"
+          },
+        }
+      );
+    });
+
+    return () => mm.revert();
   }, []);
 
   return (
@@ -54,14 +59,14 @@ export default function Footer() {
         <div style={{ height: "12vh", flexShrink: 0, width: "100%" }} aria-hidden="true" />
 
         {/* ── Top Row: Stay up to date + Write to ── */}
-        <div className="flex flex-col md:flex-row justify-between gap-12 md:gap-8 mb-20 md:mb-28">
+        <div className="flex flex-col md:flex-row justify-between gap-10 md:gap-8 mb-14 md:mb-28">
 
           {/* Left — Stay up to date */}
-          <div className="flex flex-col gap-4">
-            <p className="animate-footer font-sans text-[0.8rem] text-[#D12027] font-medium tracking-widest uppercase">
+          <div className="flex flex-col items-center md:items-start gap-4">
+            <p className="animate-footer font-sans text-[0.8rem] text-[#D12027] font-medium tracking-widest uppercase text-center md:text-left">
               Stay up to date
             </p>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 justify-center md:justify-start">
               {/* LinkedIn */}
               <a
                 href="https://www.linkedin.com/company/oia-bennettuniversity/"
@@ -78,13 +83,13 @@ export default function Footer() {
           </div>
 
           {/* Right — Write to */}
-          <div className="flex flex-col gap-3">
-            <p className="animate-footer font-sans text-[0.8rem] text-[#D12027] font-medium tracking-widest uppercase">
+          <div className="flex flex-col items-center md:items-start gap-3">
+            <p className="animate-footer font-sans text-[0.8rem] text-[#D12027] font-medium tracking-widest uppercase text-center md:text-left">
               Write to
             </p>
             <a
               href="mailto:oia@bennett.edu.in"
-              className="animate-footer font-sans text-2xl md:text-3xl lg:text-4xl font-medium text-foreground hover:text-[#D12027] transition-colors duration-300 tracking-tight"
+              className="animate-footer font-sans text-2xl md:text-3xl lg:text-4xl font-medium text-foreground hover:text-[#D12027] transition-colors duration-300 tracking-tight text-center md:text-left"
             >
               oia@bennett.edu.in
             </a>
@@ -92,10 +97,10 @@ export default function Footer() {
         </div>
 
         {/* ── Middle Row: Copyright + Developers ── */}
-        <div className="flex flex-col md:flex-row justify-between gap-12 md:gap-8 mb-20 md:mb-28">
+        <div className="flex flex-col md:flex-row justify-between gap-12 md:gap-8 mb-12 md:mb-28">
 
           {/* Left — Copyright / OIA Info */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col items-center md:items-start gap-2 text-center md:text-left">
             <p className="animate-footer font-sans text-[0.8rem] text-[#D12027] font-semibold tracking-widest uppercase mb-2">
               Office of International Affairs
             </p>
@@ -122,17 +127,17 @@ export default function Footer() {
           </div>
 
           {/* Right — Developers */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col items-center md:items-start gap-2 text-center md:text-left">
             <button
               onClick={() => setShowDevs(!showDevs)}
-              className="animate-footer text-left focus:outline-none flex items-center gap-2"
+              className="animate-footer focus:outline-none flex items-center justify-center md:justify-start gap-2"
             >
               <p className="font-sans text-[0.8rem] text-[#D12027] font-semibold tracking-widest uppercase cursor-pointer hover:opacity-80 transition-opacity">
                 Developers
               </p>
             </button>
             <div
-              className={`flex flex-col gap-2 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDevs ? 'max-h-[200px] opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'}`}
+              className={`flex flex-col items-center md:items-start gap-2 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDevs ? 'max-h-[200px] opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'}`}
             >
               <p className="font-sans text-sm text-foreground/70 leading-relaxed max-w-xs">
                 This website is designed

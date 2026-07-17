@@ -121,8 +121,10 @@ export default function OtherProgramsPage() {
 
       {/* Hero Section — full viewport height, heading shifted up by 10vh */}
       <section className="relative z-30 flex flex-col items-center justify-center min-h-screen" style={{ transform: "translateY(-10vh)" }}>
-        {/* World Map background behind heading */}
-        <BackgroundMap />
+        {/* World Map background behind heading (Hidden on mobile) */}
+        <div className="hidden md:block">
+          <BackgroundMap />
+        </div>
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -190,7 +192,7 @@ export default function OtherProgramsPage() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(420px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 420px), 1fr))",
             gap: "80px 40px",
           }}
         >

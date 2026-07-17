@@ -507,11 +507,11 @@ export default function CreateProgramPage() {
 
       <AdminPageHeader title="Create Program" />
 
-      <div style={{ border: "1px solid #b5bda0", padding: "2rem", backgroundColor: "#f5f0e8", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
+      <div className="admin-form-container" style={{ border: "1px solid #b5bda0", padding: "2rem", backgroundColor: "#f5f0e8", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
         <form onSubmit={(e) => { e.preventDefault(); setShowConfirm(true); }}>
           {/* Basic Details */}
           <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#1a1a1a", marginBottom: "1rem", borderBottom: "1px solid rgba(181, 189, 160, 0.5)", paddingBottom: "0.5rem" }}>Basic Details</h3>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+          <div className="admin-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
             <FormField label="Program Name" required>
               <input type="text" placeholder="e.g. HSE Summer School" value={name} onChange={(e) => setName(e.target.value)} required style={{ backgroundColor: "transparent", border: "1px solid #b5bda0", padding: "8px 12px", borderRadius: "4px", width: "100%", fontSize: "14px" }} />
             </FormField>
@@ -520,7 +520,7 @@ export default function CreateProgramPage() {
             </FormField>
           </div>
           
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem", marginTop: "1rem" }}>
+          <div className="admin-grid-3" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem", marginTop: "1rem" }}>
             <FormField label="Program Type" required>
               <CustomDropdown
                 value={programType}
@@ -610,7 +610,7 @@ export default function CreateProgramPage() {
                       <Trash2 size={16} />
                     </button>
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                  <div className="admin-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                     <FormField label="Name">
                       <input type="text" value={poc.name} onChange={(e) => updatePOC(index, 'name', e.target.value)} placeholder="Enter name" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0" }} />
                     </FormField>
@@ -630,7 +630,7 @@ export default function CreateProgramPage() {
           </div>
 
           {/* Dates */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem", marginTop: "1rem" }}>
+          <div className="admin-grid-3" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem", marginTop: "1rem" }}>
             <FormField label="Program Start Date" required>
               {isComingSoon ? (
                 <input key="coming-soon-start" type="text" defaultValue="Coming Soon" disabled style={{ backgroundColor: "rgba(181, 189, 160, 0.2)", color: "#6b6b6b", border: "1px solid #b5bda0", padding: "10px", borderRadius: "4px", width: "100%", outline: "none", cursor: "not-allowed" }} />
@@ -669,7 +669,7 @@ export default function CreateProgramPage() {
                   </button>
                 </div>
               ) : (
-                <div style={{ border: "1px dashed #b5bda0", borderRadius: "4px", padding: "2rem", textAlign: "center", backgroundColor: "rgba(255,255,255,0.4)" }}>
+                <div className="admin-upload-box" style={{ border: "1px dashed #b5bda0", borderRadius: "4px", padding: "2rem", textAlign: "center", backgroundColor: "rgba(255,255,255,0.4)" }}>
                   <input
                     type="file"
                     accept="image/*"
@@ -694,7 +694,7 @@ export default function CreateProgramPage() {
           {/* Gallery Images */}
           <div style={{ marginTop: "1.5rem" }}>
             <FormField label="Program Images (Gallery)">
-              <div style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
+              <div className="admin-upload-box" style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
                 <input
                   type="file"
                   multiple

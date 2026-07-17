@@ -22,7 +22,7 @@ export default function ProgramCard({ program }: ProgramCardProps) {
         {/* Text Container */}
         <div className="flex flex-col gap-1">
           <div className="flex justify-between items-baseline">
-            <h3 style={{ fontFamily: "var(--font-outfit)" }} className="text-xl font-medium text-[#1a1a1a]">
+            <h3 style={{ fontFamily: "var(--font-outfit)" }} className="text-xl font-medium text-[#1a1a1a] line-clamp-2 leading-tight">
               {program.title}
             </h3>
             <span style={{ fontFamily: "var(--font-outfit)" }} className="text-sm text-[#1a1a1a] shrink-0 ml-4">

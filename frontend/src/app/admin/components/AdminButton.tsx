@@ -94,6 +94,13 @@ export default function AdminButton({ children, className = "", ...props }: Admi
         .btn-12:hover:before {
           --progress: 0;
         }
+
+        @media (max-width: 768px) {
+          .btn-12 {
+            font-size: 11.5px;
+            padding: 0.5rem 1.6rem;
+          }
+        }
       `}</style>
       <button className={`btn-12 ${className}`} {...props}>
         <span>{children}</span>

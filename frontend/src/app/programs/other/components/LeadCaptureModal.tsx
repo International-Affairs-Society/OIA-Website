@@ -182,7 +182,7 @@ export default function LeadCaptureModal() {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              padding: "48px 56px 24px 56px",
+              padding: "clamp(32px, 6vw, 48px) clamp(24px, 5vw, 56px) clamp(16px, 4vw, 24px)",
             }}
           >
             <motion.div
@@ -235,7 +235,7 @@ export default function LeadCaptureModal() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} style={{ padding: "8px 56px 48px 56px" }}>
+          <form onSubmit={handleSubmit} style={{ padding: "8px clamp(24px, 5vw, 56px) clamp(32px, 6vw, 48px)" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               {/* Name */}
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>

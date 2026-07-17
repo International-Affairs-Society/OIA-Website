@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { 
   PieChart, Calendar, Layers, Users, FileText, 
   Handshake, MapPin, GraduationCap, UserCog, 
-  Star, Send, Archive, History 
+  Star, Send, Archive, History, Home
 } from "lucide-react";
 import Navbar from "@/app/homepage/Navbar";
 import { useAuth } from "@/app/admin/roles/AuthContext";
@@ -47,6 +47,7 @@ export default function AdminLayout({
   }, [pathname, allowedPaths, router]);
 
   const allNavItems = [
+    { label: "Main Website", path: "/", icon: Home },
     { label: "Analytics", path: "/admin", icon: PieChart },
     { label: "Events", path: "/admin/events", icon: Calendar },
     { label: "Programs", path: "/admin/programs", icon: Layers },
@@ -63,7 +64,10 @@ export default function AdminLayout({
   ];
 
   // Filter nav items based on role permissions
-  const navItems = allNavItems.filter((item) => allowedPaths.includes(item.path));
+  const navItems = allNavItems.filter((item) => {
+    if (item.path === "/") return isMobile;
+    return allowedPaths.includes(item.path);
+  });
 
   const sidebarWidth = isMobile ? "260px" : collapsed ? "56px" : "220px";
 
@@ -78,7 +82,7 @@ export default function AdminLayout({
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label="Toggle menu"
             style={{
-              position: "absolute", top: "50%", left: 16, transform: "translateY(-50%)",
+              position: "absolute", top: "50%", right: 16, transform: "translateY(-50%)",
               background: "none", border: "none", cursor: "pointer", zIndex: 1100,
               padding: 8, display: "flex", flexDirection: "column", gap: 4,
             }}
@@ -235,6 +239,65 @@ export default function AdminLayout({
             transition: "margin-left 0.3s ease",
           }}
         >
+          <style>{`
+            @media (max-width: 768px) {
+              .admin-form-container {
+                padding: 1rem !important;
+              }
+              .admin-grid-1, .admin-grid-2, .admin-grid-3 {
+                grid-template-columns: 1fr !important;
+              }
+              .admin-upload-box {
+                padding: 1rem !important;
+              }
+              .admin-filter-right {
+                flex-wrap: wrap !important;
+              }
+              .admin-bulk-actions {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 16px !important;
+              }
+              .admin-bulk-actions-right {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 16px !important;
+                justify-content: flex-start !important;
+              }
+              .admin-bulk-actions .desktop-divider {
+                display: none !important;
+              }
+              .admin-bulk-actions-right > div {
+                width: 100% !important;
+              }
+              .admin-bulk-actions-right .status-update-row {
+                flex-direction: column !important;
+              }
+              .audit-card-content {
+                flex-direction: column !important;
+                gap: 12px !important;
+                padding: 16px !important;
+              }
+              .audit-card-content > div {
+                width: 100% !important;
+                text-align: left !important;
+              }
+              .review-card {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 16px !important;
+              }
+              .review-card-left {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 8px !important;
+              }
+              .review-card-right {
+                width: 100% !important;
+                justify-content: space-between !important;
+              }
+            }
+          `}</style>
           {children}
         </main>
       </div>

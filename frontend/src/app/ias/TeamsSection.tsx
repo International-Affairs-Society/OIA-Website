@@ -95,6 +95,46 @@ export default function TeamsSection() {
         paddingBottom: "140px",
       }}
     >
+      <style>{`
+        @media (max-width: 768px) {
+          .team-hero-container {
+            flex-direction: column;
+            gap: 2rem !important;
+            padding-bottom: 60px !important;
+          }
+          .team-hero-label, .team-hero-desc {
+            text-align: center !important;
+            align-items: center !important;
+          }
+          .team-hero-desc p {
+            max-width: 100% !important;
+          }
+          .team-card-wrapper {
+            width: 42vw !important;
+            height: 56vw !important;
+          }
+          .team-card-inner {
+            width: 100% !important;
+            height: 100% !important;
+          }
+          .dept-heading-wrapper {
+            justify-content: center !important;
+            margin-bottom: 30px !important;
+          }
+          .dept-heading-bar, .dept-heading-line, .dept-heading-sub {
+            display: none !important;
+          }
+          .dept-heading-main {
+            color: #D12027 !important;
+            text-align: center !important;
+            letter-spacing: 0.15em !important;
+            font-size: 1.5rem !important;
+          }
+          .dept-cards-grid {
+            gap: 20px 15px !important;
+          }
+        }
+      `}</style>
       {/* ── Giant "TEAM" Header ── */}
       <div
         style={{
@@ -123,6 +163,7 @@ export default function TeamsSection() {
 
       {/* ── Hero: President card ── */}
       <div
+        className="team-hero-container"
         style={{
           position: "relative",
           zIndex: 10,
@@ -136,6 +177,7 @@ export default function TeamsSection() {
       >
         {/* Left label */}
         <div
+          className="team-hero-label"
           style={{
             flex: "1 1 260px",
             textAlign: "right",
@@ -251,7 +293,7 @@ export default function TeamsSection() {
         </div>
 
         {/* Right text */}
-        <div style={{ flex: "1 1 260px", textAlign: "left" }}>
+        <div className="team-hero-desc" style={{ flex: "1 1 260px", textAlign: "left" }}>
           <p
             style={{
               maxWidth: "340px",
@@ -282,6 +324,7 @@ export default function TeamsSection() {
           <div key={di} style={{ marginBottom: "100px" }}>
             {/* Section heading */}
             <div
+              className="dept-heading-wrapper"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -291,6 +334,7 @@ export default function TeamsSection() {
             >
               {/* Red accent bar */}
               <div
+                className="dept-heading-bar"
                 style={{
                   width: "5px",
                   height: "48px",
@@ -301,6 +345,7 @@ export default function TeamsSection() {
               />
               <div>
                 <p
+                  className="dept-heading-sub"
                   style={{
                     margin: 0,
                     fontSize: "11px",
@@ -313,6 +358,7 @@ export default function TeamsSection() {
                   IAS Department
                 </p>
                 <h3
+                  className="dept-heading-main"
                   style={{
                     margin: 0,
                     fontSize: "clamp(1.6rem, 3vw, 2.6rem)",
@@ -328,6 +374,7 @@ export default function TeamsSection() {
               </div>
               {/* Divider line */}
               <div
+                className="dept-heading-line"
                 style={{
                   flex: 1,
                   height: "1px",
@@ -340,6 +387,7 @@ export default function TeamsSection() {
 
             {/* Cards Grid */}
             <div
+              className="dept-cards-grid"
               style={{
                 display: "flex",
                 flexWrap: "wrap",

@@ -225,7 +225,7 @@ export default function AuditTrailPage() {
                 <div style={{ width: "8px", backgroundColor: colors.text }} />
 
                 {/* Content */}
-                <div style={{ padding: "20px", display: "flex", flex: 1, gap: "24px", alignItems: "flex-start" }}>
+                <div className="audit-card-content" style={{ padding: "20px", display: "flex", flex: 1, gap: "24px", alignItems: "flex-start" }}>
                   {/* Left Col: User & Role */}
                   <div style={{ width: "200px", flexShrink: 0 }}>
                     <div style={{ fontWeight: 600, fontSize: "15px", color: "#1a1a1a", marginBottom: "4px" }}>

@@ -21,6 +21,8 @@ export default function CreatePastEventPage() {
   const [date, setDate] = useState("");
   const [linkedMouId, setLinkedMouId] = useState("");
   const [showOnHomepage, setShowOnHomepage] = useState(false);
+  const [subtitle, setSubtitle] = useState("");
+  const [features, setFeatures] = useState<string[]>([""]);
   const [posterUrl, setPosterUrl] = useState("");
   const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
@@ -160,6 +162,8 @@ export default function CreatePastEventPage() {
         date,
         linkedMouId: linkedMouId || null,
         addToHomepage: showOnHomepage,
+        subtitle: showOnHomepage ? subtitle : undefined,
+        highlights: showOnHomepage ? features.filter(f => f.trim() !== "") : [],
         posterUrl: showOnHomepage ? (posterUrl || null) : null,
         galleryUrls,
         eventType: "past"
@@ -198,7 +202,7 @@ export default function CreatePastEventPage() {
 
       <AdminPageHeader title="Add Past Event" />
 
-      <div style={{ border: "1px solid #b5bda0", padding: "2rem", backgroundColor: "#f5f0e8", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
+      <div className="admin-form-container" style={{ border: "1px solid #b5bda0", padding: "2rem", backgroundColor: "#f5f0e8", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
         <form onSubmit={(e) => { e.preventDefault(); setShowConfirm(true); }}>
           <FormField label="Title" required>
             <input type="text" placeholder="Enter title" value={title} onChange={(e) => setTitle(e.target.value)} required />
@@ -243,7 +247,7 @@ export default function CreatePastEventPage() {
           {/* ── Media Upload (Multiple) ── */}
           <div style={{ marginTop: "1.5rem" }}>
             <FormField label="Event Gallery (Images / Documents)">
-              <div style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
+              <div className="admin-upload-box" style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
                 <input
                   type="file"
                   accept="image/png,image/jpeg,image/webp"
@@ -338,7 +342,72 @@ export default function CreatePastEventPage() {
 
             {/* ── Extended form when "Yes" is selected ── */}
             {showOnHomepage && (
-              <div style={{ marginTop: "1.25rem", paddingTop: "1.25rem", borderTop: "1px solid #b5bda0" }}>
+              <div style={{ marginTop: "1.25rem", paddingTop: "1.25rem", borderTop: "1px solid #b5bda0", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+                <FormField label="Homepage Card Subtitle" required>
+                  <input
+                    type="text"
+                    value={subtitle}
+                    onChange={(e) => setSubtitle(e.target.value)}
+                    placeholder="e.g. A celebration of international cultures"
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      border: "1px solid #b5bda0",
+                      backgroundColor: "#f5f0e8",
+                      color: "#1a1a1a",
+                      fontSize: "14px",
+                    }}
+                  />
+                </FormField>
+
+                <FormField label="Homepage Card Features (Max 4)" required>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                    {features.map((feature, idx) => (
+                      <div key={idx} style={{ display: "flex", gap: "10px" }}>
+                        <input
+                          type="text"
+                          value={feature}
+                          onChange={(e) => {
+                            const newFeatures = [...features];
+                            newFeatures[idx] = e.target.value;
+                            setFeatures(newFeatures);
+                          }}
+                          placeholder={`Feature ${idx + 1}`}
+                          style={{
+                            flex: 1,
+                            padding: "10px",
+                            border: "1px solid #b5bda0",
+                            backgroundColor: "#f5f0e8",
+                            color: "#1a1a1a",
+                            fontSize: "14px",
+                          }}
+                        />
+                        {features.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newFeatures = features.filter((_, i) => i !== idx);
+                              setFeatures(newFeatures);
+                            }}
+                            style={{ padding: "0 10px", backgroundColor: "#c0392b", color: "white", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: "bold" }}
+                          >
+                            X
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    {features.length < 4 && (
+                      <button
+                        type="button"
+                        onClick={() => setFeatures([...features, ""])}
+                        style={{ padding: "8px 12px", border: "1px dashed #b5bda0", background: "transparent", color: "#1a1a1a", cursor: "pointer", fontSize: "12px", alignSelf: "flex-start" }}
+                      >
+                        + Add Feature
+                      </button>
+                    )}
+                  </div>
+                </FormField>
+
                 <FormField label="Homepage Card Image">
                   {posterUrl ? (
                     <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-start" }}>
@@ -352,7 +421,7 @@ export default function CreatePastEventPage() {
                       </button>
                     </div>
                   ) : (
-                    <div style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
+                    <div className="admin-upload-box" style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
                       <input
                         type="file"
                         accept="image/png,image/jpeg,image/webp"
@@ -378,7 +447,7 @@ export default function CreatePastEventPage() {
                       color: "#5C6B3F",
                     }}
                   >
-                    <strong>⚠ Image Resolution Guide:</strong> The homepage events section displays cards at a <strong>3:4 portrait aspect ratio</strong>. For best results, upload an image with a resolution of <strong>600 × 800 px</strong>.
+                    <strong>⚠ Image Resolution Guide:</strong> The homepage events section displays cards at a <strong>~2.57:1 landscape aspect ratio</strong>. For best results, upload an image with a resolution of <strong>1280 × 500 px</strong>.
                   </div>
                 </FormField>
               </div>

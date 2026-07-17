@@ -147,7 +147,7 @@ export default function ArchivedPage() {
   });
 
   return (
-    <div style={{ padding: "32px 40px", maxWidth: "1400px", margin: "0 auto" }}>
+    <div style={{ width: "100%", maxWidth: "1400px", margin: "0 auto" }}>
       <AdminPageHeader
         title="Archived Items"
         subtitle="Manage deleted or archived Events, Programs, and MOUs. Only Super Admins can access this section."
@@ -176,7 +176,7 @@ export default function ArchivedPage() {
         backgroundColor: "transparent",
         borderRadius: "8px",
         border: "1px solid #b5bda0",
-        overflow: "hidden"
+        overflowX: "auto"
       }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>

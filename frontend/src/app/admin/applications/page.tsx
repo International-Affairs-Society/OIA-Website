@@ -447,7 +447,7 @@ export default function ApplicationsPage() {
       </div>
 
       {/* ── Bulk Actions Bar ── */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "24px", padding: "16px", backgroundColor: "#f0ebe1", border: "1px solid #b5bda0", borderRadius: "8px", marginBottom: "16px" }}>
+      <div className="admin-bulk-actions" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "24px", padding: "16px", backgroundColor: "#f0ebe1", border: "1px solid #b5bda0", borderRadius: "8px", marginBottom: "16px" }}>
         
         {/* Left: Select All */}
         <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0, marginTop: "8px" }}>
@@ -463,25 +463,25 @@ export default function ApplicationsPage() {
         </div>
 
         {/* Right: Comments & Status Update */}
-        <div style={{ display: "flex", alignItems: "flex-start", gap: "24px", flexWrap: "wrap", flex: 1, justifyContent: "flex-end" }}>
+        <div className="admin-bulk-actions-right" style={{ display: "flex", alignItems: "flex-start", gap: "24px", flexWrap: "wrap", flex: 1, justifyContent: "flex-end" }}>
           
           {/* Add Comment */}
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <button
               onClick={() => setShowAddCommentPopup(true)}
               disabled={selectedIds.size === 0}
-              style={{ padding: "10px 16px", backgroundColor: "#1a1a1a", color: "#fff", border: "none", borderRadius: "8px", cursor: selectedIds.size === 0 ? "not-allowed" : "pointer", fontWeight: 600, fontSize: "13px", opacity: selectedIds.size === 0 ? 0.5 : 1, transition: "opacity 0.2s" }}
+              style={{ padding: "10px 16px", backgroundColor: "#1a1a1a", color: "#fff", border: "none", borderRadius: "8px", cursor: selectedIds.size === 0 ? "not-allowed" : "pointer", fontWeight: 600, fontSize: "13px", opacity: selectedIds.size === 0 ? 0.5 : 1, transition: "opacity 0.2s", width: "100%" }}
             >
               Add Comment
             </button>
           </div>
 
-          <div style={{ width: "1px", height: "40px", backgroundColor: "#b5bda0" }} />
+          <div className="desktop-divider" style={{ width: "1px", height: "40px", backgroundColor: "#b5bda0" }} />
 
           {/* Update Status */}
-          <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <div style={{ minWidth: "260px" }}>
+          <div className="status-update-row" style={{ display: "flex", alignItems: "flex-start", gap: "8px", flex: 1 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1 }}>
+              <div style={{ minWidth: "0" }}>
                 <CustomDropdown
                   placeholder="Select Status..."
                   value={massStatus}

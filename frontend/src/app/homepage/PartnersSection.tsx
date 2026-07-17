@@ -143,16 +143,16 @@ export default function PartnersSection() {
               delay={50}
               animateBy="words"
               direction="bottom"
-              className="w-full text-center font-sans font-medium leading-[1.1] tracking-tight text-foreground text-3xl md:text-5xl lg:text-[4.5rem]"
+              className="w-full text-center font-zodiak font-medium leading-[1.1] tracking-tight text-foreground text-3xl md:text-5xl lg:text-[4.5rem]"
             />
             <BlurText
               text="universities"
               delay={50}
               animateBy="words"
               direction="bottom"
-              className="w-full text-center font-sans font-medium leading-[1.1] tracking-tight text-foreground text-3xl md:text-5xl lg:text-[4.5rem]"
+              className="w-full text-center font-zodiak font-medium leading-[1.1] tracking-tight text-foreground text-3xl md:text-5xl lg:text-[4.5rem]"
             />
-            <div className="w-full flex flex-row flex-wrap items-center justify-center gap-x-3 gap-y-1 text-3xl md:text-5xl lg:text-[4.5rem] font-sans font-medium leading-[1.1] tracking-tight">
+            <div className="w-full flex flex-row flex-wrap items-center justify-center gap-x-3 gap-y-1 text-3xl md:text-5xl lg:text-[4.5rem] font-zodiak font-medium leading-[1.1] tracking-tight">
               <BlurText
                 text="of"
                 delay={50}
@@ -165,7 +165,7 @@ export default function PartnersSection() {
                 delay={50}
                 animateBy="words"
                 direction="bottom"
-                className="text-[#D12027] font-semibold"
+                className="text-[#D12027]"
               />
               <BlurText
                 text="to reach"
@@ -180,7 +180,7 @@ export default function PartnersSection() {
               delay={50}
               animateBy="words"
               direction="bottom"
-              className="w-full text-center font-sans font-medium leading-[1.1] tracking-tight text-foreground text-3xl md:text-5xl lg:text-[4.5rem]"
+              className="w-full text-center font-zodiak font-medium leading-[1.1] tracking-tight text-foreground text-3xl md:text-5xl lg:text-[4.5rem]"
             />
           </div>
         </div>
@@ -217,17 +217,27 @@ export default function PartnersSection() {
           }}
         >
           <div
-            className="w-full"
+            className="w-full relative group"
             style={{
               maskImage: 'linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)',
               WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)'
             }}
           >
-            <WorldMapSVG />
+            {/* Clickable overlay for mobile only */}
+            <a 
+              href="/partners" 
+              className="absolute inset-0 z-10 block md:hidden cursor-pointer"
+              aria-label="Go to Partners page"
+            ></a>
+            
+            {/* The actual map */}
+            <div className="relative z-0 md:group-hover:opacity-100 transition-opacity">
+              <WorldMapSVG />
+            </div>
           </div>
 
           {/* ── Explore More Link (Under the Map) ── */}
-          <div className="w-full flex items-center justify-center mt-12 z-50">
+          <div className="w-full flex items-center justify-center mt-24 md:mt-12 z-50">
             <a
               href="/partners"
               className="group flex items-center gap-3 md:gap-4 text-foreground/70 hover:text-[#D12027] transition-colors duration-300 uppercase tracking-widest text-sm md:text-lg lg:text-xl font-semibold"

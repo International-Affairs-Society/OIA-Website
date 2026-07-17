@@ -315,7 +315,7 @@ export function UpcomingEventReadOnlyForm({ data, isEditable, onChange }: { data
       </div>
       <div style={{ marginTop: "1.5rem" }}>
         <FormField label="Event Poster / Cover Image">
-          <div style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
+          <div className="admin-upload-box" style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
             <p style={{ fontSize: "14px", fontWeight: 500, color: "#1a1a1a", textDecoration: "underline", margin: 0 }}>
               (Media attached in submission)
             </p>
@@ -359,7 +359,7 @@ export function PastEventReadOnlyForm({ data, isEditable, onChange }: { data: Re
       </div>
       <div style={{ marginTop: "1.5rem" }}>
         <FormField label="Event Gallery (Images / Documents)">
-          <div style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
+          <div className="admin-upload-box" style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
             <p style={{ fontSize: "14px", fontWeight: 500, color: "#1a1a1a", textDecoration: "underline", margin: 0 }}>
               (Media attached in submission)
             </p>
@@ -417,7 +417,7 @@ export function MOUReadOnlyForm({ data, isEditable, onChange }: { data: Record<s
       </FormField>
       <div style={{ marginTop: "1.5rem" }}>
         <FormField label="Add Media (Images/Documents)">
-          <div style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
+          <div className="admin-upload-box" style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
             <p style={{ fontSize: "14px", fontWeight: 500, color: "#1a1a1a", textDecoration: "underline", margin: 0 }}>
               (Media attached in submission)
             </p>
@@ -504,7 +504,7 @@ export function VisitReadOnlyForm({ data, isEditable, onChange }: { data: Record
 
       <div style={{ marginTop: "1.5rem" }}>
         <FormField label="Visit Report & Media">
-          <div style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
+          <div className="admin-upload-box" style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
             <p style={{ fontSize: "14px", fontWeight: 500, color: "#1a1a1a", textDecoration: "underline", margin: 0 }}>
               (Media attached in submission)
             </p>

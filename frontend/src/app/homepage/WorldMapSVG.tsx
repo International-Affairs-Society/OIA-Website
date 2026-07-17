@@ -281,8 +281,8 @@ const WorldMapSVG = memo(function WorldMapSVG() {
           className={`absolute z-50 pointer-events-none`}
           style={{
             left: tooltip.x,
-            top: tooltip.y - 12,
-            transform: "translate(-50%, -100%)",
+            top: tooltip.y + 16,
+            transform: "translate(-50%, 0)",
           }}
         >
           <div

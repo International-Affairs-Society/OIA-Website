@@ -1,18 +1,40 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import CircuitPattern from "./CircuitPattern";
-import Plasma from "./Plasma";
 import { useDeviceTierContext } from "@/hooks/useDeviceTier";
 
 gsap.registerPlugin(ScrollTrigger);
 
+import CardFlip from "@/components/ui/card-flip";
+
+// Mock data removed in favor of backend API
+// Fan layout: 5 visible positions + 2 off-screen positions for enter/exit
+const FAN_SLOTS: Record<number, { left: string; top: string; width: string; height: string; rotate: number; zIndex: number; opacity: number }> = {
+  [-2]: { left: "-30%", top: "30%", width: "22%", height: "40%", rotate: -10, zIndex: 0, opacity: 0 },  // off-screen left (entering)
+  [-1]: { left: "-15%", top: "25%", width: "24%", height: "45%", rotate: -5,  zIndex: 0, opacity: 0 },  // off-screen far left
+  0:    { left: "2%",   top: "22%", width: "26%", height: "50%", rotate: 0,   zIndex: 1, opacity: 1 },  // left outer
+  1:    { left: "14%",  top: "17%", width: "30%", height: "55%", rotate: -15, zIndex: 2, opacity: 1 },  // left inner
+  2:    { left: "27%",  top: "8%",  width: "46%", height: "70%", rotate: 0,   zIndex: 3, opacity: 1 },  // CENTER
+  3:    { left: "54%",  top: "17%", width: "30%", height: "55%", rotate: 15,  zIndex: 2, opacity: 1 },  // right inner
+  4:    { left: "72%",  top: "22%", width: "28%", height: "50%", rotate: 0,   zIndex: 1, opacity: 1 },  // right outer
+  5:    { left: "105%", top: "25%", width: "24%", height: "45%", rotate: 5,   zIndex: 0, opacity: 0 },  // off-screen far right
+  6:    { left: "120%", top: "30%", width: "22%", height: "40%", rotate: 10,  zIndex: 0, opacity: 0 },  // off-screen right (exiting)
+};
+
+// Get slot style, clamping to nearest off-screen slot if out of range
+function getSlotStyle(slotIndex: number) {
+  if (slotIndex <= -2) return FAN_SLOTS[-2];
+  if (slotIndex >= 6)  return FAN_SLOTS[6];
+  return FAN_SLOTS[slotIndex] || FAN_SLOTS[-2];
+}
+
 export default function EventsSection() {
   const sectionRef = useRef<HTMLElement>(null);
-  const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const fanRef = useRef<HTMLDivElement>(null);
   const deviceTier = useDeviceTierContext();
   const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -20,13 +42,26 @@ export default function EventsSection() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/events?eventType=past&addToHomepage=true`);
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+        const res = await fetch(`${API_URL}/api/v1/events`);
         if (res.ok) {
           const json = await res.json();
-          setEvents(json.data || []);
+          // Filter out archived, sort if necessary, take top 5
+          const validEvents = (json.data || [])
+            .filter((e: any) => !e.is_archived)
+            .slice(0, 5)
+            .map((e: any) => ({
+              id: e.id,
+              title: e.title,
+              subtitle: e.event_type === "upcoming" ? "Upcoming Event" : "Past Event",
+              description: e.description || "",
+              features: e.highlights || [],
+              posterUrl: e.poster_url || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=800&auto=format&fit=crop"
+            }));
+          setEvents(validEvents);
         }
       } catch (err) {
-        console.error("Failed to fetch homepage events:", err);
+        console.error("Failed to fetch events for homepage:", err);
       } finally {
         setIsLoading(false);
       }
@@ -34,12 +69,61 @@ export default function EventsSection() {
     fetchEvents();
   }, []);
 
+  // centerIndex: which event index is currently in the center slot (position 2)
+  const [centerIndex, setCenterIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Auto-rotate every 4 seconds
+  const startTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setCenterIndex((prev) => (prev + 1) % events.length);
+    }, 4000);
+  }, [events.length]);
+
+  useEffect(() => {
+    if (!isPaused && events.length > 0) {
+      startTimer();
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [isPaused, startTimer, events.length]);
+
+  const handleMouseEnter = () => {
+    setIsPaused(true);
+    if (timerRef.current) clearInterval(timerRef.current);
+  };
+  const handleMouseLeave = () => {
+    setIsPaused(false);
+  };
+
+  // Click a card → make it the center
+  const handleCardClick = (eventIndex: number) => {
+    if (eventIndex === centerIndex) return;
+    setCenterIndex(eventIndex);
+    if (timerRef.current) clearInterval(timerRef.current);
+    startTimer();
+  };
+
+  // For each event, calculate its slot position relative to the center
+  const getSlotForEvent = (eventIndex: number): number => {
+    let diff = eventIndex - centerIndex;
+    // Wrap around for circular behavior
+    const half = Math.floor(events.length / 2);
+    if (diff > half) diff -= events.length;
+    if (diff < -half) diff += events.length;
+    // diff = 0 → slot 2 (center), diff = -1 → slot 1, diff = 1 → slot 3, etc.
+    return diff + 2;
+  };
+
+  // GSAP scroll animations
   useEffect(() => {
     if (isLoading || events.length === 0) return;
 
     const ctx = gsap.context(() => {
-      // Select the heading elements and cards
-      const elementsToAnimate = gsap.utils.toArray(".animate-heading").concat(cardsRef.current.filter(Boolean));
+      const elementsToAnimate = gsap.utils.toArray(".animate-heading");
 
       if (elementsToAnimate.length > 0) {
         gsap.fromTo(
@@ -52,7 +136,27 @@ export default function EventsSection() {
             delay: 0.5,
             stagger: 0.15,
             ease: "power3.out",
-            force3D: true, // Force GPU hardware acceleration
+            force3D: true,
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: "top 75%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        );
+      }
+
+      if (fanRef.current) {
+        gsap.fromTo(
+          fanRef.current,
+          { opacity: 0, scale: 0.85 },
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 1.4,
+            delay: 0.8,
+            ease: "power3.out",
+            force3D: true,
             scrollTrigger: {
               trigger: sectionRef.current,
               start: "top 75%",
@@ -78,20 +182,6 @@ export default function EventsSection() {
       {/* ── Background Elements ── */}
       <CircuitPattern />
 
-      {/* Plasma Effect behind cards */}
-      {deviceTier !== "low" && (
-        <div className="absolute inset-0 z-0 opacity-40 pointer-events-none mix-blend-multiply">
-          <Plasma
-            color="#D12027"
-            speed={1.5}
-            direction="forward"
-            scale={1.2}
-            opacity={0.8}
-            mouseInteractive={false}
-          />
-        </div>
-      )}
-
       {/* ── Content ── */}
       <div className="relative z-10 w-full max-w-[1400px] px-6 mx-auto flex flex-col items-center">
 
@@ -106,72 +196,196 @@ export default function EventsSection() {
         </div>
 
         <div className="w-full text-center px-4 animate-heading">
-          <h2 className="font-sans font-medium leading-[1.1] tracking-tight text-foreground text-3xl md:text-5xl lg:text-[5rem]">
-            Relive our recent <span className="text-[#D12027] font-semibold">global engagements</span>
+          <h2 className="font-zodiak font-medium leading-[1.1] tracking-tight text-foreground text-5xl md:text-7xl lg:text-[6.5rem]">
+            Relive our recent <span className="text-[#D12027]">global engagements</span>
           </h2>
         </div>
 
-        {/* Indestructible Spacer */}
+        {/* Spacer */}
         <div style={{ height: "75px", flexShrink: 0, width: "100%" }} aria-hidden="true" />
 
-        {/* ── Cards Grid (Horizontal swipe on mobile, Grid on desktop) ── */}
-        <div
-          className="w-full flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 shrink-0 overflow-x-auto snap-x snap-mandatory pb-8 md:pb-0 -mx-6 px-6 md:mx-0 md:px-0"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          {isLoading ? (
-            <div className="w-full text-center py-12 text-foreground/50 font-medium font-sans">
-              Loading engagements...
-            </div>
-          ) : events.length === 0 ? (
-            <div className="w-full text-center py-12 text-foreground/50 font-medium font-sans">
-              No recent engagements found.
-            </div>
-          ) : (
-            events.map((event, i) => (
+        {/* ── Fan Layout ── */}
+        {isLoading ? (
+          <div className="w-full text-center py-12 text-foreground/50 font-medium font-sans">
+            Loading engagements...
+          </div>
+        ) : events.length === 0 ? (
+          <div className="w-full text-center py-12 text-foreground/50 font-medium font-sans">
+            No recent engagements found.
+          </div>
+        ) : (
+          <>
+            {/* ── DESKTOP: Fan Layout ── */}
+            <div
+              ref={fanRef}
+              className="relative w-full select-none hidden md:block"
+              style={{
+                aspectRatio: "2.58",
+                touchAction: "pan-y",
+              }}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              {events.map((event, eventIndex) => {
+                const slot = getSlotForEvent(eventIndex);
+                const style = getSlotStyle(slot);
+                const isCenter = slot === 2;
+                const isVisible = slot >= 0 && slot <= 4;
+
+                return (
+                  <div
+                    key={event.id}
+                    style={{
+                      position: "absolute",
+                      left: style.left,
+                      top: style.top,
+                      width: style.width,
+                      height: style.height,
+                      transform: `rotate(${style.rotate}deg) scale(${isCenter ? 1 : 0.98})`,
+                      zIndex: style.zIndex,
+                      opacity: style.opacity,
+                      cursor: isCenter ? "default" : "pointer",
+                      transition: "all 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                      pointerEvents: isVisible ? "auto" : "none",
+                      willChange: "left, top, width, height, transform, opacity",
+                    }}
+                    onClick={() => handleCardClick(eventIndex)}
+                  >
+                    {isCenter ? (
+                      /* ═══ CENTER CARD: Full CardFlip ═══ */
+                      <CardFlip
+                        title={event.title}
+                        subtitle={event.subtitle || "Global Event"}
+                        description={event.description}
+                        features={event.features || []}
+                        imageUrl={event.posterUrl}
+                        fillContainer
+                      />
+                    ) : (
+                      /* ═══ SIDE CARDS: Simple image cards ═══ */
+                      <div
+                        className="relative w-full h-full overflow-hidden"
+                        style={{
+                          borderRadius: "12px",
+                          backgroundColor: "#FFFBF2",
+                          border: "1px solid rgba(230, 57, 70, 0.15)",
+                          boxShadow: "0 10px 25px -5px rgba(0,0,0,0.15)",
+                        }}
+                      >
+                        {event.posterUrl ? (
+                          <img
+                            alt={event.title}
+                            className="absolute inset-0 w-full h-full object-cover"
+                            draggable="false"
+                            src={event.posterUrl}
+                            style={{ userSelect: "none" }}
+                          />
+                        ) : (
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              background: "linear-gradient(135deg, #e63946 0%, #780000 100%)",
+                            }}
+                          />
+                        )}
+
+                        {/* Dark gradient overlay */}
+                        <div
+                          className="absolute inset-0"
+                          style={{
+                            background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.25) 40%, transparent 70%)",
+                          }}
+                        />
+
+                        {/* Text at bottom */}
+                        <div
+                          className="absolute bottom-0 left-0 right-0"
+                          style={{ padding: "14px" }}
+                        >
+                          <h3
+                            style={{
+                              fontWeight: 600,
+                              fontSize: "14px",
+                              lineHeight: 1.3,
+                              letterSpacing: "-0.02em",
+                              color: "white",
+                              margin: 0,
+                            }}
+                          >
+                            {event.title}
+                          </h3>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* ── Dot Indicators ── */}
               <div
-                key={event.id}
-                ref={(el) => {
-                  cardsRef.current[i] = el;
-                }}
-                className="group relative w-[80vw] sm:w-[60vw] md:w-full flex-shrink-0 snap-center aspect-[3/4] rounded-2xl overflow-hidden cursor-pointer will-change-transform"
                 style={{
-                  boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+                  position: "absolute",
+                  bottom: "-40px",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  display: "flex",
+                  gap: "10px",
+                  alignItems: "center",
                 }}
               >
-                {/* Background Image */}
-                {event.posterUrl && (
-                  <Image
-                    src={event.posterUrl}
-                    alt={event.title}
-                    fill
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                    unoptimized // Use unoptimized for R2 URLs
-                  />
-                )}
+                {events.map((_, i) => {
+                  const isActive = i === centerIndex;
 
-                {/* Dark Gradient Overlay for text readability and sleek aesthetic */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/30 transition-opacity duration-500 group-hover:opacity-90" />
-
-                {/* Card Content */}
-                <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-between">
-                  {/* Top Number */}
-                  <span className="font-sans text-white/90 text-5xl md:text-6xl font-light tracking-tighter">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-
-                  {/* Bottom Text */}
-                  <h3 className="font-sans text-white text-xl md:text-2xl font-medium text-right uppercase tracking-wider leading-snug">
-                    {event.title}
-                  </h3>
-                </div>
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => {
+                        setCenterIndex(i);
+                        if (timerRef.current) clearInterval(timerRef.current);
+                        startTimer();
+                      }}
+                      style={{
+                        width: isActive ? "28px" : "8px",
+                        height: "8px",
+                        borderRadius: "100px",
+                        border: "none",
+                        cursor: "pointer",
+                        backgroundColor: isActive ? "#D12027" : "rgba(0,0,0,0.15)",
+                        transition: "all 400ms ease",
+                        padding: 0,
+                      }}
+                      aria-label={`Go to event ${i + 1}`}
+                    />
+                  );
+                })}
               </div>
-            ))
-          )}
-        </div>
+            </div>
 
-        {/* Indestructible Spacer */}
-        <div style={{ height: "50px", flexShrink: 0, width: "100%" }} aria-hidden="true" />
+            {/* ── MOBILE: Horizontal Sliding Flip Cards ── */}
+            <div className="w-full flex md:hidden overflow-x-auto snap-x snap-mandatory gap-6 px-4 pb-12 pt-4 hide-scrollbar">
+              {events.map((event) => (
+                <div 
+                  key={event.id} 
+                  className="snap-center flex-shrink-0"
+                  style={{ width: "81vw", height: "430px" }}
+                >
+                  <CardFlip
+                    title={event.title}
+                    subtitle={event.subtitle || "Global Event"}
+                    description={event.description}
+                    features={event.features || []}
+                    imageUrl={event.posterUrl}
+                    fillContainer
+                  />
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Spacer */}
+        <div style={{ height: "80px", flexShrink: 0, width: "100%" }} aria-hidden="true" />
 
         {/* ── Explore More Link ── */}
         <div>

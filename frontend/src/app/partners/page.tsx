@@ -199,17 +199,36 @@ export default function PartnersPage() {
             justify-content: center;
         }
         .editorial-hero__line--2 {
-            justify-content: flex-start;
-            padding-left: 2%;
+            justify-content: center;
         }
         .editorial-hero__line--3 {
-            justify-content: flex-end;
-            padding-right: 5%;
+            justify-content: center;
         }
         .flip-char {
             will-change: transform, opacity;
             backface-visibility: hidden;
         }
+
+        /* ── Partners Grid & Cards ── */
+        .partner-continent-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+            margin-bottom: 80px;
+            position: relative;
+        }
+        
+        .partner-logo-card {
+            width: 342px;
+            height: 342px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: default;
+        }
+
         @media (max-width: 960px) {
             .editorial-hero {
                 padding: 120px 20px 40px;
@@ -219,9 +238,24 @@ export default function PartnersPage() {
             .editorial-hero__line {
                 font-size: clamp(2.8rem, 11vw, 7rem);
             }
-            .editorial-hero__line--1 { justify-content: flex-start; }
-            .editorial-hero__line--2 { padding-left: 5%; }
-            .editorial-hero__line--3 { padding-right: 0; justify-content: flex-start; padding-left: 10%; }
+            .editorial-hero__line--1 { justify-content: center; }
+            .editorial-hero__line--2 { justify-content: center; }
+            .editorial-hero__line--3 { justify-content: center; }
+        }
+
+        @media (max-width: 768px) {
+            .partner-continent-container {
+                padding: 0 16px;
+                margin-bottom: 50px;
+            }
+            .partner-logo-card {
+                width: 45vw;
+                height: 45vw;
+                padding: 15px;
+            }
+            .partner-continent-title {
+                font-size: clamp(4rem, 12vw, 8rem) !important;
+            }
         }
       `}} />
 
@@ -260,16 +294,11 @@ export default function PartnersPage() {
           <div
             key={ci}
             ref={(el) => { countryRefs.current[ci] = el; }}
-            style={{
-              maxWidth: "1400px",
-              margin: "0 auto",
-              padding: "0 40px",
-              marginBottom: 80,
-              position: "relative",
-            }}
+            className="partner-continent-container"
           >
             {/* Massive Solid Continent Name */}
             <h2
+              className="partner-continent-title"
               style={{
                 fontFamily: "var(--font-instrument-serif), Georgia, serif",
                 fontSize: "clamp(8rem, 16vw, 12rem)",
@@ -301,16 +330,7 @@ export default function PartnersPage() {
                 <div
                   key={ui}
                   title={uni.name}
-                  style={{
-                    width: 342,
-                    height: 342,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: 10,
-                    transition: "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
-                    cursor: "default",
-                  }}
+                  className="partner-logo-card"
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = "scale(1.05) translateY(-8px)";
                   }}

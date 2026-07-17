@@ -18,6 +18,7 @@ interface TiltedCardProps {
   showTooltip?: boolean;
   department?: string;
   email?: string;
+  className?: string;
 }
 
 const springValues: SpringOptions = {
@@ -40,6 +41,7 @@ export default function IASTeamCard({
   showTooltip = true,
   department,
   email,
+  className,
 }: TiltedCardProps) {
   const ref = useRef<HTMLElement>(null);
   const x = useMotionValue(0);
@@ -93,6 +95,7 @@ export default function IASTeamCard({
   return (
     <figure
       ref={ref}
+      className={`team-card-wrapper ${className || ''}`}
       style={{
         height: containerHeight,
         width: containerWidth,
@@ -111,6 +114,7 @@ export default function IASTeamCard({
     >
       {/* ── Tilting image container ── */}
       <motion.div
+        className="team-card-inner"
         style={{
           width: imageWidth,
           height: imageHeight,

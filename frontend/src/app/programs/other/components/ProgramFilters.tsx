@@ -204,20 +204,6 @@ export default function ProgramFilters({
           margin-top: 15vh;
         }
 
-        @media (max-width: 1024px) {
-          .program-filters-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-          }
-        }
-
-        @media (max-width: 540px) {
-          .program-filters-grid {
-            grid-template-columns: 1fr;
-            gap: 12px;
-          }
-        }
-
         /* ── Container ── */
         .filter-dropdown-container {
           font-size: 14px;
@@ -414,6 +400,27 @@ export default function ProgramFilters({
         }
         .filter-dd-option.active .filter-dd-option-btn:hover {
           color: #ffffff;
+        }
+
+        @media (max-width: 1024px) {
+          .program-filters-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            width: 90%;
+          }
+        }
+
+        @media (max-width: 540px) {
+          .program-filters-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+            width: 90%;
+          }
+          .filter-dd-label {
+            white-space: normal !important;
+            word-wrap: break-word;
+            text-align: left;
+          }
         }
       ` }} />
     </>

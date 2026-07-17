@@ -141,6 +141,16 @@ export default function IASPageClient() {
 
   return (
     <>
+      <style>{`
+        @media (max-width: 768px) {
+          .ias-hero-heading {
+            font-size: clamp(2.5rem, 10vw, 4rem) !important;
+          }
+          .ias-about-heading {
+            font-size: clamp(2.2rem, 9vw, 4rem) !important;
+          }
+        }
+      `}</style>
       <Navbar />
       <main style={{ backgroundColor: "#0a0a0a", color: "#ffffff", fontFamily: "var(--font-outfit)" }}>
         {/* ═══ HERO — Globe + Centered Title ═══ */}
@@ -211,6 +221,7 @@ export default function IASPageClient() {
             {/* Headline */}
             <div ref={headlineRef} style={{ opacity: 0 }}>
               <h1
+                className="ias-hero-heading"
                 style={{
                   fontSize: "clamp(3.3rem, 7.7vw, 8.25rem)",
                   fontWeight: 700,
@@ -303,6 +314,7 @@ export default function IASPageClient() {
               }}
             >
               <h2
+                className="ias-about-heading"
                 style={{
                   fontSize: "clamp(3rem, 7vw, 7.5rem)",
                   fontWeight: 700,

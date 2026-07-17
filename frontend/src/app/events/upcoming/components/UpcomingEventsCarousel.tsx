@@ -199,6 +199,27 @@ function EventSlide({
             )}
           </div>
 
+          {/* ── Highlights ── */}
+          {event.highlights && event.highlights.length > 0 && (
+            <div style={{ marginTop: "24px" }}>
+              {event.highlights.map((h: string) => (
+                <p
+                  key={h}
+                  className="font-space-grotesk"
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    color: "var(--foreground)",
+                    marginBottom: "6px",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  • {h}
+                </p>
+              ))}
+            </div>
+          )}
+
           {/* ── Location tag ── */}
           {event.location && (
             <span

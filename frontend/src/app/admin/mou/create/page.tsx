@@ -205,7 +205,7 @@ export default function CreateMOUPage() {
 
       <AdminPageHeader title="Create MOU" />
 
-      <div style={{ border: "1px solid #b5bda0", padding: "2rem", backgroundColor: "#f5f0e8", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
+      <div className="admin-form-container" style={{ border: "1px solid #b5bda0", padding: "2rem", backgroundColor: "#f5f0e8", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
         <form onSubmit={(e) => { e.preventDefault(); setShowConfirm(true); }}>
           
           <h3 style={{ ...sectionHeadingStyle, marginTop: 0 }}>General Details</h3>
@@ -219,7 +219,7 @@ export default function CreateMOUPage() {
             />
           </FormField>
           
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+          <div className="admin-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
             <FormField label="Partner University" required>
               <input 
                 type="text" 
@@ -248,7 +248,7 @@ export default function CreateMOUPage() {
             />
           </FormField>
           
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+          <div className="admin-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
             <FormField label="Status">
               <CustomDropdown
                 value={status}
@@ -274,7 +274,7 @@ export default function CreateMOUPage() {
             </FormField>
           </div>
           
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+          <div className="admin-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
             <FormField label="MOU Signing Date" required>
               <input 
                 type="date" 
@@ -411,7 +411,7 @@ export default function CreateMOUPage() {
                   <Trash2 size={16} />
                 </button>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div className="admin-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <FormField label="Name">
                   <input type="text" value={poc.name} onChange={(e) => updatePartnerPOC(index, 'name', e.target.value)} placeholder="Enter here" style={{ width: "100%", padding: "8px", border: "1px solid #b5bda0", borderRadius: "4px" }} />
                 </FormField>
@@ -518,7 +518,7 @@ export default function CreateMOUPage() {
                   <Trash2 size={16} />
                 </button>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div className="admin-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <FormField label="Name">
                   <input type="text" value={poc.name} onChange={(e) => updatePOC(index, 'name', e.target.value)} placeholder="Enter here" style={{ width: "100%", padding: "8px", border: "1px solid #b5bda0", borderRadius: "4px" }} />
                 </FormField>

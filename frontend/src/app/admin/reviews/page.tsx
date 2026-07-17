@@ -171,6 +171,7 @@ function ReviewsContent() {
     const renderRow = (r: ReviewItem, clickable: boolean = true) => (
       <div
         key={r.id}
+        className="review-card"
         onClick={clickable ? () => router.push(`/admin/reviews?id=${r.id}`) : undefined}
         style={{
           padding: "16px 20px", backgroundColor: "#FFFBF2", border: "1px solid #d4cfc4",
@@ -181,7 +182,7 @@ function ReviewsContent() {
         onMouseEnter={clickable ? (e) => { e.currentTarget.style.borderColor = "#7A8C5E"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.05)"; } : undefined}
         onMouseLeave={clickable ? (e) => { e.currentTarget.style.borderColor = "#d4cfc4"; e.currentTarget.style.boxShadow = "none"; } : undefined}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+        <div className="review-card-left" style={{ display: "flex", alignItems: "center", gap: "14px" }}>
           <span style={{
             display: "inline-block", fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em",
             textTransform: "uppercase", padding: "3px 8px", backgroundColor: getTypeBadgeColor(r.type),
@@ -196,7 +197,7 @@ function ReviewsContent() {
             </p>
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div className="review-card-right" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           {r.status === "changes_requested" && r.comments.length > 0 && (
             <span style={{ fontSize: "11px", color: "#c0392b", fontWeight: 500 }}>
               {r.comments.length} comment{r.comments.length !== 1 ? "s" : ""}

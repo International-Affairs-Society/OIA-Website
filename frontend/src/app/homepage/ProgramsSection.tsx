@@ -238,15 +238,15 @@ export default function ProgramsSection() {
           >
             <div
               ref={(el) => { nodeRefs.current[i] = el; }}
-              className="cursor-pointer"
-              style={{ transform: "translate(-50%, -50%)" }}
+              className="cursor-pointer relative flex items-center justify-center"
+              style={{ transform: "translate(-50%, -50%)", width: "16px", height: "16px" }}
               onMouseEnter={() => setHoveredIndex(i)}
               onMouseLeave={() => setHoveredIndex(null)}
               onClick={() => router.push(`/programs`)}
             >
               {/* Small square marker */}
               <span
-                className="inline-block rounded-sm mr-2 align-middle transition-all duration-300"
+                className="inline-block rounded-sm transition-all duration-300"
                 style={{
                   width: hoveredIndex === i ? 8 : 5,
                   height: hoveredIndex === i ? 8 : 5,
@@ -256,13 +256,15 @@ export default function ProgramsSection() {
               />
               {/* Label text */}
               <span
-                className="italic whitespace-nowrap transition-all duration-300 align-middle"
+                className="absolute left-full ml-1 italic whitespace-nowrap transition-all duration-300"
                 style={{
                   fontFamily: "var(--font-space-grotesk), sans-serif",
                   fontSize: hoveredIndex === i ? "1.2rem" : "0.95rem",
                   color:
                     hoveredIndex === i ? "#393939" : "rgba(57, 57, 57, 0.75)",
                   fontWeight: hoveredIndex === i ? 600 : 500,
+                  transform: "translateY(-50%)",
+                  top: "50%"
                 }}
               >
                 {prog.label}

@@ -248,6 +248,9 @@ export default function MobileUpcoming() {
       className="relative w-full"
       style={{
         backgroundColor: "#FFFDE2",
+        backgroundImage:
+          "linear-gradient(0deg, transparent 24%, rgba(0,0,0,0.08) 25%, rgba(0,0,0,0.08) 26%, transparent 27%, transparent 74%, rgba(0,0,0,0.08) 75%, rgba(0,0,0,0.08) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(0,0,0,0.08) 25%, rgba(0,0,0,0.08) 26%, transparent 27%, transparent 74%, rgba(0,0,0,0.08) 75%, rgba(0,0,0,0.08) 76%, transparent 77%, transparent)",
+        backgroundSize: "55px 55px",
         paddingTop: "100px",
         paddingBottom: "60px",
         minHeight: "100vh",

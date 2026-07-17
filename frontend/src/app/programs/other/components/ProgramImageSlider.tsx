@@ -10,7 +10,6 @@ type ProgramImageSliderProps = {
 
 export default function ProgramImageSlider({ images, title }: ProgramImageSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
 
   // If only one image, just render it normally without arrows
   if (!images || images.length <= 1) {
@@ -41,9 +40,7 @@ export default function ProgramImageSlider({ images, title }: ProgramImageSlider
 
   return (
     <div
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className="relative w-full overflow-hidden bg-gray-200"
+      className="relative w-full overflow-hidden bg-gray-200 group"
       style={{ aspectRatio: "16 / 10" }}
     >
       {/* Current Image */}
@@ -75,10 +72,9 @@ export default function ProgramImageSlider({ images, title }: ProgramImageSlider
           alignItems: "center",
           justifyContent: "center",
           boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-          opacity: isHovered ? 1 : 0,
-          pointerEvents: isHovered ? "auto" : "none",
           transition: "transform 0.2s, background-color 0.2s, opacity 0.3s ease",
         }}
+        className="opacity-100 md:opacity-0 md:group-hover:opacity-100 pointer-events-auto md:pointer-events-none md:group-hover:pointer-events-auto"
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = "translateY(-50%) scale(1.1)";
           e.currentTarget.style.backgroundColor = "#fff";
@@ -113,10 +109,9 @@ export default function ProgramImageSlider({ images, title }: ProgramImageSlider
           alignItems: "center",
           justifyContent: "center",
           boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-          opacity: isHovered ? 1 : 0,
-          pointerEvents: isHovered ? "auto" : "none",
           transition: "transform 0.2s, background-color 0.2s, opacity 0.3s ease",
         }}
+        className="opacity-100 md:opacity-0 md:group-hover:opacity-100 pointer-events-auto md:pointer-events-none md:group-hover:pointer-events-auto"
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = "translateY(-50%) scale(1.1)";
           e.currentTarget.style.backgroundColor = "#fff";

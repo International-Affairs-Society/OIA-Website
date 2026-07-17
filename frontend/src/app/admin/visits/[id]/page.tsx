@@ -157,7 +157,7 @@ export default function VisitDetailsPage() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "2rem" }}>
         
         {/* Delegations */}
-        <section style={{ backgroundColor: "#fff", padding: "2rem", borderRadius: "12px", border: "1px solid #b5bda0" }}>
+        <section className="admin-form-container" style={{ backgroundColor: "#fff", padding: "2rem", borderRadius: "12px", border: "1px solid #b5bda0" }}>
           <h3 style={{ fontSize: "18px", fontWeight: 600, color: "#1a1a1a", marginBottom: "1.5rem", borderBottom: "1px solid rgba(181, 189, 160, 0.3)", paddingBottom: "0.5rem" }}>Delegation (Visitors)</h3>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
@@ -186,7 +186,7 @@ export default function VisitDetailsPage() {
         </section>
 
         {/* Our POCs */}
-        <section style={{ backgroundColor: "#fff", padding: "2rem", borderRadius: "12px", border: "1px solid #b5bda0" }}>
+        <section className="admin-form-container" style={{ backgroundColor: "#fff", padding: "2rem", borderRadius: "12px", border: "1px solid #b5bda0" }}>
           <h3 style={{ fontSize: "18px", fontWeight: 600, color: "#1a1a1a", marginBottom: "1.5rem", borderBottom: "1px solid rgba(181, 189, 160, 0.3)", paddingBottom: "0.5rem" }}>Bennett University POCs</h3>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
@@ -213,7 +213,7 @@ export default function VisitDetailsPage() {
         </section>
 
         {/* Purpose & Highlights */}
-        <section style={{ backgroundColor: "#fff", padding: "2rem", borderRadius: "12px", border: "1px solid #b5bda0" }}>
+        <section className="admin-form-container" style={{ backgroundColor: "#fff", padding: "2rem", borderRadius: "12px", border: "1px solid #b5bda0" }}>
           <div style={{ marginBottom: "2rem" }}>
             <h3 style={{ fontSize: "18px", fontWeight: 600, color: "#1a1a1a", marginBottom: "1rem", borderBottom: "1px solid rgba(181, 189, 160, 0.3)", paddingBottom: "0.5rem" }}>Purpose of Visit</h3>
             <p style={{ fontSize: "15px", color: "#4a4a4a", lineHeight: 1.6 }}>{visit.purpose}</p>
@@ -234,7 +234,7 @@ export default function VisitDetailsPage() {
 
         {/* Reports */}
         {visit.reports && visit.reports.length > 0 && (
-          <section style={{ backgroundColor: "#fff", padding: "2rem", borderRadius: "12px", border: "1px solid #b5bda0" }}>
+          <section className="admin-form-container" style={{ backgroundColor: "#fff", padding: "2rem", borderRadius: "12px", border: "1px solid #b5bda0" }}>
             <h3 style={{ fontSize: "18px", fontWeight: 600, color: "#1a1a1a", marginBottom: "1.5rem", borderBottom: "1px solid rgba(181, 189, 160, 0.3)", paddingBottom: "0.5rem" }}>Attached Reports</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               {visit.reports.map((report: any, idx: number) => (
