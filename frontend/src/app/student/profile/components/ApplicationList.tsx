@@ -66,6 +66,7 @@ export default function ApplicationList({ applications, onSelect }: Props) {
           const isActive = activeTab === tab;
           return (
             <button
+              type="button"
               key={tab}
               onClick={() => setActiveTab(tab)}
               style={{
