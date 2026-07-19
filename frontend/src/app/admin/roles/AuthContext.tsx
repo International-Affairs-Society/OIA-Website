@@ -4,7 +4,7 @@
 // Integrates with backend session API.
 // ============================================================
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { Role } from "./permissions";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -49,6 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [role, setRoleState] = useState<Role>("general");
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const hasInitializedRef = useRef(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -110,6 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error("Error retrieving Supabase session on mount:", err);
       }
       await fetchMe();
+      hasInitializedRef.current = true;
     };
 
     // 1. Check existing session and sync to local storage on mount
@@ -117,13 +119,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // 2. Listen for Supabase auth events (like completing the OAuth redirect)
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Silently update the token in localStorage without triggering re-renders
       if (session) {
         localStorage.setItem("access_token", session.access_token);
       } else {
         localStorage.removeItem("access_token");
       }
 
+      // Skip all events that fire on tab focus / token refresh
+      // Only handle genuine first sign-ins and sign-outs
+      if (event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") {
+        return;
+      }
+
       if (event === "SIGNED_IN" && session) {
+        // If we already initialized (user is loaded), skip the full sign-in flow.
+        // This prevents the "Loading..." flash on tab switch.
+        if (hasInitializedRef.current) return;
+
         setIsLoading(true);
         try {
           // Send tokens to backend to set HttpOnly cookies
@@ -139,11 +152,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           
           // Now fetch the user profile from backend
           await fetchMe();
+          hasInitializedRef.current = true;
         } catch (error) {
           console.error("Error setting cookies:", error);
           setIsLoading(false);
         }
       } else if (event === "SIGNED_OUT") {
+        hasInitializedRef.current = false;
         setUser(null);
         setRoleState("general");
       }
