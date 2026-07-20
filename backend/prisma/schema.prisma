@@ -68,7 +68,7 @@ enum ReviewStatus {
   pending
   approved
   rejected
-  changes_requested
+  changes_requested @map("Changes requested")
 }
 
 enum VisitStatus {
