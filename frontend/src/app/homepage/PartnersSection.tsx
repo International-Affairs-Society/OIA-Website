@@ -303,6 +303,7 @@ export default function PartnersSection() {
                     height={dims.imgH}
                     className={`block w-full h-full ${img.isLogo ? "object-contain" : "object-cover"}`}
                     style={img.scale ? { transform: `scale(${img.scale})` } : undefined}
+                    priority={i < 6}
                     unoptimized
                   />
                 </div>

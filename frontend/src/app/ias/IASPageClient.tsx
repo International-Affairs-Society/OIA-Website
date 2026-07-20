@@ -15,8 +15,6 @@ gsap.registerPlugin(ScrollTrigger);
 export default function IASPageClient() {
   const heroRef = useRef<HTMLElement>(null);
   const headlineRef = useRef<HTMLDivElement>(null);
-  const subRef = useRef<HTMLDivElement>(null);
-  const globeWrapRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLElement>(null);
   const aboutLabelRef = useRef<HTMLDivElement>(null);
   const aboutHeadingRef = useRef<HTMLDivElement>(null);
@@ -27,116 +25,56 @@ export default function IASPageClient() {
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
         defaults: { ease: "power3.out" },
-        delay: 0.3,
+        delay: 0.4,
       });
 
       tl.fromTo(
-        globeWrapRef.current,
-        { opacity: 0, scale: 0.85 },
-        { opacity: 1, scale: 1, duration: 1.4, ease: "power2.out" }
-      )
-        .fromTo(
-          headlineRef.current,
-          { opacity: 0, y: 50 },
-          { opacity: 1, y: 0, duration: 0.9 },
-          "-=0.8"
-        )
-        .fromTo(
-          subRef.current,
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.6 },
-          "-=0.4"
-        );
+        headlineRef.current,
+        { opacity: 0, y: 40 },
+        { opacity: 1, y: 0, duration: 1.1 }
+      );
     }, heroRef);
     return () => ctx.revert();
   }, []);
 
-  // GSAP ScrollTrigger — pinned hero transition
+  // GSAP ScrollTrigger — about section entrance
   useEffect(() => {
-    // Wait for entrance animation to finish
-    const timer = setTimeout(() => {
+    if (aboutRef.current) {
       const ctx = gsap.context(() => {
-        const scrollTl = gsap.timeline({
+        const aboutTl = gsap.timeline({
           scrollTrigger: {
-            trigger: heroRef.current,
-            start: "top top",
-            end: "+=300%",
-            pin: true,
-            scrub: 0.8,
-            pinSpacing: true,
+            trigger: aboutRef.current,
+            start: "top 85%",
+            end: "top 30%",
+            scrub: 0.6,
           },
         });
 
-        // Phase 1 (0–55%): Heading + sub slide up and fade out — longer transition
-        scrollTl.to(
-          [headlineRef.current, subRef.current],
-          {
-            y: -120,
-            opacity: 0,
-            duration: 0.55,
-            ease: "power2.in",
-            stagger: 0.06,
-          },
-          0
+        aboutTl.fromTo(
+          aboutLabelRef.current,
+          { opacity: 0, y: 40 },
+          { opacity: 1, y: 0, duration: 0.3 }
         );
 
-        // Phase 2 (30–85%): Globe scales up dramatically and fades — longer expansion
-        scrollTl.to(
-          globeWrapRef.current,
-          {
-            scale: 3.2,
-            opacity: 0,
-            duration: 0.55,
-            ease: "power2.inOut",
-          },
-          0.3
+        aboutTl.fromTo(
+          aboutHeadingRef.current,
+          { opacity: 0, y: 60 },
+          { opacity: 1, y: 0, duration: 0.4 },
+          0.1
         );
 
-      }, heroRef);
-
-      // About section entrance animation
-      if (aboutRef.current) {
-        gsap.context(() => {
-          const aboutTl = gsap.timeline({
-            scrollTrigger: {
-              trigger: aboutRef.current,
-              start: "top 85%",
-              end: "top 30%",
-              scrub: 0.6,
-            },
-          });
-
-          aboutTl.fromTo(
-            aboutLabelRef.current,
-            { opacity: 0, y: 40 },
-            { opacity: 1, y: 0, duration: 0.3 }
-          );
-
-          aboutTl.fromTo(
-            aboutHeadingRef.current,
-            { opacity: 0, y: 60 },
-            { opacity: 1, y: 0, duration: 0.4 },
-            0.1
-          );
-
-          aboutTl.fromTo(
-            aboutDescRef.current,
-            { opacity: 0, y: 40 },
-            { opacity: 1, y: 0, duration: 0.3 },
-            0.25
-          );
-        }, aboutRef);
-      }
+        aboutTl.fromTo(
+          aboutDescRef.current,
+          { opacity: 0, y: 40 },
+          { opacity: 1, y: 0, duration: 0.3 },
+          0.25
+        );
+      }, aboutRef);
 
       return () => {
         ScrollTrigger.getAll().forEach((t) => t.kill());
       };
-    }, 2200); // delay for entrance animation
-
-    return () => {
-      clearTimeout(timer);
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-    };
+    }
   }, []);
 
   return (
@@ -144,16 +82,23 @@ export default function IASPageClient() {
       <style>{`
         @media (max-width: 768px) {
           .ias-hero-heading {
-            font-size: clamp(2.5rem, 10vw, 4rem) !important;
+            font-size: clamp(1.8rem, 8vw, 3rem) !important;
+            line-height: 1.35 !important;
           }
           .ias-about-heading {
             font-size: clamp(2.2rem, 9vw, 4rem) !important;
           }
         }
+        .ias-sound-btn:hover { opacity: 1 !important; }
+        @keyframes ias-pulse-ring {
+          0%   { transform: scale(1);   opacity: 0.6; }
+          100% { transform: scale(1.6); opacity: 0;   }
+        }
       `}</style>
       <Navbar />
       <main style={{ backgroundColor: "#0a0a0a", color: "#ffffff", fontFamily: "var(--font-outfit)" }}>
-        {/* ═══ HERO — Globe + Centered Title ═══ */}
+
+        {/* ═══ HERO — Full-screen video background ═══ */}
         <section
           ref={heroRef}
           style={{
@@ -167,99 +112,170 @@ export default function IASPageClient() {
             backgroundColor: "#0a0a0a",
           }}
         >
-          {/* ── Globe Background (centered, behind text) ── */}
-          <div
-            ref={globeWrapRef}
+          {/* ── Background Video ── */}
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
             style={{
               position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
               zIndex: 0,
-              pointerEvents: "none",
             }}
           >
-            <GlobeDark />
-          </div>
+            <source
+              src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260613_180732_a54afbf6-b30d-470e-861f-669871f09f67.mp4"
+              type="video/mp4"
+            />
+          </video>
 
-          {/* ── Edge vignette overlay ── */}
+          {/* ── Dark gradient overlay ── */}
           <div
             style={{
               position: "absolute",
               inset: 0,
               zIndex: 1,
-              background: "radial-gradient(ellipse at center, transparent 40%, rgba(10,10,10,0.5) 70%, #0a0a0a 95%)",
+              background: "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.55) 100%)",
               pointerEvents: "none",
             }}
           />
 
-          {/* ── Subtle grain ── */}
+          {/* ── Subtle grain texture ── */}
           <div
             style={{
               position: "absolute",
               inset: 0,
-              zIndex: 1,
-              opacity: 0.04,
+              zIndex: 2,
+              opacity: 0.03,
               backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
               backgroundSize: "200px 200px",
               pointerEvents: "none",
             }}
           />
 
-          {/* ═══ Centered Content ═══ */}
+          {/* ═══ Centered Hero Content ═══ */}
           <div
             style={{
               position: "relative",
-              zIndex: 2,
+              zIndex: 3,
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               textAlign: "center",
               padding: "0 24px",
+              marginTop: "-160px",
             }}
           >
-            {/* Headline */}
+            {/* Main Headline */}
             <div ref={headlineRef} style={{ opacity: 0 }}>
               <h1
                 className="ias-hero-heading"
                 style={{
-                  fontSize: "clamp(3.3rem, 7.7vw, 8.25rem)",
-                  fontWeight: 700,
-                  lineHeight: 1.0,
-                  letterSpacing: "-0.02em",
-                  color: "#d4d4d4",
-                  fontFamily: "var(--font-gmarket-sans)",
-                  textTransform: "uppercase",
+                  fontSize: "clamp(1.75rem, 4.5vw, 5rem)",
+                  fontWeight: 400,
+                  lineHeight: 1.3,
+                  letterSpacing: "-0.01em",
+                  color: "#ffffff",
+                  fontFamily: "var(--font-tan-pearl), serif",
                   margin: 0,
+                  textShadow: "0 0 60px rgba(255,255,255,0.2), 0 0 120px rgba(255,255,255,0.08)",
                 }}
               >
-                International
-                <br />
-                Affairs Society
+                International Affairs Society
               </h1>
-            </div>
 
-            {/* Sub-info — just a thin red rule accent */}
-            <div ref={subRef} style={{ opacity: 0, marginTop: "36px", display: "flex", alignItems: "center", gap: "16px" }}>
-              <span style={{ display: "block", width: "40px", height: "1px", background: "rgba(209,32,39,0.5)" }} />
-              <span
+              {/* Subtext */}
+              <p
                 style={{
-                  fontSize: "11px",
-                  color: "rgba(255,255,255,0.35)",
-                  fontWeight: 500,
-                  letterSpacing: "0.2em",
-                  textTransform: "uppercase",
-                  fontFamily: "var(--font-roboto-condensed)",
+                  fontSize: "clamp(13px, 1vw, 15px)",
+                  color: "rgba(255,255,255,0.6)",
+                  fontFamily: "var(--font-outfit)",
+                  fontWeight: 300,
+                  letterSpacing: "0.01em",
+                  maxWidth: "480px",
+                  lineHeight: 1.7,
+                  margin: "20px auto 0",
                 }}
               >
-                IAS
-              </span>
-              <span style={{ display: "block", width: "40px", height: "1px", background: "rgba(209,32,39,0.5)" }} />
+                Cultivating global leaders through diplomacy, cross-cultural dialogue, and bold international discourse.
+              </p>
             </div>
           </div>
 
+          {/* ── Sound / Ambient indicator — bottom-left ── */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: "32px",
+              left: "36px",
+              zIndex: 4,
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              opacity: 0.55,
+              transition: "opacity 0.3s",
+            }}
+            className="ias-sound-btn"
+          >
+            <div
+              style={{
+                position: "relative",
+                width: "40px",
+                height: "40px",
+                borderRadius: "50%",
+                border: "1px solid rgba(255,255,255,0.3)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              {/* Pulse ring */}
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  borderRadius: "50%",
+                  border: "1px solid rgba(255,255,255,0.3)",
+                  animation: "ias-pulse-ring 2s ease-out infinite",
+                }}
+              />
+              <div style={{ width: "12px", height: "2px", background: "rgba(255,255,255,0.8)", borderRadius: "1px" }} />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.3 }}>
+              <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.7)", fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase" }}>Experience</span>
+              <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.45)", letterSpacing: "0.06em" }}>with sound</span>
+            </div>
+          </div>
 
+          {/* ── Scroll indicator — bottom-center ── */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: "32px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 4,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "8px",
+              opacity: 0.45,
+            }}
+          >
+            <span style={{ fontSize: "9px", color: "rgba(255,255,255,0.6)", letterSpacing: "0.18em", textTransform: "uppercase" }}>Scroll</span>
+            <div style={{
+              width: "1px",
+              height: "36px",
+              background: "linear-gradient(to bottom, rgba(255,255,255,0.6), transparent)",
+            }} />
+          </div>
         </section>
+
 
         {/* ═══ ABOUT SECTION — Cinetica-inspired, dark theme ═══ */}
         <section

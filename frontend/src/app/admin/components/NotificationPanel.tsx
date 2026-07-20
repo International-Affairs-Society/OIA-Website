@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ReviewItem } from "@/app/admin/data/mockReviews";
 import { useAuth } from "@/app/admin/roles/AuthContext";
+import LiquidGlass from "@/components/LiquidGlass";
 
 interface NotificationPanelProps {
   isOpen: boolean;
@@ -108,10 +109,8 @@ export default function NotificationPanel({ isOpen, onClose, reviews }: Notifica
           right: 0,
           top: 0,
           width: "420px",
-          maxWidth: "100vw",
+          maxWidth: "85vw",
           height: "100vh",
-          backgroundColor: "#f5f0e8",
-          borderLeft: "1px solid #b5bda0",
           zIndex: 1100,
           display: "flex",
           flexDirection: "column",
@@ -120,6 +119,11 @@ export default function NotificationPanel({ isOpen, onClose, reviews }: Notifica
           boxShadow: isOpen ? "-8px 0 32px rgba(0,0,0,0.1)" : "none",
         }}
       >
+        <LiquidGlass 
+          backgroundColor="rgba(245, 240, 232, 0.65)"
+          borderColor="rgba(255, 255, 255, 0.4)"
+        />
+
         {/* Header */}
         <div
           style={{
@@ -134,7 +138,7 @@ export default function NotificationPanel({ isOpen, onClose, reviews }: Notifica
             <h3
               style={{
                 margin: 0,
-                fontSize: "18px",
+                fontSize: "28px",
                 fontWeight: 700,
                 color: "#1a1a1a",
                 fontFamily: "var(--font-instrument-serif)",
@@ -196,6 +200,7 @@ export default function NotificationPanel({ isOpen, onClose, reviews }: Notifica
                     padding: "16px",
                     backgroundColor: "#FFFBF2",
                     border: "1px solid #d4cfc4",
+                    borderRadius: "8px",
                     transition: "border-color 0.2s",
                     cursor: "default",
                   }}

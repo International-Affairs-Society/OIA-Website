@@ -8,6 +8,7 @@ import { Bell } from "lucide-react";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { PERMISSIONS } from "@/app/admin/roles/permissions";
 import NotificationPanel from "@/app/admin/components/NotificationPanel";
+import LiquidGlass from "../../components/LiquidGlass";
 // ============================================================
 // DATA CONSTANTS — Replace with API calls when backend is ready
 // ============================================================
@@ -55,7 +56,7 @@ const ADMIN_BUTTON = {
 
 // ============================================================
 
-export default function Navbar() {
+export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMenuToggle?: () => void; adminMenuOpen?: boolean } = {}) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -132,7 +133,7 @@ export default function Navbar() {
     <>
     <nav
       id="main-navbar"
-      className="fixed left-0 right-0 z-50"
+      className={isAdminPage ? "relative z-50 w-full" : "fixed left-0 right-0 z-50"}
       style={{
         animation: "slideDown 0.8s ease-out forwards",
         top: isScrolled ? "14px" : "0px",
@@ -262,12 +263,12 @@ export default function Navbar() {
         </div>
 
         {/* Right — Profile/Admin/Login (Desktop) + Hamburger (Mobile) */}
-        <div className="flex items-center gap-5 lg:gap-8 mr-8 lg:mr-24">
-          {/* Notifications — Desktop */}
+        <div className="flex items-center gap-4 sm:gap-6 lg:gap-8">
+          {/* Notifications */}
           {perms.navbar.notification && role !== 'super_admin' && (
             <Link href="/student/profile?tab=notifications">
               <button
-                className="hidden md:flex relative items-center justify-center transition-colors duration-300"
+                className="flex relative items-center justify-center transition-colors duration-300"
                 style={{ color: textColor }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = textHover)}
                 onMouseLeave={(e) => (e.currentTarget.style.color = textColor)}
@@ -280,7 +281,7 @@ export default function Navbar() {
           )}
           {perms.navbar.notification && role === 'super_admin' && (
             <button
-              className="hidden md:flex relative items-center justify-center transition-colors duration-300"
+              className="flex relative items-center justify-center transition-colors duration-300"
               style={{ color: textColor }}
               onMouseEnter={(e) => (e.currentTarget.style.color = textHover)}
               onMouseLeave={(e) => (e.currentTarget.style.color = textColor)}
@@ -366,7 +367,7 @@ export default function Navbar() {
             {isAuthenticated ? "Logout" : LOGIN_BUTTON.label}
           </a>
 
-          {/* Hamburger — Mobile */}
+          {/* Hamburger — Mobile (non-admin pages) */}
           {!isAdminPage && (
             <button
               id="mobile-menu-toggle"
@@ -380,7 +381,7 @@ export default function Navbar() {
               style={{
                 backgroundColor: textColor,
                 transform: isMobileMenuOpen
-                  ? "rotate(45deg) translateY(4px)"
+                  ? "translateY(8px) rotate(45deg)"
                   : "none",
               }}
             />
@@ -397,11 +398,44 @@ export default function Navbar() {
               style={{
                 backgroundColor: textColor,
                 transform: isMobileMenuOpen
-                  ? "rotate(-45deg) translateY(-4px)"
+                  ? "translateY(-8px) rotate(-45deg)"
                   : "none",
               }}
             />
           </button>
+          )}
+
+          {/* Admin Hamburger — Mobile (admin pages only) */}
+          {isAdminPage && onAdminMenuToggle && (
+            <button
+              id="admin-mobile-menu-toggle"
+              className="md:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5"
+              onClick={onAdminMenuToggle}
+              aria-label="Toggle admin menu"
+            >
+              <span
+                className="block w-6 h-[2px] transition-all duration-300 origin-center"
+                style={{
+                  backgroundColor: textColor,
+                  transform: adminMenuOpen ? "translateY(8px) rotate(45deg)" : "none",
+                }}
+              />
+              <span
+                className="block w-6 h-[2px] transition-all duration-300"
+                style={{
+                  backgroundColor: textColor,
+                  opacity: adminMenuOpen ? 0 : 1,
+                  transform: adminMenuOpen ? "scaleX(0)" : "scaleX(1)",
+                }}
+              />
+              <span
+                className="block w-6 h-[2px] transition-all duration-300 origin-center"
+                style={{
+                  backgroundColor: textColor,
+                  transform: adminMenuOpen ? "translateY(-8px) rotate(-45deg)" : "none",
+                }}
+              />
+            </button>
           )}
         </div>
       </div>
@@ -430,13 +464,16 @@ export default function Navbar() {
           zIndex: 50,
           display: "flex", flexDirection: "column",
           width: "82vw", maxWidth: "360px",
-          backgroundColor: isDarkPage ? "#0f0f0f" : "#FFFBF2",
           boxShadow: "-16px 0 48px rgba(0,0,0,0.18)",
           transform: isMobileMenuOpen ? "translateX(0)" : "translateX(100%)",
           transition: "transform 0.35s cubic-bezier(0.23, 1, 0.32, 1)",
           willChange: "transform",
         }}
       >
+        <LiquidGlass 
+          backgroundColor={isDarkPage ? "rgba(15, 15, 15, 0.65)" : "rgba(255, 251, 242, 0.65)"} 
+          borderColor={isDarkPage ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.4)"}
+        />
         {/* ── Drawer Header (red branded area) ── */}
         <div
           style={{

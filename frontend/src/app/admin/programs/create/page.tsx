@@ -1,10 +1,11 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AdminPageHeader, FormField, CustomDropdown, ConfirmModal } from "../../components";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { Plus, Trash2 } from "lucide-react";
+import { saveDraft, getDraftById } from "@/app/admin/drafts/draftsStorage";
 
 const SCHOOL_OPTIONS = ["SCSET", "SOAI", "SEAS", "SOM", "SOL", "TSOM", "SOLA", "SOD", "All"];
 const SEMESTER_OPTIONS = ["Semester 1", "Semester 2", "Semester 3", "Semester 4", "Semester 5", "Semester 6", "Semester 7", "Semester 8", "Semester 9", "Semester 10", "All"];
@@ -252,7 +253,10 @@ function CustomFormBuilder({ fields, setFields }: { fields: CustomField[]; setFi
 
 export default function CreateProgramPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { role } = useAuth();
+  
+  const draftId = searchParams?.get("draftId") || undefined;
   
   const [name, setName] = useState("");
   const [partner, setPartner] = useState("");
@@ -268,6 +272,7 @@ export default function CreateProgramPage() {
   const [useDefaultForm, setUseDefaultForm] = useState(true);
   const [isComingSoon, setIsComingSoon] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showDraftConfirm, setShowDraftConfirm] = useState(false);
   
   const [ourPOCs, setOurPOCs] = useState<any[]>([]);
   const [showPOCDropdown, setShowPOCDropdown] = useState(false);
@@ -319,11 +324,42 @@ export default function CreateProgramPage() {
           setMousList([{ value: "None", label: "None" }, ...mapped]);
         }
       } catch (err) {
-        console.error("Failed to fetch initial data for create program:", err);
+        console.error("Failed to fetch Users/MOUs:", err);
       }
     };
     fetchData();
-  }, []);
+
+    if (draftId && role) {
+      const draft = getDraftById(role, draftId);
+      if (draft && draft.data) {
+        setName(draft.data.name || "");
+        setPartner(draft.data.partner || "");
+        setDuration(draft.data.duration || "");
+        setMou(draft.data.mou || "None");
+        setProgramType(draft.data.programType || "");
+        setCountry(draft.data.country || "");
+        setStartDate(draft.data.startDate || "");
+        setEndDate(draft.data.endDate || "");
+        setLastDateToApply(draft.data.lastDateToApply || "");
+        setShowLivingCost(draft.data.showLivingCost || false);
+        setUseDefaultForm(draft.data.useDefaultForm !== false);
+        setIsComingSoon(draft.data.isComingSoon || false);
+        setOurPOCs(draft.data.ourPOCs || []);
+        setSchoolsEligible(draft.data.schoolsEligible || []);
+        setSemestersEligible(draft.data.semestersEligible || []);
+        setCoursesEligible(draft.data.coursesEligible || []);
+        setOverview(draft.data.overview || "");
+        setHighlights(draft.data.highlights || [""]);
+        setFeeSummary(draft.data.feeSummary || "");
+        setFeeBreakdown(draft.data.feeBreakdown || "");
+        setEstimatedStayCost(draft.data.estimatedStayCost || "");
+        setLivingCostsText(draft.data.livingCostsText || "");
+        setCustomFields(draft.data.customFields || []);
+        setPosterUrl(draft.data.posterUrl || "");
+        setGalleryUrls(draft.data.galleryUrls || []);
+      }
+    }
+  }, [role, draftId]);
 
   const addPOC = (user?: any) => {
     if (user) {
@@ -491,10 +527,18 @@ export default function CreateProgramPage() {
         return false;
       }
     } catch (err) {
-      console.error(err);
-      alert("Error occurred while saving program.");
+      console.error("Error creating program:", err);
+      alert("Error creating program. See console.");
       return false;
     }
+  };
+
+  const handleSaveDraft = () => {
+    const payload = {
+      name, partner, duration, mou, programType, country, startDate, endDate, lastDateToApply, showLivingCost, useDefaultForm, isComingSoon, ourPOCs, schoolsEligible, semestersEligible, coursesEligible, overview, highlights, feeSummary, feeBreakdown, estimatedStayCost, livingCostsText, customFields, posterUrl, galleryUrls
+    };
+    saveDraft(role, "Program", name, payload, draftId);
+    return Promise.resolve(true);
   };
 
   return (
@@ -828,6 +872,21 @@ export default function CreateProgramPage() {
             </button>
             <button
               type="button"
+              onClick={() => setShowDraftConfirm(true)}
+              style={{
+                padding: "10px 24px",
+                backgroundColor: "#FFFBF2",
+                color: "#1a1a1a",
+                border: "1px solid #1a1a1a",
+                fontSize: "14px",
+                cursor: "pointer",
+                borderRadius: "4px"
+              }}
+            >
+              Save as Draft
+            </button>
+            <button
+              type="button"
               onClick={() => router.push("/admin/programs")}
               style={{
                 padding: "10px 24px",
@@ -844,17 +903,20 @@ export default function CreateProgramPage() {
         </form>
       </div>
 
-      {/* Confirmation Popup */}
-      <ConfirmModal
-        isOpen={showConfirm}
-        onClose={() => setShowConfirm(false)}
-        onConfirm={executeSaveProgram}
-        onSuccess={() => router.push("/admin/programs")}
-        title="Save program?"
-        confirmLabel="Yes"
-        cancelLabel="No"
         submittingLabel="Submitting..."
         successLabel="Submitted!"
+      />
+
+      <ConfirmModal
+        isOpen={showDraftConfirm}
+        onClose={() => setShowDraftConfirm(false)}
+        onConfirm={handleSaveDraft}
+        onSuccess={() => router.push("/admin/drafts")}
+        title="Save as Draft?"
+        confirmLabel="Save Draft"
+        cancelLabel="Cancel"
+        submittingLabel="Saving..."
+        successLabel="Draft Saved!"
       />
     </div>
   );

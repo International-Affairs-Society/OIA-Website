@@ -174,7 +174,7 @@ function ReviewsContent() {
         className="review-card"
         onClick={clickable ? () => router.push(`/admin/reviews?id=${r.id}`) : undefined}
         style={{
-          padding: "16px 20px", backgroundColor: "#FFFBF2", border: "1px solid #d4cfc4",
+          padding: "16px 20px", backgroundColor: "#FFFBF2", border: "1px solid #d4cfc4", borderRadius: "12px",
           cursor: clickable ? "pointer" : "default",
           display: "flex", alignItems: "center", justifyContent: "space-between",
           transition: "border-color 0.2s, box-shadow 0.2s",

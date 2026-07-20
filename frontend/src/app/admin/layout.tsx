@@ -5,8 +5,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { 
   PieChart, Calendar, Layers, Users, FileText, 
   Handshake, MapPin, GraduationCap, UserCog, 
-  Star, Send, Archive, History, Home
+  Star, Send, Archive, History, Home, Bell, FileEdit
 } from "lucide-react";
+import LiquidGlass from "../../components/LiquidGlass";
 import Navbar from "@/app/homepage/Navbar";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { getAllowedAdminPaths, PERMISSIONS } from "@/app/admin/roles/permissions";
@@ -57,10 +58,11 @@ export default function AdminLayout({
     { label: "Analytics", path: "/admin", icon: PieChart },
     { label: "Events", path: "/admin/events", icon: Calendar },
     { label: "Programs", path: "/admin/programs", icon: Layers },
-    { label: "Program Leads", path: "/admin/leads", icon: Users },
-    { label: "Applications", path: "/admin/applications", icon: FileText },
     { label: "MOUs", path: "/admin/mou", icon: Handshake },
     { label: "Visits", path: "/admin/visits", icon: MapPin },
+    { label: "Drafts", path: "/admin/drafts", icon: FileEdit },
+    { label: "Program Leads", path: "/admin/leads", icon: Users },
+    { label: "Applications", path: "/admin/applications", icon: FileText },
     { label: "Students", path: "/admin/students", icon: GraduationCap },
     { label: "Users", path: "/admin/users", icon: UserCog },
     { label: "Reviews", path: "/admin/reviews", icon: Star },
@@ -88,35 +90,11 @@ export default function AdminLayout({
   return (
     <div style={{ height: "100vh", overflow: "hidden", backgroundColor: "#f5f0e8", display: "flex", flexDirection: "column" }}>
       {/* Navbar Area */}
-      <div style={{ height: isMobile ? "60px" : "73px", flexShrink: 0, position: "relative" }}>
-        <Navbar />
-        {/* Mobile hamburger button */}
-        {isMobile && (
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            aria-label="Toggle menu"
-            style={{
-              position: "absolute", top: "50%", right: 16, transform: "translateY(-50%)",
-              background: "none", border: "none", cursor: "pointer", zIndex: 1100,
-              padding: 8, display: "flex", flexDirection: "column", gap: 4,
-            }}
-          >
-            <span style={{ display: "block", width: 22, height: 2, background: sidebarOpen ? "transparent" : "#1a1a1a", transition: "all 0.3s", position: "relative" }}>
-              {sidebarOpen && (
-                <>
-                  <span style={{ position: "absolute", top: 0, left: 0, width: 22, height: 2, background: "#1a1a1a", transform: "rotate(45deg)" }} />
-                  <span style={{ position: "absolute", top: 0, left: 0, width: 22, height: 2, background: "#1a1a1a", transform: "rotate(-45deg)" }} />
-                </>
-              )}
-            </span>
-            {!sidebarOpen && (
-              <>
-                <span style={{ display: "block", width: 22, height: 2, background: "#1a1a1a" }} />
-                <span style={{ display: "block", width: 22, height: 2, background: "#1a1a1a" }} />
-              </>
-            )}
-          </button>
-        )}
+      <div style={{ flexShrink: 0, position: "relative", zIndex: 1000 }}>
+        <Navbar
+          onAdminMenuToggle={() => setSidebarOpen(!sidebarOpen)}
+          adminMenuOpen={sidebarOpen}
+        />
       </div>
 
       <div style={{ display: "flex", flex: 1, position: "relative", overflow: "hidden" }}>
@@ -136,28 +114,31 @@ export default function AdminLayout({
           data-lenis-prevent
           style={{
             width: sidebarWidth,
-            borderRight: "1px solid #b5bda0",
-            backgroundColor: "#f0ebe1",
             flexShrink: 0,
             transition: "width 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
 
             // Desktop: fixed flex layout, independent scroll
             position: isMobile ? "fixed" : "relative",
-            top: isMobile ? 60 : 0,
-            left: 0,
+            top: 0,
+            left: isMobile ? "auto" : 0,
+            right: isMobile ? 0 : "auto",
             bottom: isMobile ? 0 : undefined,
-            height: isMobile ? undefined : "100%", 
+            height: isMobile ? "100vh" : "100%", 
             overflowY: "auto",
             overflowX: "hidden",
-            zIndex: isMobile ? 1050 : 40,
+            zIndex: isMobile ? 1200 : 40,
 
             // Mobile sliding transition
             ...(isMobile ? {
-              transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
+              transform: sidebarOpen ? "translateX(0)" : "translateX(100%)",
               transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
             } : {}),
           }}
         >
+          <LiquidGlass 
+            backgroundColor="rgba(240, 235, 225, 0.65)"
+            borderColor="rgba(255, 255, 255, 0.4)"
+          />
           {/* Desktop collapse toggle */}
           {!isMobile && (
             <button
@@ -199,9 +180,34 @@ export default function AdminLayout({
             </button>
           )}
 
+          {/* Mobile close toggle */}
+          {isMobile && (
+            <div style={{ display: "flex", justifyContent: "flex-end", padding: "16px 16px 0 16px" }}>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                aria-label="Close sidebar"
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#1a1a1a",
+                  padding: "4px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+          )}
+
           <nav style={{ padding: isMobile ? "16px 0" : "12px 0", display: "flex", flexDirection: "column" }}>
             {navItems.map((item) => {
-              const isActive = pathname === item.path || (pathname.startsWith(item.path) && item.path !== "/admin");
+              const isActive = pathname === item.path || (item.path !== "/" && item.path !== "/admin" && pathname.startsWith(item.path));
               const Icon = item.icon;
               return (
                 <Link

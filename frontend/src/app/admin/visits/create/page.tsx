@@ -1,10 +1,11 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AdminPageHeader, FormField, ConfirmModal } from "../../components";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { Plus, Trash2, Upload, AlertCircle, CheckCircle, X, FileText, Loader2 } from "lucide-react";
+import { saveDraft, getDraftById } from "@/app/admin/drafts/draftsStorage";
 
 function DynamicHighlightsInput({ 
   label, 
@@ -67,7 +68,10 @@ function DynamicHighlightsInput({
 
 export default function CreateVisitPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { role } = useAuth();
+  
+  const draftId = searchParams?.get("draftId") || undefined;
   
   const [delegations, setDelegations] = useState<any[]>([{ name: "", designation: "", email: "", country: "" }]);
   const [ourPOCs, setOurPOCs] = useState<any[]>([{ name: "", designation: "", email: "", contactNumber: "" }]);
@@ -85,6 +89,7 @@ export default function CreateVisitPage() {
 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showDraftConfirm, setShowDraftConfirm] = useState(false);
 
   const [showPOCDropdown, setShowPOCDropdown] = useState(false);
   const [showEventDropdown, setShowEventDropdown] = useState(false);
@@ -133,7 +138,22 @@ export default function CreateVisitPage() {
       }
     };
     fetchData();
-  }, []);
+
+    if (draftId && role) {
+      const draft = getDraftById(role, draftId);
+      if (draft && draft.data) {
+        setUniversity(draft.data.university || "");
+        setVisitDate(draft.data.visitDate || "");
+        setDelegations(draft.data.delegations?.length ? draft.data.delegations : [{ name: "", designation: "", email: "", country: "" }]);
+        setOurPOCs(draft.data.ourPOCs?.length ? draft.data.ourPOCs : [{ name: "", designation: "", email: "", contactNumber: "" }]);
+        setPurpose(draft.data.purpose || "");
+        setHighlights(draft.data.highlights?.length ? draft.data.highlights : [""]);
+        setUploadedPhotos(draft.data.uploadedPhotos || []);
+        setReportFileUrl(draft.data.reportFileUrl || null);
+        setReportFileName(draft.data.reportFileName || "");
+      }
+    }
+  }, [role, draftId]);
 
   const addPOC = (user?: any) => {
     if (user) {
@@ -595,6 +615,16 @@ export default function CreateVisitPage() {
             </button>
             <button
               type="button"
+              onClick={() => setShowDraftConfirm(true)}
+              style={{
+                padding: "12px 32px", backgroundColor: "#FFFBF2", color: "#1a1a1a",
+                border: "1px solid #1a1a1a", fontSize: "15px", fontWeight: 500, cursor: "pointer", borderRadius: "4px"
+              }}
+            >
+              Save as Draft
+            </button>
+            <button
+              type="button"
               onClick={() => router.push("/admin/visits")}
               style={{
                 padding: "12px 32px", backgroundColor: "transparent", color: "#1a1a1a",
@@ -611,12 +641,29 @@ export default function CreateVisitPage() {
           onClose={() => setShowConfirmDialog(false)}
           onConfirm={handleConfirmSubmit}
           onSuccess={() => router.push("/admin/visits")}
-          title="Confirm Submission"
-          message={role === 'admin' || role === 'editor' ? 'Are you sure you want to submit this visit for approval? This action cannot be undone.' : 'Are you sure you want to record this visit? This action cannot be undone.'}
-          confirmLabel="Confirm"
+          title="Record Visit?"
+          confirmLabel="Yes, Submit"
           cancelLabel="Cancel"
           submittingLabel="Submitting..."
-          successLabel={role === 'admin' || role === 'editor' ? 'Submitted for Approval' : 'Visit Recorded'}
+          successLabel="Submitted Successfully!"
+        />
+
+        <ConfirmModal
+          isOpen={showDraftConfirm}
+          onClose={() => setShowDraftConfirm(false)}
+          onConfirm={() => {
+            const payload = {
+              university, visitDate, delegations, ourPOCs, purpose, highlights, uploadedPhotos, reportFileUrl, reportFileName
+            };
+            saveDraft(role, "Visit", university || "Untitled Visit", payload, draftId);
+            return Promise.resolve(true);
+          }}
+          onSuccess={() => router.push("/admin/drafts")}
+          title="Save as Draft?"
+          confirmLabel="Save Draft"
+          cancelLabel="Cancel"
+          submittingLabel="Saving..."
+          successLabel="Draft Saved!"
         />
       </div>
     </div>
