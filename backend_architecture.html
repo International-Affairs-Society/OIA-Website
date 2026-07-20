@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OIA Backend Architecture — Full Diagrams</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #ffffff;
+    color: #1a1a2e;
+    padding: 40px 60px;
+    line-height: 1.7;
+  }
+  
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #0f172a;
+    border-bottom: 3px solid #3b82f6;
+    padding-bottom: 12px;
+  }
+  
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-top: 48px;
+    margin-bottom: 16px;
+    color: #1e293b;
+    page-break-before: always;
+  }
+  
+  h2:first-of-type {
+    page-break-before: avoid;
+  }
+
+  p, li {
+    font-size: 13px;
+    color: #475569;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 32px;
+  }
+
+  .diagram-container {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 24px;
+    margin: 20px 0;
+    overflow-x: auto;
+  }
+  
+  .diagram-container .mermaid {
+    display: flex;
+    justify-content: center;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 12px;
+  }
+  
+  th {
+    background: #f1f5f9;
+    font-weight: 600;
+    text-align: left;
+    padding: 10px 14px;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+  }
+  
+  td {
+    padding: 10px 14px;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    vertical-align: top;
+  }
+
+  .note {
+    background: #eff6ff;
+    border-left: 4px solid #3b82f6;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 13px;
+    color: #1e40af;
+  }
+
+  @media print {
+    body { padding: 20px 30px; }
+    h2 { page-break-before: always; }
+    h2:first-of-type { page-break-before: avoid; }
+    .diagram-container { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<h1>OIA Backend — Complete Architecture Diagrams</h1>
+<p class="subtitle">Bennett University — Office of International Affairs Student Portal<br>
+Verified against codebase on 2026-07-18 | Express.js + Prisma + Supabase + Cloudflare R2</p>
+
+<h2>1. Request Lifecycle (Middleware Pipeline)</h2>
+<p>Every incoming HTTP request passes through this pipeline before reaching any controller:</p>
+
+<div class="diagram-container">
+<pre class="mermaid">
+flowchart TD
+    REQ([Incoming HTTP Request]) --> HELMET[helmet: Security Headers]
+    HELMET --> RATE[express-rate-limit\n100 req/15min prod]
+    RATE -->|Exceeded| R429([429 Too Many Requests])
+    RATE -->|OK| CORS[CORS Check]
+    CORS -->|Blocked| RCORS([CORS Error])
+    CORS -->|OK| PARSE[express.json + cookieParser]
+    PARSE --> ROUTER{Route Matched?}
+    ROUTER -->|No| R404([404 NOT_FOUND])
+    ROUTER -->|Yes| AUTH{Requires Auth?}
+    AUTH -->|No| CTRL[Controller Logic]
+    AUTH -->|Yes| A1
+
+    A1[Extract token from\ncookie or Bearer header] --> A2{Token found?}
+    A2 -->|No| A401([401 UNAUTHORIZED])
+    A2 -->|Yes| A3[jwt.verify SUPABASE_JWT_SECRET]
+    A3 -->|Valid| A5[Decoded payload]
+    A3 -->|Invalid| A4[Fallback: supabase.auth.getUser]
+    A4 -->|Fail| A401
+    A4 -->|OK| A5
+    A5 --> A6{Email @bennett.edu.in?}
+    A6 -->|No| A403([403 FORBIDDEN])
+    A6 -->|Yes| A7[Assign role via regex]
+    A7 --> A8[prisma.users.upsert - JIT]
+    A8 --> A12[req.user = appUser]
+    A12 --> ROLE{Requires Role?}
+    ROLE -->|No| CTRL
+    ROLE -->|Yes| R1{Role authorized?}
+    R1 -->|No| R403([403 Insufficient role])
+    R1 -->|Yes| CTRL
+    CTRL --> ZOD{Zod Validation}
+    ZOD -->|Fail| ZERR([400 VALIDATION_ERROR])
+    ZOD -->|Pass| RESP([Business Logic + Response])
+</pre>
+</div>
+
+<h2>2. Review and Approval Workflow</h2>
+<p>Programs, Events, MOUs, and Visits share this pattern. Admin/Editor writes are intercepted into a review queue.</p>
+
+<div class="diagram-container">
+<pre class="mermaid">
+flowchart TD
+    REQ([Create / Update / Delete]) --> ROLE{User Role?}
+    ROLE -->|super_admin| DIRECT[Direct DB Write]
+    DIRECT --> AUDIT[audit_logs entry]
+    AUDIT --> CACHE[invalidateCache]
+    CACHE --> RES201([201/200 Response])
+
+    ROLE -->|admin / editor| REVIEW[Create Review Record]
+    REVIEW --> RDATA[reviews.data JSON:\naction, targetId, payload]
+    RDATA --> RES202([202 Accepted + reviewId])
+
+    RES202 -.-> APPROVE{Super Admin Decision}
+    APPROVE -->|Approve| APPLY[Apply payload to target table\nSet status: published]
+    APPLY --> ALOG[audit_logs: Approved]
+    APPROVE -->|Reject| REJECT[status: rejected]
+    REJECT --> RLOG[audit_logs: Rejected]
+    APPROVE -->|Changes| CHANGES[Append comment\nstatus: changes_requested]
+    CHANGES --> CLOG[audit_logs: Requested_Changes]
+</pre>
+</div>
+
+<h2>3. All Backend Domains and Routes</h2>
+
+<table>
+<tr><th>Domain</th><th>Routes</th><th>Key Logic</th></tr>
+<tr><td><strong>Auth</strong></td><td>GET /me, POST /set-cookie, POST /logout</td><td>Return user profile, relay tokens to HttpOnly cookies, clear cookies</td></tr>
+<tr><td><strong>Programs</strong></td><td>GET /, GET /:id, POST /, PATCH /:id, DELETE /:id</td><td>Public: cached published only. Staff: all statuses. Review intercept for admin/editor. Hard delete + audit</td></tr>
+<tr><td><strong>Events</strong></td><td>GET /, GET /:id, POST /, PATCH /:id, DELETE /:id, POST /:id/register</td><td>Public cached reads. Validates linkedMOU. super_admin auto-publishes. Registration mocked</td></tr>
+<tr><td><strong>MOUs</strong></td><td>GET /, GET /:id, POST /, PATCH /:id, DELETE /:id</td><td>Auto-calculates duration. Nested writes for POCs/documents. Review intercept</td></tr>
+<tr><td><strong>Visits</strong></td><td>GET /, GET /:id, POST /, PATCH /:id, DELETE /:id, PATCH /:id/approve</td><td>Delegations + POCs + reports. Delete also goes through review. super_admin approves</td></tr>
+<tr><td><strong>Applications</strong></td><td>GET /, GET /me, GET /:id, POST /, PATCH /:id/stage, POST /bulk/status</td><td>Unique constraint per student+program. 4-stage pipeline. Bulk update. Owner access check</td></tr>
+<tr><td><strong>Documents</strong></td><td>GET /, GET /:id, POST /, PATCH /:id/verify, DELETE /:id</td><td>Upload to R2. Pre-signed URLs (15min). Categories: PASSPORT, TRANSCRIPT, etc. Owner delete if PENDING</td></tr>
+<tr><td><strong>Users</strong></td><td>GET /, GET /:id, POST /, PATCH /:id, DELETE /:id</td><td>Cannot self-assign super_admin. Delete transaction: reassign → unlink → cascade</td></tr>
+<tr><td><strong>Reviews</strong></td><td>GET /, GET /:id, POST /, approve, reject, request-changes</td><td>Editors see own only. Approve applies payload to target. Comments appended as JSON</td></tr>
+<tr><td><strong>Notifications</strong></td><td>GET /me, GET /, POST /, PATCH /:id/read</td><td>Filter: all, role:X, user:ID. Read status mocked</td></tr>
+<tr><td><strong>Analytics</strong></td><td>GET /overview, /applications, /events</td><td>Aggregate counts via Promise.all. Group by stage/program/type</td></tr>
+<tr><td><strong>Media</strong></td><td>POST /, GET /:filename</td><td>Upload to R2. GET streams from R2 with 1-year Cache-Control</td></tr>
+<tr><td><strong>Universities</strong></td><td>CRUD</td><td>Public read, super_admin write</td></tr>
+<tr><td><strong>Calendar</strong></td><td>CRUD</td><td>Authenticated read, super_admin write</td></tr>
+<tr><td><strong>Audit Logs</strong></td><td>GET /</td><td>Read-only, staff/leadership</td></tr>
+<tr><td><strong>Others</strong></td><td>Change Requests, Student Records, Program Leads</td><td>Standard CRUD with role restrictions</td></tr>
+</table>
+
+<h2>4. Data Flow: Storage and Caching</h2>
+
+<div class="diagram-container">
+<pre class="mermaid">
+flowchart TD
+    subgraph READ [Read Path]
+        R1[Read Request] --> R2{Cache hit?}
+        R2 -->|Hit| R3([Return cached])
+        R2 -->|Miss| R4[(PostgreSQL via Prisma)]
+        R4 --> R5[setCached 60s TTL]
+        R5 --> R6([JSON Response])
+    end
+
+    subgraph WRITE [Write Path]
+        W1[Write Request] --> W2[Zod validate]
+        W2 --> W3[(PostgreSQL Write)]
+        W3 --> W4[(audit_logs)]
+        W4 --> W5[invalidateCache]
+        W5 --> W6([JSON Response])
+    end
+
+    subgraph FILES [File Operations]
+        F1[Upload: multer] --> F2[R2 PutObjectCommand]
+        F2 --> F3[(Save metadata in DB)]
+        F4[Download] --> F5[getSignedUrl 15min]
+        F5 --> F6([Pre-signed URL])
+        F7[Media Proxy] --> F8[Stream from R2\nCache-Control: 1 year]
+    end
+</pre>
+</div>
+
+<h2>5. User Deletion Transaction</h2>
+<p>The most complex operation — a single Prisma transaction handling cascading cleanup:</p>
+
+<div class="diagram-container">
+<pre class="mermaid">
+flowchart TD
+    DEL([DELETE /users/:id]) --> FIND{User exists?}
+    FIND -->|No| R404([404 NOT_FOUND])
+    FIND -->|Yes| T1[Find fallback admin]
+
+    T1 --> T2{Fallback found?}
+    T2 -->|Yes| REASSIGN[Reassign ownership:\nprograms, events, mous,\nvisits, reviews]
+    T2 -->|No| CASCADE[Cascade delete all\nowned resources]
+    REASSIGN --> UNLINK[Unlink POC refs → null]
+    CASCADE --> UNLINK
+    UNLINK --> DELAPPS[Delete applications]
+    DELAPPS --> DELSTUD[Delete student record]
+    DELSTUD --> DELUSER[Delete user]
+    DELUSER --> R200([200 Deleted])
+</pre>
+</div>
+
+<div class="note">
+<strong>How to export as PDF:</strong> Open this file in Chrome → press <strong>Ctrl+P</strong> → set Destination to <strong>Save as PDF</strong> → click Save. The diagrams will render with page breaks between sections.
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+</script>
+
+</body>
+</html>
