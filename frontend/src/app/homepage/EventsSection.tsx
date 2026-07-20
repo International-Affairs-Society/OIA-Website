@@ -43,7 +43,7 @@ export default function EventsSection() {
     const fetchEvents = async () => {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-        const res = await fetch(`${API_URL}/api/v1/events`);
+        const res = await fetch(`${API_URL}/api/v1/events?eventType=past`);
         if (res.ok) {
           const json = await res.json();
           // Filter out archived, sort if necessary, take top 5
