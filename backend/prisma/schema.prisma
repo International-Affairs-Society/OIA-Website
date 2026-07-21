@@ -178,6 +178,7 @@ model programs {
 model events {
   id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title               String
+  subtitle            String?
   event_type          EventType
   description         String?
   location            String?

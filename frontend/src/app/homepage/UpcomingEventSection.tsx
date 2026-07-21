@@ -130,8 +130,8 @@ export default function UpcomingEventSection() {
               location: e.location || "Bennett University",
               date: e.date || e.start_date,
               posterUrl:
-                e.poster_url ||
-                "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=800&auto=format&fit=crop",
+                (e.poster_url ||
+                "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=800&auto=format&fit=crop").replace("localhost", "127.0.0.1"),
             });
             return;
           }
@@ -273,6 +273,7 @@ export default function UpcomingEventSection() {
                 style={{ objectFit: "cover" }}
                 sizes="(max-width: 768px) 100vw, 42vw"
                 priority
+                unoptimized={displayEvent.posterUrl.includes("127.0.0.1") || displayEvent.posterUrl.includes("localhost")}
               />
             </div>
 

@@ -9,6 +9,7 @@ import { getCached, setCached, invalidateCache } from '../lib/cache.js'
 // Validation Schema for creation
 const eventSchema = z.object({
   title: z.string().min(1),
+  subtitle: z.string().optional().nullable(),
   eventType: z.enum(['upcoming', 'past']),
   description: z.string().optional().nullable(),
   location: z.string().optional().nullable(),
@@ -33,6 +34,7 @@ function formatEvent(ev) {
     mouId: ev.linked_mou_id || null,
     mou: ev.mou?.name || 'None',
     title: ev.title,
+    subtitle: ev.subtitle || null,
     date: ev.date ? ev.date.toISOString().split('T')[0] : null,
     endDate: ev.end_date ? ev.end_date.toISOString().split('T')[0] : null,
     highlights: ev.highlights || [],
@@ -187,6 +189,7 @@ export const createEvent = asyncHandler(async (req, res) => {
 
   const dbData = {
     title: parsed.title,
+    subtitle: parsed.subtitle || null,
     event_type: parsed.eventType,
     description: parsed.description || null,
     location: parsed.location || null,
@@ -280,6 +283,7 @@ export const updateEvent = asyncHandler(async (req, res) => {
 
   const dbData = {}
   if (parsed.title !== undefined) dbData.title = parsed.title
+  if (parsed.subtitle !== undefined) dbData.subtitle = parsed.subtitle
   if (parsed.eventType !== undefined) dbData.event_type = parsed.eventType
   if (parsed.description !== undefined) dbData.description = parsed.description
   if (parsed.location !== undefined) dbData.location = parsed.location

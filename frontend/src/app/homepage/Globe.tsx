@@ -180,7 +180,7 @@ export default function Globe({ mouMarkers, compact }: GlobeProps = {}) {
           }
         }
 
-        // Cap pixel ratio on low-end — renders 2.25x fewer pixels on 1.5x DPI screens
+        // Cap pixel ratio on low-end
         if (isLowEnd) {
           const renderer = globeEl.current.renderer();
           if (renderer) {
@@ -218,44 +218,44 @@ export default function Globe({ mouMarkers, compact }: GlobeProps = {}) {
       style={{ width: compact ? "100%" : globeSize, height: compact ? 380 : globeSize }}
     >
       <GlobeGL
-        ref={globeEl}
-        width={compact ? 600 : globeSize}
-        height={compact ? 380 : globeSize}
-        backgroundColor="rgba(0,0,0,0)"
-        showAtmosphere={!isLowEnd}
-        atmosphereColor="#EEE0B7"
-        atmosphereAltitude={0.15}
-        showGlobe={true}
-        globeMaterial={globeMaterial}
+          ref={globeEl}
+          width={compact ? 600 : globeSize}
+          height={compact ? 380 : globeSize}
+          backgroundColor="rgba(0,0,0,0)"
+          showAtmosphere={true}
+          atmosphereColor="#EEE0B7"
+          atmosphereAltitude={0.15}
+          showGlobe={true}
+          globeMaterial={globeMaterial}
 
-        // Polygons
-        polygonsData={countries.features}
-        polygonCapColor={POLYGON_CAP_COLOR}
-        polygonSideColor={POLYGON_SIDE_COLOR}
-        polygonStrokeColor={POLYGON_STROKE_COLOR}
-        polygonAltitude={0.005}
-        onPolygonHover={NOOP}
-        polygonLabel={EMPTY_LABEL}
+          // Polygons
+          polygonsData={countries.features}
+          polygonCapColor={POLYGON_CAP_COLOR}
+          polygonSideColor={POLYGON_SIDE_COLOR}
+          polygonStrokeColor={POLYGON_STROKE_COLOR}
+          polygonAltitude={0.005}
+          onPolygonHover={NOOP}
+          polygonLabel={EMPTY_LABEL}
 
-        // Arcs — only show when NOT using mouMarkers
-        arcsData={mouMarkers ? [] : ARCS}
-        arcColor={ARC_COLOR}
-        arcAltitudeAutoScale={0.6}
-        arcStroke={0.1}
-        arcDashLength={0.9}
-        arcDashGap={4}
-        arcDashAnimateTime={isLowEnd ? 5000 : 3000}
-        arcDashInitialGap={ARC_INITIAL_GAP}
-        onArcHover={NOOP}
-        arcLabel={EMPTY_LABEL}
+          // Arcs — only show when NOT using mouMarkers
+          arcsData={mouMarkers ? [] : ARCS}
+          arcColor={ARC_COLOR}
+          arcAltitudeAutoScale={0.6}
+          arcStroke={0.1}
+          arcDashLength={0.9}
+          arcDashGap={4}
+          arcDashAnimateTime={3000}
+          arcDashInitialGap={ARC_INITIAL_GAP}
+          onArcHover={NOOP}
+          arcLabel={EMPTY_LABEL}
 
-        // Point markers for MOUs
-        pointsData={pointsData}
-        pointColor={pointColor}
-        pointAltitude={pointAlt}
-        pointRadius={pointRadius}
-        pointLabel={pointLabel}
-      />
+          // Point markers for MOUs
+          pointsData={pointsData}
+          pointColor={pointColor}
+          pointAltitude={pointAlt}
+          pointRadius={pointRadius}
+          pointLabel={pointLabel}
+        />
     </div>
   );
 }

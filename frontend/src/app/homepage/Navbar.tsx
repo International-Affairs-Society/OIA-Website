@@ -651,6 +651,7 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
         isOpen={notifPanelOpen}
         onClose={() => setNotifPanelOpen(false)}
         reviews={reviews}
+        isDarkTheme={isDarkPage}
       />
     )}
     </>

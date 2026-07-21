@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AdminPageHeader, ConfirmModal } from "../components";
+import { AdminPageHeader, ConfirmModal, CustomDropdown } from "../components";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { getDrafts, deleteDraft, DraftItem, DraftType } from "./draftsStorage";
 import { Edit3, Eye, Trash2, FileText, Search } from "lucide-react";
@@ -63,20 +63,19 @@ export default function DraftsPage() {
         backgroundColor: "transparent", padding: "1rem 0", borderBottom: "1px solid rgba(181, 189, 160, 0.4)"
       }}>
         <div style={{ fontSize: "14px", fontWeight: 600, color: "#1a1a1a" }}>Filter by Type:</div>
-        <select 
-          value={filterType} 
-          onChange={(e) => setFilterType(e.target.value as DraftType | "All")}
-          style={{
-            padding: "8px 16px", borderRadius: "8px", border: "1px solid #b5bda0",
-            backgroundColor: "transparent", fontSize: "13px", color: "#1a1a1a", minWidth: "150px"
-          }}
-        >
-          <option value="All">All Types</option>
-          <option value="MOU">MOU</option>
-          <option value="Event">Event</option>
-          <option value="Program">Program</option>
-          <option value="Visit">Visit</option>
-        </select>
+        <div style={{ minWidth: "150px" }}>
+          <CustomDropdown 
+            value={filterType}
+            onChange={(val) => setFilterType(val as DraftType | "All")}
+            options={[
+              { label: "All Types", value: "All" },
+              { label: "MOU", value: "MOU" },
+              { label: "Event", value: "Event" },
+              { label: "Program", value: "Program" },
+              { label: "Visit", value: "Visit" }
+            ]}
+          />
+        </div>
         <div style={{ marginLeft: "auto", fontSize: "13px", color: "#6b6b6b" }}>
           Showing {filteredDrafts.length} drafts
         </div>

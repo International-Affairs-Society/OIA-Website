@@ -20,12 +20,25 @@ export default function SmoothScroll({
 
     const isLowEnd = deviceTier === "low";
 
+    // Global GSAP optimizations for accessibility and low-end hardware
+    if (isLowEnd || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      gsap.ticker.fps(30); // Cap GSAP at 30fps to save battery/CPU
+      gsap.config({ force3D: false }); // Disable heavy 3D hardware acceleration for standard tweens
+    }
+
+    if (isLowEnd) {
+      // Completely bypass smooth scrolling on low end devices to save CPU/GPU.
+      return;
+    }
+
+    const isMidEnd = deviceTier === "mid";
+
     const lenis = new Lenis({
-      lerp: isLowEnd ? 0.15 : 0.08,           // Faster convergence on low-end = fewer frames
+      lerp: isMidEnd ? 0.15 : 0.08, // Lighter, faster lerp on Mid tier to save CPU cycles
       wheelMultiplier: 1.0,
-      touchMultiplier: isLowEnd ? 1.2 : 1.6,
       smoothWheel: true,
-      syncTouch: !isLowEnd,                     // Disable syncTouch on low-end (saves CPU)
+      smoothTouch: false,
+      syncTouch: false,
     });
 
     // Expose on window so other components (e.g. NotificationPanel) can pause/resume
@@ -33,35 +46,19 @@ export default function SmoothScroll({
 
     lenis.on("scroll", ScrollTrigger.update);
 
-    if (isLowEnd) {
-      // Low-end: use native requestAnimationFrame instead of GSAP ticker (30% less CPU)
-      let rafId: number;
-      const update = (time: number) => {
-        lenis.raf(time);
-        rafId = requestAnimationFrame(update);
-      };
-      rafId = requestAnimationFrame(update);
+    // Mid/High: full GSAP ticker integration for buttery-smooth scrolling
+    const update = (time: number) => {
+      lenis.raf(time * 1000);
+    };
 
-      return () => {
-        cancelAnimationFrame(rafId);
-        (window as any).__lenis = null;
-        lenis.destroy();
-      };
-    } else {
-      // Mid/High: full GSAP ticker integration for buttery-smooth scrolling
-      const update = (time: number) => {
-        lenis.raf(time * 1000);
-      };
+    gsap.ticker.add(update);
+    gsap.ticker.lagSmoothing(0);
 
-      gsap.ticker.add(update);
-      gsap.ticker.lagSmoothing(0);
-
-      return () => {
-        (window as any).__lenis = null;
-        lenis.destroy();
-        gsap.ticker.remove(update);
-      };
-    }
+    return () => {
+      (window as any).__lenis = null;
+      lenis.destroy();
+      gsap.ticker.remove(update);
+    };
   }, [pathname, deviceTier]);
 
   return <>{children}</>;

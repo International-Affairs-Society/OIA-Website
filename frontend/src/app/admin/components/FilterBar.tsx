@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import CustomDropdown from "./CustomDropdown";
+import SearchInput from "./SearchInput";
 
 export interface FilterBarProps {
   filters?: {
@@ -49,15 +50,9 @@ export default function FilterBar({
       }}
     >
       <div style={{ flex: "1 1 200px" }}>
-        <input
-          type="text"
+        <SearchInput 
           placeholder={searchPlaceholder || "Search..."}
-          onChange={(e) => onSearch && onSearch(e.target.value)}
-          style={{
-            ...inputStyle,
-            width: "100%",
-            maxWidth: "300px",
-          }}
+          onChange={(val) => onSearch && onSearch(val)}
         />
       </div>
 

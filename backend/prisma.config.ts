@@ -4,5 +4,8 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 export default defineConfig({
-  earlyAccess: true
+  earlyAccess: true,
+  datasource: {
+    url: process.env.DIRECT_URL || process.env.DATABASE_URL
+  }
 })

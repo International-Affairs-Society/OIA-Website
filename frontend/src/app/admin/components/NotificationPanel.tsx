@@ -9,6 +9,7 @@ interface NotificationPanelProps {
   isOpen: boolean;
   onClose: () => void;
   reviews: ReviewItem[];
+  isDarkTheme?: boolean;
 }
 
 function formatTimeAgo(dateStr: string): string {
@@ -40,9 +41,35 @@ function getTypeBadgeColor(type: string): string {
   }
 }
 
-export default function NotificationPanel({ isOpen, onClose, reviews }: NotificationPanelProps) {
+export default function NotificationPanel({ isOpen, onClose, reviews, isDarkTheme = false }: NotificationPanelProps) {
   const router = useRouter();
   const { role } = useAuth();
+
+  const theme = isDarkTheme ? {
+    glassBg: "rgba(15, 15, 15, 0.8)",
+    glassBorder: "rgba(255, 255, 255, 0.1)",
+    textPrimary: "#ffffff",
+    textSecondary: "#a1a1a1",
+    borderPrimary: "#333333",
+    itemBg: "#1a1a1a",
+    itemBorder: "#333333",
+    itemBorderHover: "#555555",
+    btnBg: "#ffffff",
+    btnText: "#1a1a1a",
+    btnBgHover: "#cccccc"
+  } : {
+    glassBg: "rgba(245, 240, 232, 0.65)",
+    glassBorder: "rgba(255, 255, 255, 0.4)",
+    textPrimary: "#1a1a1a",
+    textSecondary: "#6b6b6b",
+    borderPrimary: "#b5bda0",
+    itemBg: "#FFFBF2",
+    itemBorder: "#d4cfc4",
+    itemBorderHover: "#7A8C5E",
+    btnBg: "#1a1a1a",
+    btnText: "#f5f0e8",
+    btnBgHover: "#7A8C5E"
+  };
 
   // Super admin sees pending reviews; editor/admin sees changes_requested items
   const isSuperAdmin = role === "super_admin";
@@ -120,15 +147,15 @@ export default function NotificationPanel({ isOpen, onClose, reviews }: Notifica
         }}
       >
         <LiquidGlass 
-          backgroundColor="rgba(245, 240, 232, 0.65)"
-          borderColor="rgba(255, 255, 255, 0.4)"
+          backgroundColor={theme.glassBg}
+          borderColor={theme.glassBorder}
         />
 
         {/* Header */}
         <div
           style={{
             padding: "24px",
-            borderBottom: "1px solid #b5bda0",
+            borderBottom: `1px solid ${theme.borderPrimary}`,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -140,14 +167,14 @@ export default function NotificationPanel({ isOpen, onClose, reviews }: Notifica
                 margin: 0,
                 fontSize: "28px",
                 fontWeight: 700,
-                color: "#1a1a1a",
+                color: theme.textPrimary,
                 fontFamily: "var(--font-instrument-serif)",
                 letterSpacing: "-0.01em",
               }}
             >
               Notifications
             </h3>
-            <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#6b6b6b" }}>
+            <p style={{ margin: "4px 0 0", fontSize: "12px", color: theme.textSecondary }}>
               {headerSubtext}
             </p>
           </div>
@@ -158,7 +185,7 @@ export default function NotificationPanel({ isOpen, onClose, reviews }: Notifica
               border: "none",
               cursor: "pointer",
               fontSize: "22px",
-              color: "#6b6b6b",
+              color: theme.textSecondary,
               lineHeight: 1,
               width: "32px",
               height: "32px",
@@ -169,12 +196,12 @@ export default function NotificationPanel({ isOpen, onClose, reviews }: Notifica
               transition: "all 0.15s",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.05)";
-              e.currentTarget.style.color = "#1a1a1a";
+              e.currentTarget.style.backgroundColor = isDarkTheme ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)";
+              e.currentTarget.style.color = theme.textPrimary;
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = "transparent";
-              e.currentTarget.style.color = "#6b6b6b";
+              e.currentTarget.style.color = theme.textSecondary;
             }}
           >
             &times;
@@ -187,7 +214,7 @@ export default function NotificationPanel({ isOpen, onClose, reviews }: Notifica
           style={{ flex: 1, overflowY: "auto", padding: "16px" }}
         >
           {relevantReviews.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "3rem 1rem", color: "#6b6b6b" }}>
+            <div style={{ textAlign: "center", padding: "3rem 1rem", color: theme.textSecondary }}>
               <div style={{ fontSize: "40px", marginBottom: "12px" }}>✓</div>
               <p style={{ fontSize: "14px", margin: 0 }}>{emptyText}</p>
             </div>
@@ -198,14 +225,14 @@ export default function NotificationPanel({ isOpen, onClose, reviews }: Notifica
                   key={review.id}
                   style={{
                     padding: "16px",
-                    backgroundColor: "#FFFBF2",
-                    border: "1px solid #d4cfc4",
+                    backgroundColor: theme.itemBg,
+                    border: `1px solid ${theme.itemBorder}`,
                     borderRadius: "8px",
                     transition: "border-color 0.2s",
                     cursor: "default",
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#7A8C5E")}
-                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#d4cfc4")}
+                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = theme.itemBorderHover)}
+                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = theme.itemBorder)}
                 >
                   {/* Type badge */}
                   <div style={{ marginBottom: "10px", display: "flex", alignItems: "center", gap: "8px" }}>
@@ -248,7 +275,7 @@ export default function NotificationPanel({ isOpen, onClose, reviews }: Notifica
                     style={{
                       fontSize: "14px",
                       fontWeight: 600,
-                      color: "#1a1a1a",
+                      color: theme.textPrimary,
                       margin: "0 0 8px",
                       fontFamily: "var(--font-outfit)",
                     }}
@@ -259,7 +286,7 @@ export default function NotificationPanel({ isOpen, onClose, reviews }: Notifica
                   {/* For editor/admin: show latest comment preview */}
                   {!isSuperAdmin && review.comments.length > 0 && (
                     <p style={{
-                      fontSize: "12px", color: "#6b6b6b", margin: "0 0 8px", lineHeight: 1.5,
+                      fontSize: "12px", color: theme.textSecondary, margin: "0 0 8px", lineHeight: 1.5,
                       overflow: "hidden", textOverflow: "ellipsis",
                       display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any,
                     }}>
@@ -269,9 +296,9 @@ export default function NotificationPanel({ isOpen, onClose, reviews }: Notifica
 
                   {/* Submitter info (for super admin) */}
                   {isSuperAdmin && (
-                    <div style={{ fontSize: "12px", color: "#6b6b6b", lineHeight: 1.7 }}>
+                    <div style={{ fontSize: "12px", color: theme.textSecondary, lineHeight: 1.7 }}>
                       <div>
-                        <strong style={{ color: "#1a1a1a" }}>{review.submittedBy.name}</strong>
+                        <strong style={{ color: theme.textPrimary }}>{review.submittedBy.name}</strong>
                       </div>
                       <div>{review.submittedBy.email}</div>
                       <div>
@@ -291,10 +318,10 @@ export default function NotificationPanel({ isOpen, onClose, reviews }: Notifica
                       justifyContent: "space-between",
                       marginTop: "12px",
                       paddingTop: "10px",
-                      borderTop: "1px solid #e8e3d9",
+                      borderTop: `1px solid ${theme.itemBorder}`,
                     }}
                   >
-                    <span style={{ fontSize: "11px", color: "#999" }}>
+                    <span style={{ fontSize: "11px", color: theme.textSecondary }}>
                       {formatTimeAgo(review.submittedAt)}
                     </span>
                     <button
@@ -305,14 +332,14 @@ export default function NotificationPanel({ isOpen, onClose, reviews }: Notifica
                         fontWeight: 600,
                         letterSpacing: "0.05em",
                         textTransform: "uppercase",
-                        backgroundColor: "#1a1a1a",
-                        color: "#f5f0e8",
+                        backgroundColor: theme.btnBg,
+                        color: theme.btnText,
                         border: "none",
                         cursor: "pointer",
                         transition: "background-color 0.2s",
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#7A8C5E")}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#1a1a1a")}
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = theme.btnBgHover)}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = theme.btnBg)}
                     >
                       View →
                     </button>

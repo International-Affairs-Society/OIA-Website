@@ -95,6 +95,7 @@ export default function CardFlip({
       style={containerStyle}
       onMouseEnter={() => setIsFlipped(true)}
       onMouseLeave={() => setIsFlipped(false)}
+      onClick={() => setIsFlipped(!isFlipped)}
     >
       <div style={innerStyle}>
         {/* ═══ FRONT FACE ═══ */}

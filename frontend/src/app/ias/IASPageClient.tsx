@@ -101,13 +101,13 @@ export default function IASPageClient() {
         {/* ═══ HERO — Full-screen video background ═══ */}
         <section
           ref={heroRef}
+          className="ias-hero-section"
           style={{
             position: "relative",
-            height: "100vh",
             width: "100%",
+            height: "100vh",
             overflow: "hidden",
             display: "flex",
-            alignItems: "center",
             justifyContent: "center",
             backgroundColor: "#0a0a0a",
           }}
@@ -159,6 +159,7 @@ export default function IASPageClient() {
 
           {/* ═══ Centered Hero Content ═══ */}
           <div
+            className="ias-hero-content"
             style={{
               position: "relative",
               zIndex: 3,
@@ -167,7 +168,6 @@ export default function IASPageClient() {
               alignItems: "center",
               textAlign: "center",
               padding: "0 24px",
-              marginTop: "-160px",
             }}
           >
             {/* Main Headline */}
@@ -580,6 +580,28 @@ function TopographicBackground() {
           <feBlend in="lit" in2="SourceGraphic" mode="normal" />
         </filter>
       </svg>
+
+      <style>{`
+        /* Mobile alignment */
+        .ias-hero-section {
+          align-items: flex-start;
+          padding-top: 130px;
+        }
+        .ias-hero-content {
+          margin-top: 0px;
+        }
+
+        /* Desktop alignment */
+        @media (min-width: 768px) {
+          .ias-hero-section {
+            align-items: center;
+            padding-top: 0px;
+          }
+          .ias-hero-content {
+            margin-top: -160px;
+          }
+        }
+      `}</style>
     </div>
   );
 }

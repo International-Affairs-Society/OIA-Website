@@ -179,8 +179,12 @@ export default function ProgramsSection() {
         <SplashCursor
           COLOR="#D12027"
           RAINBOW_MODE={false}
-          SPLAT_FORCE={4000}
+          SPLAT_FORCE={deviceTier === "mid" ? 2000 : 4000}
           DENSITY_DISSIPATION={2.5}
+          SIM_RESOLUTION={deviceTier === "mid" ? 64 : 128}
+          DYE_RESOLUTION={deviceTier === "mid" ? 512 : 1440}
+          CURL={deviceTier === "mid" ? 10 : 50}
+          PRESSURE_ITERATIONS={deviceTier === "mid" ? 10 : 20}
         />
       )}
 

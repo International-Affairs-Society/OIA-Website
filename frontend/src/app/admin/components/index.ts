@@ -9,4 +9,5 @@ export { default as TabGroup } from './TabGroup';
 export { default as CustomDropdown } from "./CustomDropdown";
 export { default as AdminButton } from "./AdminButton";
 export { default as NotificationPanel } from "./NotificationPanel";
+export { default as SearchInput } from "./SearchInput";
 export * from "./ReadOnlyForms";
