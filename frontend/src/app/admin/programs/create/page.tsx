@@ -329,36 +329,39 @@ export default function CreateProgramPage() {
     };
     fetchData();
 
-    if (draftId && role) {
-      const draft = getDraftById(role, draftId);
-      if (draft && draft.data) {
-        setName(draft.data.name || "");
-        setPartner(draft.data.partner || "");
-        setDuration(draft.data.duration || "");
-        setMou(draft.data.mou || "None");
-        setProgramType(draft.data.programType || "");
-        setCountry(draft.data.country || "");
-        setStartDate(draft.data.startDate || "");
-        setEndDate(draft.data.endDate || "");
-        setLastDateToApply(draft.data.lastDateToApply || "");
-        setShowLivingCost(draft.data.showLivingCost || false);
-        setUseDefaultForm(draft.data.useDefaultForm !== false);
-        setIsComingSoon(draft.data.isComingSoon || false);
-        setOurPOCs(draft.data.ourPOCs || []);
-        setSchoolsEligible(draft.data.schoolsEligible || []);
-        setSemestersEligible(draft.data.semestersEligible || []);
-        setCoursesEligible(draft.data.coursesEligible || []);
-        setOverview(draft.data.overview || "");
-        setHighlights(draft.data.highlights || [""]);
-        setFeeSummary(draft.data.feeSummary || "");
-        setFeeBreakdown(draft.data.feeBreakdown || "");
-        setEstimatedStayCost(draft.data.estimatedStayCost || "");
-        setLivingCostsText(draft.data.livingCostsText || "");
-        setCustomFields(draft.data.customFields || []);
-        setPosterUrl(draft.data.posterUrl || "");
-        setGalleryUrls(draft.data.galleryUrls || []);
+    const loadDraft = async () => {
+      if (draftId && role) {
+        const draft = await getDraftById(role, draftId);
+        if (draft && draft.data) {
+          setName(draft.data.name || "");
+          setPartner(draft.data.partner || "");
+          setDuration(draft.data.duration || "");
+          setMou(draft.data.mou || "None");
+          setProgramType(draft.data.programType || "");
+          setCountry(draft.data.country || "");
+          setStartDate(draft.data.startDate || "");
+          setEndDate(draft.data.endDate || "");
+          setLastDateToApply(draft.data.lastDateToApply || "");
+          setShowLivingCost(draft.data.showLivingCost || false);
+          setUseDefaultForm(draft.data.useDefaultForm !== false);
+          setIsComingSoon(draft.data.isComingSoon || false);
+          setOurPOCs(draft.data.ourPOCs || []);
+          setSchoolsEligible(draft.data.schoolsEligible || []);
+          setSemestersEligible(draft.data.semestersEligible || []);
+          setCoursesEligible(draft.data.coursesEligible || []);
+          setOverview(draft.data.overview || "");
+          setHighlights(draft.data.highlights || [""]);
+          setFeeSummary(draft.data.feeSummary || "");
+          setFeeBreakdown(draft.data.feeBreakdown || "");
+          setEstimatedStayCost(draft.data.estimatedStayCost || "");
+          setLivingCostsText(draft.data.livingCostsText || "");
+          setCustomFields(draft.data.customFields || []);
+          setPosterUrl(draft.data.posterUrl || "");
+          setGalleryUrls(draft.data.galleryUrls || []);
+        }
       }
-    }
+    };
+    loadDraft();
   }, [role, draftId]);
 
   const addPOC = (user?: any) => {

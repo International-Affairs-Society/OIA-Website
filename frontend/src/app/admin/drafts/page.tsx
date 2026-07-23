@@ -22,7 +22,7 @@ export default function DraftsPage() {
 
   useEffect(() => {
     if (role) {
-      setDrafts(getDrafts(role));
+      getDrafts(role).then(setDrafts);
     }
   }, [role]);
 
@@ -46,10 +46,10 @@ export default function DraftsPage() {
     setShowDeleteConfirm(true);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (draftToDelete && role) {
-      deleteDraft(role, draftToDelete);
-      setDrafts(getDrafts(role));
+      await deleteDraft(role, draftToDelete);
+      setDrafts(await getDrafts(role));
     }
     return Promise.resolve(true);
   };

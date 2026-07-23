@@ -139,20 +139,23 @@ export default function CreateVisitPage() {
     };
     fetchData();
 
-    if (draftId && role) {
-      const draft = getDraftById(role, draftId);
-      if (draft && draft.data) {
-        setUniversity(draft.data.university || "");
-        setVisitDate(draft.data.visitDate || "");
-        setDelegations(draft.data.delegations?.length ? draft.data.delegations : [{ name: "", designation: "", email: "", country: "" }]);
-        setOurPOCs(draft.data.ourPOCs?.length ? draft.data.ourPOCs : [{ name: "", designation: "", email: "", contactNumber: "" }]);
-        setPurpose(draft.data.purpose || "");
-        setHighlights(draft.data.highlights?.length ? draft.data.highlights : [""]);
-        setUploadedPhotos(draft.data.uploadedPhotos || []);
-        setReportFileUrl(draft.data.reportFileUrl || null);
-        setReportFileName(draft.data.reportFileName || "");
+    const loadDraft = async () => {
+      if (draftId && role) {
+        const draft = await getDraftById(role, draftId);
+        if (draft && draft.data) {
+          setUniversity(draft.data.university || "");
+          setVisitDate(draft.data.visitDate || "");
+          setDelegations(draft.data.delegations?.length ? draft.data.delegations : [{ name: "", designation: "", email: "", country: "" }]);
+          setOurPOCs(draft.data.ourPOCs?.length ? draft.data.ourPOCs : [{ name: "", designation: "", email: "", contactNumber: "" }]);
+          setPurpose(draft.data.purpose || "");
+          setHighlights(draft.data.highlights?.length ? draft.data.highlights : [""]);
+          setUploadedPhotos(draft.data.uploadedPhotos || []);
+          setReportFileUrl(draft.data.reportFileUrl || null);
+          setReportFileName(draft.data.reportFileName || "");
+        }
       }
-    }
+    };
+    loadDraft();
   }, [role, draftId]);
 
   const addPOC = (user?: any) => {
