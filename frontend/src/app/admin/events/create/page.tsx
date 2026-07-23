@@ -23,17 +23,20 @@ export default function CreateEventPage() {
   const [showDraftConfirm, setShowDraftConfirm] = React.useState(false);
 
   React.useEffect(() => {
-    if (draftId && role) {
-      const draft = getDraftById(role, draftId);
-      if (draft && draft.data) {
-        setTitle(draft.data.title || "");
-        setDescription(draft.data.description || "");
-        setDate(draft.data.date || "");
-        setLocation(draft.data.location || "");
-        setLinkedMOU(draft.data.linkedMOU || "");
-        setIsArchived(draft.data.isArchived || false);
+    const loadDraft = async () => {
+      if (draftId && role) {
+        const draft = await getDraftById(role, draftId);
+        if (draft && draft.data) {
+          setTitle(draft.data.title || "");
+          setDescription(draft.data.description || "");
+          setDate(draft.data.date || "");
+          setLocation(draft.data.location || "");
+          setLinkedMOU(draft.data.linkedMOU || "");
+          setIsArchived(draft.data.isArchived || false);
+        }
       }
-    }
+    };
+    loadDraft();
   }, [role, draftId]);
 
   const handleSaveDraft = () => {

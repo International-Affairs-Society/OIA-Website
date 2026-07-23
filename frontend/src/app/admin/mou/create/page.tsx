@@ -75,25 +75,28 @@ export default function CreateMOUPage() {
     };
     fetchUsers();
 
-    if (draftId && role) {
-      const draft = getDraftById(role, draftId);
-      if (draft && draft.data) {
-        setName(draft.data.name || "");
-        setPartnerUniversity(draft.data.partnerUniversity || "");
-        setCountry(draft.data.country || "");
-        setType(draft.data.type || "Semester Exchange");
-        setStatus(draft.data.status || "Active");
-        setDuration(draft.data.duration || "");
-        setStartDate(draft.data.startDate || "");
-        setExpiryDate(draft.data.expiryDate || "");
-        setNotes(draft.data.notes || "");
-        setSelectedSchools(draft.data.selectedSchools || []);
-        setSelectedSemesters(draft.data.selectedSemesters || []);
-        setSelectedCourses(draft.data.selectedCourses || []);
-        setPartnerPOCs(draft.data.partnerPOCs?.length ? draft.data.partnerPOCs : [{ name: "", designation: "", email: "", contactNumber: "" }]);
-        setOurPOCs(draft.data.ourPOCs || []);
+    const loadDraft = async () => {
+      if (draftId && role) {
+        const draft = await getDraftById(role, draftId);
+        if (draft && draft.data) {
+          setName(draft.data.name || "");
+          setPartnerUniversity(draft.data.partnerUniversity || "");
+          setCountry(draft.data.country || "");
+          setType(draft.data.type || "Semester Exchange");
+          setStatus(draft.data.status || "Active");
+          setDuration(draft.data.duration || "");
+          setStartDate(draft.data.startDate || "");
+          setExpiryDate(draft.data.expiryDate || "");
+          setNotes(draft.data.notes || "");
+          setSelectedSchools(draft.data.selectedSchools || []);
+          setSelectedSemesters(draft.data.selectedSemesters || []);
+          setSelectedCourses(draft.data.selectedCourses || []);
+          setPartnerPOCs(draft.data.partnerPOCs?.length ? draft.data.partnerPOCs : [{ name: "", designation: "", email: "", contactNumber: "" }]);
+          setOurPOCs(draft.data.ourPOCs || []);
+        }
       }
-    }
+    };
+    loadDraft();
   }, [role, draftId]);
 
   const addPartnerPOC = () => {

@@ -26,6 +26,7 @@ import auditRouter from './src/routes/audit.js'
 import mediaRouter from './src/routes/media.js'
 import programLeadsRouter from './src/routes/programLeads.js'
 import visitsRouter from './src/routes/visits.js'
+import draftsRouter from './src/routes/drafts.js'
 
 
 // Import error handler middleware
@@ -92,6 +93,7 @@ app.use('/api/v1/audit', auditRouter)
 app.use('/api/v1/media', mediaRouter)
 app.use('/api/v1/program-leads', programLeadsRouter)
 app.use('/api/v1/visits', visitsRouter)
+app.use('/api/v1/drafts', draftsRouter)
 
 
 // Global 404 Route handler

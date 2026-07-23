@@ -68,7 +68,7 @@ enum ReviewStatus {
   pending
   approved
   rejected
-  changes_requested @map("Changes requested")
+  changes_requested
 }
 
 enum VisitStatus {
@@ -130,6 +130,7 @@ model users {
   reviews    reviews[]
   visits     visits[]
   notifications notifications[]
+  drafts     drafts[]
 }
 
 model students {
@@ -382,3 +383,16 @@ model notifications {
 
   sender           users?   @relation(fields: [sent_by_id], references: [id])
 }
+
+model drafts {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type       String   // "MOU", "Event", "Program", "Visit"
+  title      String?  
+  data       Json     // Stores the exact React state payload
+  user_id    String   @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+
+  user       users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
