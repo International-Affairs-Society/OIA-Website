@@ -159,38 +159,50 @@ export default function GlobeDark() {
       className="relative overflow-visible"
       style={{ width: globeSize, height: globeSize }}
     >
-      <GlobeGL
-        ref={globeEl}
-        width={globeSize}
-        height={globeSize}
-        backgroundColor="rgba(0,0,0,0)"
-        showAtmosphere={!isLowEnd}
-        atmosphereColor="#1e3a5f"
-        atmosphereAltitude={0.18}
-        showGlobe={true}
-        globeMaterial={darkMaterial}
+      {isLowEnd ? (
+        <div 
+          style={{ 
+            width: "100%", 
+            height: "100%", 
+            borderRadius: "50%", 
+            background: "radial-gradient(circle at 30% 30%, rgba(30, 58, 95, 0.4), rgba(0,0,0,0) 70%)",
+            border: "1px dashed rgba(30, 58, 95, 0.3)" 
+          }} 
+        />
+      ) : (
+        <GlobeGL
+          ref={globeEl}
+          width={globeSize}
+          height={globeSize}
+          backgroundColor="rgba(0,0,0,0)"
+          showAtmosphere={true}
+          atmosphereColor="#1e3a5f"
+          atmosphereAltitude={0.18}
+          showGlobe={true}
+          globeMaterial={darkMaterial}
 
-        // Polygons — dark land masses
-        polygonsData={countries.features}
-        polygonCapColor={POLYGON_CAP_COLOR}
-        polygonSideColor={POLYGON_SIDE_COLOR}
-        polygonStrokeColor={POLYGON_STROKE_COLOR}
-        polygonAltitude={0.005}
-        onPolygonHover={NOOP}
-        polygonLabel={EMPTY_LABEL}
+          // Polygons — dark land masses
+          polygonsData={countries.features}
+          polygonCapColor={POLYGON_CAP_COLOR}
+          polygonSideColor={POLYGON_SIDE_COLOR}
+          polygonStrokeColor={POLYGON_STROKE_COLOR}
+          polygonAltitude={0.005}
+          onPolygonHover={NOOP}
+          polygonLabel={EMPTY_LABEL}
 
-        // Arcs — red connection lines
-        arcsData={ARCS}
-        arcColor={ARC_COLOR}
-        arcAltitudeAutoScale={0.6}
-        arcStroke={0.1}
-        arcDashLength={0.9}
-        arcDashGap={4}
-        arcDashAnimateTime={isLowEnd ? 5000 : 3000}
-        arcDashInitialGap={ARC_INITIAL_GAP}
-        onArcHover={NOOP}
-        arcLabel={EMPTY_LABEL}
-      />
+          // Arcs — red connection lines
+          arcsData={ARCS}
+          arcColor={ARC_COLOR}
+          arcAltitudeAutoScale={0.6}
+          arcStroke={0.1}
+          arcDashLength={0.9}
+          arcDashGap={4}
+          arcDashAnimateTime={3000}
+          arcDashInitialGap={ARC_INITIAL_GAP}
+          onArcHover={NOOP}
+          arcLabel={EMPTY_LABEL}
+        />
+      )}
     </div>
   );
 }

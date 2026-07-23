@@ -362,25 +362,26 @@ export default function TimelineSection() {
 
           {/* Node dots */}
           {nodePositions.map((node, i) => (
-            <g key={i}>
-              {/* Glow ring */}
-              <circle
-                cx={node.x}
-                cy={node.y}
-                r="12"
-                fill="none"
-                stroke="rgba(209,32,39,0.2)"
-                strokeWidth="1"
-              />
-              {/* Solid dot */}
-              <circle
-                cx={node.x}
-                cy={node.y}
-                r="5"
-                fill="#D12027"
-              />
-
-            </g>
+            i !== 5 && (
+              <g key={i}>
+                {/* Glow ring */}
+                <circle
+                  cx={node.x}
+                  cy={node.y}
+                  r="12"
+                  fill="none"
+                  stroke="rgba(209,32,39,0.2)"
+                  strokeWidth="1"
+                />
+                {/* Solid dot */}
+                <circle
+                  cx={node.x}
+                  cy={node.y}
+                  r="5"
+                  fill="#D12027"
+                />
+              </g>
+            )
           ))}
         </svg>
 

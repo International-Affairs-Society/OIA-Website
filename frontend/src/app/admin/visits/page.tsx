@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AdminPageHeader, AdminTable } from "../components";
+import { AdminPageHeader, AdminTable, SearchInput } from "../components";
 import ActionButtons from "../components/ActionButtons";
 import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 import { useAuth } from "@/app/admin/roles/AuthContext";
@@ -112,16 +112,12 @@ export default function VisitsPage() {
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem", flexWrap: "wrap", gap: "1rem" }}>
         <div style={{ display: "flex", gap: "1rem", flex: 1, minWidth: "300px" }}>
-          <input
-            type="text"
-            placeholder="Search university..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              padding: "10px 16px", borderRadius: "8px", border: "1px solid #b5bda0",
-              backgroundColor: "#fff", fontSize: "14px", flex: 1, maxWidth: "300px", outline: "none"
-            }}
-          />
+          <div style={{ flex: 1, maxWidth: "300px" }}>
+            <SearchInput 
+              placeholder="Search university..."
+              onChange={(val) => setSearchTerm(val)}
+            />
+          </div>
         </div>
       </div>
 

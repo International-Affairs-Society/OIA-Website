@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { AdminPageHeader } from "@/app/admin/components";
+import { AdminPageHeader, SearchInput } from "@/app/admin/components";
 import CustomDropdown from "@/app/admin/components/CustomDropdown";
 import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 import { MOCK_AUDIT_LOGS, AuditAction } from "../data/mockAudit";
@@ -100,77 +100,75 @@ export default function AuditTrailPage() {
 
       {/* Filters Area */}
       <div style={{
-        display: "flex", gap: "16px", alignItems: "flex-end", flexWrap: "wrap",
+        display: "flex", gap: "16px", alignItems: "stretch", flexWrap: "wrap",
         backgroundColor: "#FFFBF2", padding: "20px", borderRadius: "12px",
         border: "1px solid #b5bda0", marginBottom: "24px"
       }}>
         {/* Name Search */}
-        <div style={{ flex: 1, minWidth: "200px" }}>
+        <div style={{ flex: 1, minWidth: "200px", display: "flex", flexDirection: "column" }}>
           <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#6b6b6b", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
             Search by Name
           </label>
-          <div style={{
-            display: "flex", alignItems: "center", padding: "10px 14px", border: "1px solid #b5bda0",
-            borderRadius: "8px", backgroundColor: "transparent", transition: "border-color 0.2s"
-          }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b6b6b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "8px" }}>
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input
-              type="text"
+          <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+            <SearchInput 
               placeholder="E.g. Alice SuperAdmin"
-              value={searchName}
-              onChange={(e) => setSearchName(e.target.value)}
-              style={{ border: "none", outline: "none", fontSize: "14px", color: "#1a1a1a", width: "100%", backgroundColor: "transparent" }}
+              onChange={(val) => setSearchName(val)}
             />
           </div>
         </div>
 
         {/* Role Filter */}
-        <div style={{ minWidth: "160px" }}>
+        <div style={{ minWidth: "160px", display: "flex", flexDirection: "column" }}>
           <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#6b6b6b", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
             Role
           </label>
-          <CustomDropdown
-            placeholder="All Roles"
-            value={roleFilter}
-            options={ROLE_OPTIONS}
-            onChange={setRoleFilter}
-          />
+          <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+            <div style={{ width: "100%" }}>
+              <CustomDropdown
+                placeholder="All Roles"
+                value={roleFilter}
+                options={ROLE_OPTIONS}
+                onChange={setRoleFilter}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Custom Date Picker (From - To) */}
         <div style={{ display: "flex", gap: "12px" }}>
-          <div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
             <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#6b6b6b", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
               From Date
             </label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              style={{
-                padding: "9px 12px", border: "1px solid #b5bda0", borderRadius: "8px",
-                backgroundColor: "transparent", fontSize: "14px", color: "#1a1a1a", outline: "none",
-                fontFamily: "var(--font-outfit)"
-              }}
-            />
+            <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                style={{
+                  padding: "9px 12px", border: "1px solid #b5bda0", borderRadius: "8px",
+                  backgroundColor: "transparent", fontSize: "14px", color: "#1a1a1a", outline: "none",
+                  fontFamily: "var(--font-outfit)"
+                }}
+              />
+            </div>
           </div>
-          <div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
             <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#6b6b6b", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
               To Date
             </label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              style={{
-                padding: "9px 12px", border: "1px solid #b5bda0", borderRadius: "8px",
-                backgroundColor: "transparent", fontSize: "14px", color: "#1a1a1a", outline: "none",
-                fontFamily: "var(--font-outfit)"
-              }}
-            />
+            <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                style={{
+                  padding: "9px 12px", border: "1px solid #b5bda0", borderRadius: "8px",
+                  backgroundColor: "transparent", fontSize: "14px", color: "#1a1a1a", outline: "none",
+                  fontFamily: "var(--font-outfit)"
+                }}
+              />
+            </div>
           </div>
         </div>
 

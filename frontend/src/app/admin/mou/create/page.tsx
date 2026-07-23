@@ -1,10 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AdminPageHeader, FormField, CustomDropdown, ConfirmModal } from "../../components";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { Plus, Trash2 } from "lucide-react";
+import { saveDraft, getDraftById } from "@/app/admin/drafts/draftsStorage";
 
 const SCHOOL_OPTIONS = ["SCSET", "SOAI", "SEAS", "SOM", "SOL", "TSOM", "SOLA", "SOD", "All"];
 const SEMESTER_OPTIONS = ["Semester 1", "Semester 2", "Semester 3", "Semester 4", "Semester 5", "Semester 6", "Semester 7", "Semester 8", "Semester 9", "Semester 10", "All"];
@@ -26,10 +27,14 @@ interface UserItem {
 
 export default function CreateMOUPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { role } = useAuth();
+  
+  const draftId = searchParams?.get("draftId") || undefined;
 
   // Loading / Saving states
   const [isSaving, setIsSaving] = useState(false);
+  const [showDraftConfirm, setShowDraftConfirm] = useState(false);
   const [users, setUsers] = useState<UserItem[]>([]);
 
   // Form State
@@ -69,7 +74,27 @@ export default function CreateMOUPage() {
       }
     };
     fetchUsers();
-  }, []);
+
+    if (draftId && role) {
+      const draft = getDraftById(role, draftId);
+      if (draft && draft.data) {
+        setName(draft.data.name || "");
+        setPartnerUniversity(draft.data.partnerUniversity || "");
+        setCountry(draft.data.country || "");
+        setType(draft.data.type || "Semester Exchange");
+        setStatus(draft.data.status || "Active");
+        setDuration(draft.data.duration || "");
+        setStartDate(draft.data.startDate || "");
+        setExpiryDate(draft.data.expiryDate || "");
+        setNotes(draft.data.notes || "");
+        setSelectedSchools(draft.data.selectedSchools || []);
+        setSelectedSemesters(draft.data.selectedSemesters || []);
+        setSelectedCourses(draft.data.selectedCourses || []);
+        setPartnerPOCs(draft.data.partnerPOCs?.length ? draft.data.partnerPOCs : [{ name: "", designation: "", email: "", contactNumber: "" }]);
+        setOurPOCs(draft.data.ourPOCs || []);
+      }
+    }
+  }, [role, draftId]);
 
   const addPartnerPOC = () => {
     setPartnerPOCs([...partnerPOCs, { name: "", designation: "", email: "", contactNumber: "" }]);
@@ -182,6 +207,16 @@ export default function CreateMOUPage() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleSaveDraft = () => {
+    const payload = {
+      name, partnerUniversity, country, type, status, duration, 
+      startDate, expiryDate, notes, selectedSchools, selectedSemesters, 
+      selectedCourses, partnerPOCs, ourPOCs
+    };
+    saveDraft(role, "MOU", name, payload, draftId);
+    return Promise.resolve(true);
   };
 
   const sectionHeadingStyle = {
@@ -564,6 +599,21 @@ export default function CreateMOUPage() {
             </button>
             <button
               type="button"
+              onClick={() => setShowDraftConfirm(true)}
+              style={{
+                padding: "10px 24px",
+                backgroundColor: "#FFFBF2",
+                color: "#1a1a1a",
+                border: "1px solid #1a1a1a",
+                fontSize: "14px",
+                cursor: "pointer",
+                borderRadius: "4px"
+              }}
+            >
+              Save as Draft
+            </button>
+            <button
+              type="button"
               onClick={() => router.push("/admin/mou")}
               style={{
                 padding: "10px 24px",
@@ -591,6 +641,18 @@ export default function CreateMOUPage() {
         cancelLabel="No"
         submittingLabel="Submitting..."
         successLabel="Submitted!"
+      />
+
+      <ConfirmModal
+        isOpen={showDraftConfirm}
+        onClose={() => setShowDraftConfirm(false)}
+        onConfirm={handleSaveDraft}
+        onSuccess={() => router.push("/admin/drafts")}
+        title="Save as Draft?"
+        confirmLabel="Save Draft"
+        cancelLabel="Cancel"
+        submittingLabel="Saving..."
+        successLabel="Draft Saved!"
       />
     </div>
   );

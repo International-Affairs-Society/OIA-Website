@@ -64,9 +64,9 @@ export default function HeroSection() {
         <h1
           style={{
             fontFamily: "var(--font-tan-pearl), serif",
-            fontSize: "clamp(1.75rem, 6.2vw, 5.5rem)",
+            fontSize: "clamp(3.1rem, 10.5vw, 5.5rem)",
             fontWeight: 400,
-            lineHeight: 1.4,
+            lineHeight: 1.2,
             letterSpacing: "-0.01em",
             color: "#393939",
             textAlign: "center",
@@ -79,17 +79,27 @@ export default function HeroSection() {
             marginTop: "clamp(5rem, 10vh, 8rem)",
           }}
         >
-          {HERO_CONTENT.headingLines.map((line, index) => (
-            <span
-              key={index}
-              className="block"
-              style={{
-                transitionDelay: `${index * 0.3}s`,
-              }}
-            >
-              {line}
+          {/* Desktop view: 2 lines */}
+          <div className="hidden md:block">
+            <span className="block" style={{ transitionDelay: "0s" }}>
+              Office of
             </span>
-          ))}
+            <span className="block" style={{ transitionDelay: "0.3s" }}>
+              International Affairs
+            </span>
+          </div>
+          {/* Mobile view: 3 lines */}
+          <div className="block md:hidden">
+            <span className="block" style={{ transitionDelay: "0s" }}>
+              Office of
+            </span>
+            <span className="block" style={{ transitionDelay: "0.3s" }}>
+              International
+            </span>
+            <span className="block" style={{ transitionDelay: "0.6s" }}>
+              Affairs
+            </span>
+          </div>
         </h1>
       </div>
 

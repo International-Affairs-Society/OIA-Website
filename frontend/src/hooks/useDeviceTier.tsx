@@ -19,62 +19,32 @@ export type DeviceTier = "low" | "mid" | "high";
 function detectDeviceTier(): DeviceTier {
   if (typeof window === "undefined") return "mid"; // SSR fallback
 
+  // ── 0. Developer Override ──
+  const override = localStorage.getItem("OIA_FORCE_DEVICE_TIER");
+  if (override === "low" || override === "mid" || override === "high") {
+    console.log(`🛠️ Forcing Device Tier to: ${override.toUpperCase()}`);
+    return override as DeviceTier;
+  }
+
   // ── 1. CPU Cores ──
   const cores = navigator.hardwareConcurrency || 4;
 
   // ── 2. RAM (Chrome/Edge only — returns undefined on Firefox/Safari) ──
   const memory = (navigator as any).deviceMemory as number | undefined;
 
-  // ── 3. GPU via WebGL renderer string ──
-  let gpuRenderer = "";
-  try {
-    const canvas = document.createElement("canvas");
-    const gl =
-      canvas.getContext("webgl2") ||
-      canvas.getContext("webgl") ||
-      canvas.getContext("experimental-webgl");
-    if (gl) {
-      const debugInfo = (gl as WebGLRenderingContext).getExtension(
-        "WEBGL_debug_renderer_info"
-      );
-      if (debugInfo) {
-        gpuRenderer = (gl as WebGLRenderingContext)
-          .getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
-          .toLowerCase();
-      }
-    }
-    canvas.remove();
-  } catch {
-    // WebGL not available — assume low
-  }
-
-  // ── Classify GPU ──
-  const LOW_GPU_PATTERNS = [
-    "intel hd",
-    "intel uhd",
-    "intel(r) hd",
-    "intel(r) uhd",
-    "amd radeon(tm) vega 3",
-    "amd radeon vega 3",
-    "mali-",
-    "adreno 5",
-    "adreno 6",
-    "powervr",
-    "swiftshader", // software renderer
-    "llvmpipe", // software renderer
-    "mesa",
-  ];
-
-  const isLowGPU =
-    gpuRenderer === "" ||
-    LOW_GPU_PATTERNS.some((pattern) => gpuRenderer.includes(pattern));
-
   let finalTier: DeviceTier = "high";
 
   // ── Decision ──
-  // If ANY signal says low, classify as low
-  if (cores <= 4 || (memory !== undefined && memory <= 4) || isLowGPU) {
+  // IMPORTANT: The browser caps `navigator.deviceMemory` at 8 for privacy reasons.
+  // This means 8GB, 16GB, 32GB, and 64GB all return `8`.
+  // If we say `memory <= 8` is Mid, then ALL high-end computers will be classified as Mid!
+  // Therefore, if memory is 8, we must rely entirely on CPU cores to determine High vs Mid.
+
+  if (cores <= 4 || (memory !== undefined && memory <= 4)) {
     finalTier = "low";
+  } 
+  else if (cores <= 6 || (memory !== undefined && memory < 8)) {
+    finalTier = "mid";
   }
 
   // Log to console so developer can see the detected specs
@@ -82,7 +52,6 @@ function detectDeviceTier(): DeviceTier {
   console.table({
     "CPU Cores": cores,
     "RAM (GB)": memory || "Unknown (Firefox/Safari)",
-    "GPU Model": gpuRenderer || "Unknown",
     "Assigned Tier": finalTier.toUpperCase(),
   });
 

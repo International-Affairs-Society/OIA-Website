@@ -45,23 +45,47 @@ export default function PartnersSection() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      if (headingRef.current) {
-        gsap.fromTo(
-          headingRef.current,
-          { opacity: 0, y: -50 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.8,
-            ease: "power3.out",
-            scrollTrigger: {
-              trigger: headingRef.current,
-              start: "top 70%",
-              toggleActions: "play reverse play reverse",
-            },
-          }
-        );
-      }
+      let mm = gsap.matchMedia();
+
+      mm.add("(max-width: 767px)", () => {
+        if (headingRef.current) {
+          gsap.fromTo(
+            headingRef.current,
+            { opacity: 0, y: 50 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.8,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: headingRef.current,
+                start: "top 70%",
+                toggleActions: "play reverse play reverse",
+              },
+            }
+          );
+        }
+      });
+
+      mm.add("(min-width: 768px)", () => {
+        if (headingRef.current) {
+          gsap.fromTo(
+            headingRef.current,
+            { opacity: 0, y: -50 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.8,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: headingRef.current,
+                start: "top 70%",
+                toggleActions: "play reverse play reverse",
+              },
+            }
+          );
+        }
+      });
 
       if (wheelRef.current) {
         gsap.fromTo(
@@ -134,8 +158,9 @@ export default function PartnersSection() {
             OUR PARTNERS
           </p>
 
+          {/* ── Desktop View (BlurText) ── */}
           <div
-            className="w-full flex flex-col items-center justify-center"
+            className="hidden md:flex w-full flex-col items-center justify-center"
             style={{ gap: "0px" }}
           >
             <BlurText
@@ -182,6 +207,20 @@ export default function PartnersSection() {
               direction="bottom"
               className="w-full text-center font-zodiak font-medium leading-[1.1] tracking-tight text-foreground text-3xl md:text-5xl lg:text-[4.5rem]"
             />
+          </div>
+
+          {/* ── Mobile View (Normal Text) ── */}
+          <div
+            className="flex md:hidden w-full flex-col items-center justify-center gap-1 font-zodiak font-medium leading-[1.1] tracking-tight text-3xl"
+          >
+            <div className="w-full text-center text-foreground">The international partnered</div>
+            <div className="w-full text-center text-foreground">universities</div>
+            <div className="w-full flex flex-row flex-wrap items-center justify-center gap-x-2 text-center">
+              <span className="text-foreground">of</span>
+              <span className="text-[#D12027]">Bennett University</span>
+              <span className="text-foreground">to reach</span>
+            </div>
+            <div className="w-full text-center text-foreground">horizons globally</div>
           </div>
         </div>
       </div>
@@ -303,6 +342,7 @@ export default function PartnersSection() {
                     height={dims.imgH}
                     className={`block w-full h-full ${img.isLogo ? "object-contain" : "object-cover"}`}
                     style={img.scale ? { transform: `scale(${img.scale})` } : undefined}
+                    priority={i < 6}
                     unoptimized
                   />
                 </div>

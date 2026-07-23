@@ -27,6 +27,7 @@ export interface AdminPermissions {
   audit: boolean;
   visits: boolean;
   leads: boolean;
+  drafts: boolean;
   canEdit: boolean; // false = read-only mode for viewer
 }
 
@@ -39,32 +40,32 @@ export interface RolePermissions {
 export const PERMISSIONS: Record<Role, RolePermissions> = {
   general: {
     navbar: { profile: false, admin: false, notification: false, showLogout: true },
-    admin: { analytics: false, events: false, programs: false, applications: false, mou: false, students: false, users: false, reviews: false, submissions: false, archived: false, audit: false, visits: false, leads: false, canEdit: false },
+    admin: { analytics: false, events: false, programs: false, applications: false, mou: false, students: false, users: false, reviews: false, submissions: false, archived: false, audit: false, visits: false, leads: false, drafts: false, canEdit: false },
     canAccessProfile: false,
   },
   student: {
     navbar: { profile: true, admin: false, notification: true, showLogout: true },
-    admin: { analytics: false, events: false, programs: false, applications: false, mou: false, students: false, users: false, reviews: false, submissions: false, archived: false, audit: false, visits: false, leads: false, canEdit: false },
+    admin: { analytics: false, events: false, programs: false, applications: false, mou: false, students: false, users: false, reviews: false, submissions: false, archived: false, audit: false, visits: false, leads: false, drafts: false, canEdit: false },
     canAccessProfile: true,
   },
   editor: {
     navbar: { profile: true, admin: true, notification: true, showLogout: true },
-    admin: { analytics: false, events: true, programs: true, applications: false, mou: false, students: false, users: false, reviews: false, submissions: true, archived: false, audit: false, visits: false, leads: false, canEdit: true },
+    admin: { analytics: false, events: true, programs: true, applications: false, mou: false, students: false, users: false, reviews: false, submissions: true, archived: false, audit: false, visits: false, leads: false, drafts: true, canEdit: true },
     canAccessProfile: true,
   },
   admin: {
     navbar: { profile: false, admin: true, notification: false, showLogout: true },
-    admin: { analytics: true, events: true, programs: true, applications: true, mou: true, students: true, users: false, reviews: false, submissions: true, archived: false, audit: false, visits: true, leads: true, canEdit: true },
+    admin: { analytics: true, events: true, programs: true, applications: true, mou: true, students: true, users: false, reviews: false, submissions: true, archived: false, audit: false, visits: true, leads: true, drafts: true, canEdit: true },
     canAccessProfile: false,
   },
   super_admin: {
     navbar: { profile: false, admin: true, notification: true, showLogout: true },
-    admin: { analytics: true, events: true, programs: true, applications: true, mou: true, students: true, users: true, reviews: true, submissions: false, archived: true, audit: true, visits: true, leads: true, canEdit: true },
+    admin: { analytics: true, events: true, programs: true, applications: true, mou: true, students: true, users: true, reviews: true, submissions: false, archived: true, audit: true, visits: true, leads: true, drafts: true, canEdit: true },
     canAccessProfile: false,
   },
   viewer: {
     navbar: { profile: false, admin: true, notification: false, showLogout: true },
-    admin: { analytics: true, events: false, programs: false, applications: false, mou: true, students: false, users: false, reviews: false, submissions: false, archived: false, audit: false, visits: true, leads: false, canEdit: false },
+    admin: { analytics: true, events: false, programs: false, applications: false, mou: true, students: false, users: false, reviews: false, submissions: false, archived: false, audit: false, visits: true, leads: false, drafts: false, canEdit: false },
     canAccessProfile: false,
   },
 };
@@ -86,6 +87,7 @@ export function getAllowedAdminPaths(role: Role): string[] {
   if (perms.audit) paths.push('/admin/audit');
   if (perms.visits) paths.push('/admin/visits');
   if (perms.leads) paths.push('/admin/leads');
+  if (perms.drafts) paths.push('/admin/drafts');
   return paths;
 }
 

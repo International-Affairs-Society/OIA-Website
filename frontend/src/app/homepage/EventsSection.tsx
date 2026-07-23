@@ -174,7 +174,7 @@ export default function EventsSection() {
     <section
       ref={sectionRef}
       id="events"
-      className="relative w-full min-h-screen overflow-hidden flex flex-col items-center py-24"
+      className="relative w-full min-h-0 md:min-h-screen overflow-hidden flex flex-col items-center pt-12 pb-6 md:py-24"
       style={{
         backgroundColor: "var(--background)",
       }}
@@ -185,24 +185,24 @@ export default function EventsSection() {
       {/* ── Content ── */}
       <div className="relative z-10 w-full max-w-[1400px] px-6 mx-auto flex flex-col items-center">
 
-        {/* Top 10% Spacer */}
-        <div style={{ height: "10vh", flexShrink: 0, width: "100%" }} aria-hidden="true" />
+        {/* Top Spacer */}
+        <div className="events-top-spacer" style={{ flexShrink: 0, width: "100%" }} aria-hidden="true" />
 
         {/* Section Header */}
         <div className="w-full text-center animate-heading">
-          <p className="font-sans text-[0.85rem] text-foreground/50 font-medium tracking-wide uppercase mb-16">
+          <p className="font-sans text-[0.85rem] text-foreground/50 font-medium tracking-wide uppercase events-label-mb">
             LATEST EVENTS
           </p>
         </div>
 
         <div className="w-full text-center px-4 animate-heading">
-          <h2 className="font-zodiak font-medium leading-[1.1] tracking-tight text-foreground text-5xl md:text-7xl lg:text-[6.5rem]">
+          <h2 className="events-heading font-zodiak font-medium leading-[1.1] tracking-tight text-foreground">
             Relive our recent <span className="text-[#D12027]">global engagements</span>
           </h2>
         </div>
 
         {/* Spacer */}
-        <div style={{ height: "75px", flexShrink: 0, width: "100%" }} aria-hidden="true" />
+        <div className="events-mid-spacer" style={{ flexShrink: 0, width: "100%" }} aria-hidden="true" />
 
         {/* ── Fan Layout ── */}
         {isLoading ? (
@@ -218,7 +218,7 @@ export default function EventsSection() {
             {/* ── DESKTOP: Fan Layout ── */}
             <div
               ref={fanRef}
-              className="relative w-full select-none hidden md:block"
+              className="relative w-[95%] select-none hidden md:block"
               style={{
                 aspectRatio: "2.58",
                 touchAction: "pan-y",
@@ -325,7 +325,7 @@ export default function EventsSection() {
               <div
                 style={{
                   position: "absolute",
-                  bottom: "-40px",
+                  top: "82%",
                   left: "50%",
                   transform: "translateX(-50%)",
                   display: "flex",
@@ -385,12 +385,12 @@ export default function EventsSection() {
         )}
 
         {/* Spacer */}
-        <div style={{ height: "80px", flexShrink: 0, width: "100%" }} aria-hidden="true" />
+        <div className="events-bottom-spacer" style={{ flexShrink: 0, width: "100%" }} aria-hidden="true" />
 
         {/* ── Explore More Link ── */}
-        <div>
+        <div className="relative z-50">
           <a
-            href="/events"
+            href="/events/past"
             className="group flex items-center gap-3 text-foreground/70 hover:text-[#D12027] transition-colors duration-300 uppercase tracking-widest text-sm font-semibold"
           >
             Explore More
@@ -413,6 +413,26 @@ export default function EventsSection() {
         </div>
 
       </div>
+      <style>{`
+        /* Mobile defaults */
+        .events-top-spacer    { height: 5vh; }
+        .events-label-mb      { margin-bottom: 12px; }
+        .events-heading       { font-size: clamp(1.6rem, 7.5vw, 2.2rem); }
+        .events-mid-spacer    { height: 20px; }
+        .events-bottom-spacer { height: 20px; }
+
+        /* Desktop overrides */
+        @media (min-width: 768px) {
+          .events-top-spacer    { height: 10vh; }
+          .events-label-mb      { margin-bottom: 16px; }
+          .events-heading       { font-size: clamp(2.6rem, 6.1vw, 6.1rem); }
+          .events-mid-spacer    { height: 18px; }
+          .events-bottom-spacer { height: 0px; margin-top: -40px; }
+        }
+        @media (min-width: 1024px) {
+          .events-heading { font-size: 5.7rem; }
+        }
+      `}</style>
     </section>
   );
 }
