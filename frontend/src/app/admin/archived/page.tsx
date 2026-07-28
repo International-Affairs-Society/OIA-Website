@@ -18,6 +18,7 @@ interface ArchiveItem {
 
 export default function ArchivedPage() {
   const [items, setItems] = useState<ArchiveItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [filterType, setFilterType] = useState("All");
 
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
@@ -31,6 +32,7 @@ export default function ArchivedPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
   
   const fetchArchivedItems = async () => {
+    setIsLoading(true);
     try {
       const token = localStorage.getItem("access_token");
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
@@ -75,6 +77,8 @@ export default function ArchivedPage() {
       setItems([...events, ...programs, ...mous]);
     } catch (err) {
       console.error("Failed to fetch archived items:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -188,7 +192,22 @@ export default function ArchivedPage() {
             </tr>
           </thead>
           <tbody>
-            {filteredItems.length === 0 ? (
+            {isLoading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <tr key={`skeleton-${i}`} style={{ borderBottom: "1px solid #eaeded" }}>
+                  <td style={{ padding: "16px" }}><div className="animate-pulse bg-gray-200 rounded h-5 w-3/4"></div></td>
+                  <td style={{ padding: "16px" }}><div className="animate-pulse bg-gray-200 rounded h-6 w-20"></div></td>
+                  <td style={{ padding: "16px" }}><div className="animate-pulse bg-gray-200 rounded h-5 w-1/2"></div></td>
+                  <td style={{ padding: "16px" }}>
+                    <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+                      <div className="animate-pulse bg-gray-200 rounded h-8 w-24"></div>
+                      <div className="animate-pulse bg-gray-200 rounded h-8 w-24"></div>
+                      <div className="animate-pulse bg-gray-200 rounded h-8 w-20"></div>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : filteredItems.length === 0 ? (
               <tr>
                 <td colSpan={4} style={{ padding: "32px", textAlign: "center", color: "#6b6b6b", fontSize: "14px", fontFamily: "var(--font-outfit)" }}>
                   No archived items found.

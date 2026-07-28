@@ -180,7 +180,6 @@ export default function UpcomingEventSection() {
         padding: "80px 0",
       }}
     >
-      {/* Grid background */}
       <CircuitPattern />
 
       <div
@@ -192,7 +191,6 @@ export default function UpcomingEventSection() {
           width: "100%",
         }}
       >
-        {/* ── Section label + heading row ── */}
         <div
           style={{
             opacity: isVisible ? 1 : 0,
@@ -237,8 +235,6 @@ export default function UpcomingEventSection() {
           </div>
 
         </div>
-
-        {/* ── Main card ── */}
         <div
           className="uev-grid"
           style={{
@@ -251,9 +247,7 @@ export default function UpcomingEventSection() {
             transition: "opacity 0.85s ease 0.15s, transform 0.85s ease 0.15s",
           }}
         >
-          {/* LEFT — Poster + Countdown */}
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            {/* Poster */}
             <div
               style={{
                 position: "relative",
@@ -278,8 +272,6 @@ export default function UpcomingEventSection() {
             </div>
 
           </div>
-
-          {/* RIGHT — Details */}
           <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
             <span
               style={{
@@ -354,7 +346,6 @@ export default function UpcomingEventSection() {
                 </span>
               </div>
             )}
-            {/* Countdown moved below text */}
             <div style={{ marginTop: "12px", minHeight: "60px" }}>
               {!countdown.isMounted ? null : !countdown.over ? (
                 <div
@@ -383,8 +374,6 @@ export default function UpcomingEventSection() {
                 </div>
               )}
             </div>
-
-            {/* Explore More Button moved here */}
             <div style={{ marginTop: "12px" }}>
               <Link
                 href="/events/upcoming"

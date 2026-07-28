@@ -1,3 +1,4 @@
+/** @deprecated This file is scheduled for deletion once API integration is complete */
 export type AuditAction = "Approved" | "Requested Changes" | "Submitted" | "Rejected" | "Archived" | "Unarchived";
 export type ItemType = "Event" | "Program" | "MOU";
 

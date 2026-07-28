@@ -47,27 +47,18 @@ export default function Footer() {
       className="relative w-full overflow-hidden flex flex-col items-center"
       style={{ backgroundColor: "var(--background)" }}
     >
-      {/* ── Grid Background (same as Partners section) ── */}
       <CircuitPattern />
-
-      {/* ── Main Content ── */}
       <div
         className="relative z-10 px-6 md:px-12 lg:px-16 pb-8"
         style={{ width: "100%", maxWidth: "1400px" }}
       >
-        {/* Spacer to push footer content down so it appears after Events section is fully scrolled */}
         <div style={{ height: "12vh", flexShrink: 0, width: "100%" }} aria-hidden="true" />
-
-        {/* ── Top Row: Stay up to date + Write to ── */}
         <div className="flex flex-col md:flex-row justify-between gap-10 md:gap-8 mb-14 md:mb-28">
-
-          {/* Left — Stay up to date */}
           <div className="flex flex-col items-center md:items-start gap-4">
             <p className="animate-footer font-sans text-[0.8rem] text-[#D12027] font-medium tracking-widest uppercase text-center md:text-left">
               Stay up to date
             </p>
             <div className="flex items-center gap-4 justify-center md:justify-start">
-              {/* LinkedIn */}
               <a
                 href="https://www.linkedin.com/company/oia-bennettuniversity/"
                 target="_blank"
@@ -81,8 +72,6 @@ export default function Footer() {
               </a>
             </div>
           </div>
-
-          {/* Right — Write to */}
           <div className="flex flex-col items-center md:items-start gap-3">
             <p className="animate-footer font-sans text-[0.8rem] text-[#D12027] font-medium tracking-widest uppercase text-center md:text-left">
               Write to
@@ -95,11 +84,7 @@ export default function Footer() {
             </a>
           </div>
         </div>
-
-        {/* ── Middle Row: Copyright + Developers ── */}
         <div className="flex flex-col md:flex-row justify-between gap-12 md:gap-8 mb-12 md:mb-28">
-
-          {/* Left — Copyright / OIA Info */}
           <div className="flex flex-col items-center md:items-start gap-2 text-center md:text-left">
             <p className="animate-footer font-sans text-[0.8rem] text-[#D12027] font-semibold tracking-widest uppercase mb-2">
               Office of International Affairs
@@ -125,8 +110,6 @@ export default function Footer() {
               Fully NEP 2020 Compliant
             </a>
           </div>
-
-          {/* Right — Developers */}
           <div className="flex flex-col items-center md:items-start gap-2 text-center md:text-left">
             <button
               onClick={() => setShowDevs(!showDevs)}
@@ -151,8 +134,6 @@ export default function Footer() {
             </div>
           </div>
         </div>
-
-        {/* ── Let's Talk SVG ── */}
         <div className="animate-footer w-full overflow-hidden mt-8 md:mt-0">
           <Image
             src="/homepage assets/lets talk.svg"
@@ -167,8 +148,6 @@ export default function Footer() {
             priority
           />
         </div>
-
-        {/* ── Bottom Copyright Bar ── */}
         <div className="animate-footer w-full flex flex-col items-center justify-center pt-6 pb-4 border-t border-foreground/10">
           <p className="font-sans text-xs text-foreground/40 tracking-wide text-center">
             © {new Date().getFullYear()} Office of International Affairs, Bennett University. All rights reserved.

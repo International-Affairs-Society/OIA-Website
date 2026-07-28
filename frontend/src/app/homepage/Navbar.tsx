@@ -9,9 +9,6 @@ import { useAuth } from "@/app/admin/roles/AuthContext";
 import { PERMISSIONS } from "@/app/admin/roles/permissions";
 import NotificationPanel from "@/app/admin/components/NotificationPanel";
 import LiquidGlass from "../../components/LiquidGlass";
-// ============================================================
-// DATA CONSTANTS — Replace with API calls when backend is ready
-// ============================================================
 
 interface NavItem {
   label: string;
@@ -150,7 +147,6 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
         overflow: "visible",
       }}
     >
-      {/* Main navbar bar — glassmorphism */}
       <div
         className="px-6 sm:px-8 lg:px-12 py-3 flex items-center justify-between"
         style={{
@@ -193,8 +189,6 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
             priority
           />
         </div>
-
-        {/* Center — Nav Links (Desktop) */}
         <div className="hidden md:flex items-center gap-6 lg:gap-10">
           {NAV_ITEMS.map((item) => (
             item.dropdown ? (
@@ -261,10 +255,7 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
             )
           ))}
         </div>
-
-        {/* Right — Profile/Admin/Login (Desktop) + Hamburger (Mobile) */}
         <div className="flex items-center gap-4 sm:gap-6 lg:gap-8">
-          {/* Notifications */}
           {perms.navbar.notification && role !== 'super_admin' && (
             <Link href="/student/profile?tab=notifications">
               <button
@@ -294,8 +285,6 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
               )}
             </button>
           )}
-
-          {/* Admin — Desktop */}
           {perms.navbar.admin && (
             <a
               id={ADMIN_BUTTON.id}
@@ -316,8 +305,6 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
               {ADMIN_BUTTON.label}
             </a>
           )}
-
-          {/* Profile — Desktop */}
           {perms.navbar.profile && (
             <a
               id={PROFILE_BUTTON.id}
@@ -338,8 +325,6 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
               {PROFILE_BUTTON.label}
             </a>
           )}
-
-          {/* Login/Logout — Desktop */}
           <a
             id={LOGIN_BUTTON.id}
             href="#"
@@ -366,8 +351,6 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
           >
             {isAuthenticated ? "Logout" : LOGIN_BUTTON.label}
           </a>
-
-          {/* Hamburger — Mobile (non-admin pages) */}
           {!isAdminPage && (
             <button
               id="mobile-menu-toggle"
@@ -404,8 +387,6 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
             />
           </button>
           )}
-
-          {/* Admin Hamburger — Mobile (admin pages only) */}
           {isAdminPage && onAdminMenuToggle && (
             <button
               id="admin-mobile-menu-toggle"
@@ -441,9 +422,6 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
       </div>
 
     </nav>
-
-      {/* ── Mobile Side Drawer ── */}
-      {/* Backdrop */}
       {isMobileMenuOpen && (
         <div
           onClick={() => setIsMobileMenuOpen(false)}
@@ -455,8 +433,6 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
           }}
         />
       )}
-
-      {/* Drawer Panel */}
       <div
         className="md:hidden"
         style={{
@@ -474,7 +450,6 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
           backgroundColor={isDarkPage ? "rgba(15, 15, 15, 0.65)" : "rgba(255, 251, 242, 0.65)"} 
           borderColor={isDarkPage ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.4)"}
         />
-        {/* ── Drawer Header (red branded area) ── */}
         <div
           style={{
             position: "relative", display: "flex", flexDirection: "column",
@@ -484,7 +459,6 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
             minHeight: "160px",
           }}
         >
-          {/* Close button */}
           <button
             onClick={() => setIsMobileMenuOpen(false)}
             aria-label="Close menu"
@@ -500,8 +474,6 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
           </button>
-
-          {/* OIA Identity */}
           <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
             <div style={{ width: "40px", height: "40px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, backgroundColor: "rgba(255,255,255,0.15)" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -522,8 +494,6 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
             Bennett University · Greater Noida
           </p>
         </div>
-
-        {/* ── Nav Links ── */}
         <div style={{ flex: 1, overflowY: "auto", padding: "16px 8px" }}>
           {NAV_ITEMS.map((item) => {
             const navItemColor = isDarkPage ? "rgba(255,255,255,0.85)" : "var(--foreground)";
@@ -589,8 +559,6 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
               </a>
             );
           })}
-
-          {/* Admin */}
           {perms.navbar.admin && (
             <a
               id={`${ADMIN_BUTTON.id}-mobile`}
@@ -602,8 +570,6 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
               <span style={{ fontSize: "15px", letterSpacing: "0.02em" }}>{ADMIN_BUTTON.label}</span>
             </a>
           )}
-
-          {/* Profile */}
           {perms.navbar.profile && (
             <a
               id={`${PROFILE_BUTTON.id}-mobile`}
@@ -616,8 +582,6 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
             </a>
           )}
         </div>
-
-        {/* ── Separator + Logout at the bottom ── */}
         <div style={{ flexShrink: 0, padding: "0 16px 32px 16px" }}>
           <div style={{ width: "100%", height: "1px", marginBottom: "16px", backgroundColor: isDarkPage ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)" }} />
           <button
@@ -644,8 +608,6 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
           </button>
         </div>
       </div>
-
-    {/* Super Admin Notification Panel */}
     {role === 'super_admin' && (
       <NotificationPanel
         isOpen={notifPanelOpen}

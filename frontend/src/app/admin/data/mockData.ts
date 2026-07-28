@@ -1,3 +1,4 @@
+/** @deprecated This file is scheduled for deletion once API integration is complete */
 export const UNIVERSITY_COORDS: Record<string, { coords: [number, number]; country: string; continent: string }> = {
   "University of Essex": { coords: [51.886, 0.9045], country: "UK", continent: "Europe" },
   "Yeshiva University": { coords: [40.8502, -73.929], country: "USA", continent: "Americas" },

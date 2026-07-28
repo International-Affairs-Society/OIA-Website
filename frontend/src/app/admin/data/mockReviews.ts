@@ -1,3 +1,4 @@
+/** @deprecated This file is scheduled for deletion once API integration is complete */
 // ============================================================
 // MOCK DATA — Approval Requests & Review Items
 // Replace with API calls when backend is ready.

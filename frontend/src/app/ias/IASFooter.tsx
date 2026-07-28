@@ -58,14 +58,14 @@ export default function IASFooter() {
       >
 
         {/* ── Top Row: Stay up to date + Write to ── */}
-        <div className="flex flex-col md:flex-row justify-between gap-12 md:gap-8 mb-20 md:mb-28">
+        <div className="flex flex-col md:flex-row justify-between gap-8 md:gap-8 mb-12 md:mb-28">
 
           {/* Left — Stay up to date */}
-          <div className="flex flex-col gap-4">
-            <p className="animate-footer-ias font-sans text-[0.8rem] text-[#D12027] font-medium tracking-widest uppercase">
+          <div className="flex flex-col items-center md:items-start gap-4">
+            <p className="animate-footer-ias font-sans text-[0.8rem] text-[#D12027] font-medium tracking-widest uppercase text-center md:text-left">
               Stay up to date
             </p>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-center md:justify-start gap-4">
               {/* LinkedIn */}
               <a
                 href="https://www.linkedin.com/company/international-affairs-society-bu/"
@@ -82,13 +82,13 @@ export default function IASFooter() {
           </div>
 
           {/* Right — Write to */}
-          <div className="flex flex-col gap-3">
-            <p className="animate-footer-ias font-sans text-[0.8rem] text-[#D12027] font-medium tracking-widest uppercase">
+          <div className="flex flex-col items-center md:items-start gap-3">
+            <p className="animate-footer-ias font-sans text-[0.8rem] text-[#D12027] font-medium tracking-widest uppercase text-center md:text-left">
               Write to
             </p>
             <a
               href="mailto:ias@bennett.edu.in"
-              className="animate-footer-ias font-sans text-2xl md:text-3xl lg:text-4xl font-medium text-white hover:text-[#D12027] transition-colors duration-300 tracking-tight"
+              className="animate-footer-ias font-sans text-2xl md:text-3xl lg:text-4xl font-medium text-white hover:text-[#D12027] transition-colors duration-300 tracking-tight break-all md:break-normal"
             >
               ias@bennett.edu.in
             </a>
@@ -96,10 +96,10 @@ export default function IASFooter() {
         </div>
 
         {/* ── Middle Row: Copyright + Developers ── */}
-        <div className="flex flex-col md:flex-row justify-between gap-12 md:gap-8 mb-20 md:mb-28">
+        <div className="flex flex-col md:flex-row justify-between gap-8 md:gap-8 mb-12 md:mb-28">
 
           {/* Left — Copyright / IAS Info */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col items-center md:items-start gap-2 text-center md:text-left">
             <p className="animate-footer-ias font-sans text-[0.8rem] text-[#D12027] font-semibold tracking-widest uppercase mb-2">
               International Affairs Society
             </p>
@@ -118,17 +118,17 @@ export default function IASFooter() {
           </div>
 
           {/* Right — Developers */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col items-center md:items-start gap-2">
             <button 
               onClick={() => setShowDevs(!showDevs)}
-              className="animate-footer-ias text-left focus:outline-none flex items-center gap-2"
+              className="animate-footer-ias text-center md:text-left focus:outline-none flex items-center justify-center md:justify-start gap-2"
             >
-              <p className="font-sans text-[0.8rem] text-[#D12027] font-semibold tracking-widest uppercase cursor-pointer hover:opacity-80 transition-opacity">
+              <p className="font-sans text-[0.8rem] text-[#D12027] font-semibold tracking-widest uppercase cursor-pointer hover:opacity-80 transition-opacity text-center md:text-left">
                 Developers
               </p>
             </button>
             <div 
-              className={`flex flex-col gap-2 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDevs ? 'max-h-[200px] opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'}`}
+              className={`flex flex-col items-center md:items-start gap-2 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] text-center md:text-left ${showDevs ? 'max-h-[200px] opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'}`}
             >
               <p className="font-sans text-sm text-gray-400 leading-relaxed max-w-xs">
                 This website is designed
@@ -161,8 +161,8 @@ export default function IASFooter() {
         </div>
 
         {/* ── Bottom Copyright Bar ── */}
-        <div className="animate-footer-ias w-full flex flex-col items-center justify-center pt-6 pb-4 border-t border-gray-800">
-          <p className="font-sans text-xs text-gray-500 tracking-wide text-center uppercase">
+        <div className="animate-footer-ias w-full flex flex-col items-center justify-center pt-8 pb-4 border-t border-gray-800 mt-4 md:mt-0 relative z-20 bg-[#0a0a0a]">
+          <p className="font-sans text-xs text-gray-500 tracking-wide text-center uppercase px-4">
             © {new Date().getFullYear()} International Affairs Society, Bennett University. All rights reserved.
           </p>
         </div>
