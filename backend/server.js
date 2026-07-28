@@ -28,7 +28,8 @@ import programLeadsRouter from './src/routes/programLeads.js'
 import visitsRouter from './src/routes/visits.js'
 import draftsRouter from './src/routes/drafts.js'
 
-
+// Import workers to initialize them
+import './src/workers/fileWorker.js'
 // Import error handler middleware
 import errorHandler from './src/middleware/errorHandler.js'
 
@@ -110,7 +111,7 @@ app.use((req, res, next) => {
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
 })
 

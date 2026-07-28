@@ -9,6 +9,7 @@ interface NotificationPanelProps {
   isOpen: boolean;
   onClose: () => void;
   reviews: ReviewItem[];
+  systemAlerts?: any[];
   isDarkTheme?: boolean;
 }
 
@@ -41,7 +42,7 @@ function getTypeBadgeColor(type: string): string {
   }
 }
 
-export default function NotificationPanel({ isOpen, onClose, reviews, isDarkTheme = false }: NotificationPanelProps) {
+export default function NotificationPanel({ isOpen, onClose, reviews, systemAlerts = [], isDarkTheme = false }: NotificationPanelProps) {
   const router = useRouter();
   const { role } = useAuth();
 
@@ -208,18 +209,85 @@ export default function NotificationPanel({ isOpen, onClose, reviews, isDarkThem
           </button>
         </div>
 
-        {/* Notification List — data-lenis-prevent stops Lenis intercepting scroll inside this panel */}
         <div
           data-lenis-prevent
           style={{ flex: 1, overflowY: "auto", padding: "16px" }}
         >
-          {relevantReviews.length === 0 ? (
+          {relevantReviews.length === 0 && systemAlerts.length === 0 ? (
             <div style={{ textAlign: "center", padding: "3rem 1rem", color: theme.textSecondary }}>
-              <div style={{ fontSize: "40px", marginBottom: "12px" }}>✓</div>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: "0 auto 12px" }}>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
               <p style={{ fontSize: "14px", margin: 0 }}>{emptyText}</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {/* Render System Alerts First */}
+              {systemAlerts.map((alert) => (
+                <div
+                  key={alert.id}
+                  style={{
+                    padding: "16px",
+                    backgroundColor: theme.itemBg,
+                    border: `1px solid ${theme.itemBorder}`,
+                    borderRadius: "8px",
+                    transition: "border-color 0.2s",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = theme.itemBorderHover)}
+                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = theme.itemBorder)}
+                >
+                  <div style={{ marginBottom: "10px", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span
+                      style={{
+                        display: "inline-block",
+                        fontSize: "10px",
+                        fontWeight: 700,
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        padding: "3px 8px",
+                        backgroundColor: "#c0392b",
+                        color: "#fff",
+                        borderRadius: "2px",
+                      }}
+                    >
+                      System Alert
+                    </span>
+                  </div>
+                  <p
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: 600,
+                      color: theme.textPrimary,
+                      margin: "0 0 8px",
+                      fontFamily: "var(--font-outfit)",
+                    }}
+                  >
+                    {alert.subject}
+                  </p>
+                  <div style={{
+                      fontSize: "12px", color: theme.textSecondary, margin: "0 0 8px", lineHeight: 1.5,
+                    }}
+                    dangerouslySetInnerHTML={{ __html: alert.bodyHtml || alert.body_html }}
+                  />
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginTop: "12px",
+                      paddingTop: "10px",
+                      borderTop: `1px solid ${theme.itemBorder}`,
+                    }}
+                  >
+                    <span style={{ fontSize: "11px", color: theme.textSecondary }}>
+                      {formatTimeAgo(alert.sentAt || alert.sent_at)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+
+              {/* Render Relevant Reviews */}
               {relevantReviews.map((review) => (
                 <div
                   key={review.id}

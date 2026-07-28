@@ -905,7 +905,14 @@ export default function CreateProgramPage() {
           </div>
         </form>
       </div>
-
+      <ConfirmModal
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={executeSaveProgram}
+        onSuccess={() => router.push("/admin/programs")}
+        title="Submit Program?"
+        confirmLabel="Submit"
+        cancelLabel="Cancel"
         submittingLabel="Submitting..."
         successLabel="Submitted!"
       />

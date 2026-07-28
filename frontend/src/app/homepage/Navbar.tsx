@@ -65,37 +65,54 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
   const perms = PERMISSIONS[role];
   const [notifPanelOpen, setNotifPanelOpen] = useState(false);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [systemAlerts, setSystemAlerts] = useState<any[]>([]);
 
   useEffect(() => {
-    if (role === "super_admin") {
-      const fetchReviews = async () => {
-        try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/reviews`, {
-            headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` }
-          });
-          if (res.ok) {
-            const json = await res.json();
-            setReviews((json.data || []).map((r: any) => ({
-              id: r.id,
-              type: r.type,
-              title: r.title,
-              status: r.status,
-              submittedAt: r.submitted_at,
-              data: r.data,
-              comments: Array.isArray(r.comments) ? r.comments : [],
-              submittedBy: {
-                name: r.submitted_by_name,
-                email: r.submitted_by_email,
-                role: r.submitted_by_role
-              }
-            })));
-          }
-        } catch (err) {
-          console.error("Failed to fetch reviews in Navbar:", err);
+    const fetchReviews = async () => {
+      if (role !== "super_admin" && role !== "admin" && role !== "editor") return;
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/reviews`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` }
+        });
+        if (res.ok) {
+          const json = await res.json();
+          setReviews((json.data || []).map((r: any) => ({
+            id: r.id,
+            type: r.type,
+            title: r.title,
+            status: r.status,
+            submittedAt: r.submitted_at,
+            data: r.data,
+            comments: Array.isArray(r.comments) ? r.comments : [],
+            submittedBy: {
+              name: r.submitted_by_name,
+              email: r.submitted_by_email,
+              role: r.submitted_by_role
+            }
+          })));
         }
-      };
-      fetchReviews();
-    }
+      } catch (err) {
+        console.error("Failed to fetch reviews in Navbar:", err);
+      }
+    };
+
+    const fetchAlerts = async () => {
+      if (role !== "super_admin" && role !== "admin" && role !== "editor") return;
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/notifications/me`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` }
+        });
+        if (res.ok) {
+          const json = await res.json();
+          setSystemAlerts(json.data || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch system alerts in Navbar:", err);
+      }
+    };
+
+    fetchReviews();
+    fetchAlerts();
   }, [role, notifPanelOpen]);
 
   // Dark-theme pages (e.g. /ias)
@@ -265,7 +282,7 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
         {/* Right — Profile/Admin/Login (Desktop) + Hamburger (Mobile) */}
         <div className="flex items-center gap-4 sm:gap-6 lg:gap-8">
           {/* Notifications */}
-          {perms.navbar.notification && role !== 'super_admin' && (
+          {perms.navbar.notification && role !== 'super_admin' && role !== 'admin' && role !== 'editor' && (
             <Link href="/student/profile?tab=notifications">
               <button
                 className="flex relative items-center justify-center transition-colors duration-300"
@@ -279,7 +296,7 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
               </button>
             </Link>
           )}
-          {perms.navbar.notification && role === 'super_admin' && (
+          {perms.navbar.notification && (role === 'super_admin' || role === 'admin' || role === 'editor') && (
             <button
               className="flex relative items-center justify-center transition-colors duration-300"
               style={{ color: textColor }}
@@ -289,7 +306,7 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
               onClick={() => setNotifPanelOpen(true)}
             >
               <Bell size={18} />
-              {reviews.some((r) => r.status === "pending") && (
+              {(reviews.some((r) => r.status === (role === "super_admin" ? "pending" : "changes_requested")) || systemAlerts.length > 0) && (
                 <span className="absolute top-0 right-0 w-1.5 h-1.5 rounded-full" style={{ background: "#D12027", transform: "translate(25%, -25%)" }}></span>
               )}
             </button>
@@ -645,12 +662,13 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
         </div>
       </div>
 
-    {/* Super Admin Notification Panel */}
-    {role === 'super_admin' && (
+    {/* Admin Notification Panel */}
+    {(role === 'super_admin' || role === 'admin' || role === 'editor') && (
       <NotificationPanel
         isOpen={notifPanelOpen}
         onClose={() => setNotifPanelOpen(false)}
         reviews={reviews}
+        systemAlerts={systemAlerts}
         isDarkTheme={isDarkPage}
       />
     )}
