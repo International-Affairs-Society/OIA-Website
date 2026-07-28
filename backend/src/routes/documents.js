@@ -9,6 +9,7 @@ import {
 } from '../controllers/documents.js'
 import { authenticate } from '../middleware/authenticate.js'
 import { requireRole } from '../middleware/requireRole.js'
+import { dualRateLimiter } from '../middleware/rateLimiter.js'
 
 const router = Router()
 
@@ -22,8 +23,10 @@ const fileFilter = (req, file, cb) => {
   }
 }
 
+import os from 'os'
+
 const upload = multer({
-  storage: multer.memoryStorage(),
+  dest: os.tmpdir(),
   limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB max file size
   fileFilter
 })
@@ -32,7 +35,7 @@ router.get('/', authenticate, getDocuments)
 router.get('/:id', authenticate, getDocumentById)
 
 // Wrap multer upload to catch and format file size/type errors correctly
-router.post('/', authenticate, (req, res, next) => {
+router.post('/', authenticate, dualRateLimiter(4, 10), (req, res, next) => {
   const uploader = upload.single('file')
   uploader(req, res, function (err) {
     if (err instanceof multer.MulterError) {

@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import prisma from '../lib/prisma.js'
+import logger from '../lib/logger.js'
 import asyncHandler from '../middleware/asyncHandler.js'
 import { paginate } from '../utils/paginate.js'
 
@@ -191,7 +192,7 @@ export const createVisit = asyncHandler(async (req, res) => {
       performed_by_role: req.user.role,
       details: 'Created a new visit.'
     }
-  }).catch(err => console.error('Failed to create audit log for visit:', err))
+  }).catch(err => logger.error('Failed to create audit log for visit:', err))
 
   res.status(201).json(formatVisit(created))
 })
@@ -278,7 +279,7 @@ export const updateVisit = asyncHandler(async (req, res) => {
       performed_by_role: req.user.role,
       details: 'Updated the visit.'
     }
-  }).catch(err => console.error('Failed to create audit log for visit update:', err))
+  }).catch(err => logger.error('Failed to create audit log for visit update:', err))
 
   res.json(formatVisit(updated))
 })
@@ -330,7 +331,7 @@ export const deleteVisit = asyncHandler(async (req, res) => {
       performed_by_role: req.user.role,
       details: 'Deleted the visit.'
     }
-  }).catch(err => console.error('Failed to create audit log for visit deletion:', err))
+  }).catch(err => logger.error('Failed to create audit log for visit deletion:', err))
 
   res.json({ success: true, message: 'Visit deleted' })
 })
@@ -371,7 +372,7 @@ export const approveVisit = asyncHandler(async (req, res) => {
       performed_by_role: req.user.role,
       details: 'Visit approved by Super Admin'
     }
-  }).catch(err => console.error('Failed to create audit log for visit approval:', err))
+  }).catch(err => logger.error('Failed to create audit log for visit approval:', err))
 
   res.json(formatVisit(updated))
 })

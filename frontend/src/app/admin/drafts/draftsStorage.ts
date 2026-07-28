@@ -10,7 +10,8 @@ export interface DraftItem {
 }
 
 const getApiUrl = () => {
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  return `${baseUrl}/api/v1`;
 }
 
 const getHeaders = () => {
@@ -28,7 +29,11 @@ export const getDrafts = async (role: string): Promise<DraftItem[]> => {
       method: 'GET',
       headers: getHeaders()
     });
-    if (!res.ok) throw new Error('Failed to fetch drafts');
+    if (!res.ok) {
+      const text = await res.text();
+      console.error('Failed to fetch drafts response:', res.status, text);
+      throw new Error(`Failed to fetch drafts: ${res.status} ${text}`);
+    }
     const json = await res.json();
     return json.data.map((d: any) => ({
       id: d.id,

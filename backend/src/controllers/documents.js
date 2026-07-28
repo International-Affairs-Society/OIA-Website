@@ -1,10 +1,12 @@
-import { z } from 'zod'
-import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
+
+import { DeleteObjectCommand } from '@aws-sdk/client-s3'
 import prisma from '../lib/prisma.js'
 import { r2 } from '../lib/r2.js'
 import asyncHandler from '../middleware/asyncHandler.js'
 import { getSignedR2Url } from '../utils/r2Sign.js'
 import { paginate } from '../utils/paginate.js'
+import logger from '../lib/logger.js'
+import { fileQueue } from '../lib/queues.js'
 
 // Format helper
 async function formatDocument(doc, includeUrl = false) {
@@ -130,14 +132,6 @@ export const uploadDocument = asyncHandler(async (req, res) => {
   const sanitizedFilename = req.file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')
   const r2Key = `documents/${req.user.id}/${Date.now()}-${sanitizedFilename}`
 
-  // Upload buffer to Cloudflare R2
-  await r2.send(new PutObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME || 'documents',
-    Key: r2Key,
-    Body: req.file.buffer,
-    ContentType: req.file.mimetype
-  }))
-
   // Save metadata to DB
   const doc = await prisma.documents.create({
     data: {
@@ -147,6 +141,15 @@ export const uploadDocument = asyncHandler(async (req, res) => {
       r2_key: r2Key,
       status: 'PENDING'
     }
+  })
+
+  // Enqueue job for background processing
+  await fileQueue.add('uploadDocument', {
+    documentId: doc.id,
+    filePath: req.file.path,
+    r2Key: r2Key,
+    mimetype: req.file.mimetype,
+    userId: req.user.id
   })
 
   res.status(201).json(await formatDocument(doc, false))
@@ -220,7 +223,7 @@ export const deleteDocument = asyncHandler(async (req, res) => {
       Key: doc.r2_key
     }))
   } catch (err) {
-    console.error('Failed to delete object from R2:', doc.r2_key, err)
+    logger.error('Failed to delete object from R2:', doc.r2_key, err)
   }
 
   // Delete from DB

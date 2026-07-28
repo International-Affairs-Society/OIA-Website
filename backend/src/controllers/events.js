@@ -2,7 +2,6 @@ import { z } from 'zod'
 import jwt from 'jsonwebtoken'
 import prisma from '../lib/prisma.js'
 import asyncHandler from '../middleware/asyncHandler.js'
-import pick from '../utils/pick.js'
 import { paginate } from '../utils/paginate.js'
 import { getCached, setCached, invalidateCache } from '../lib/cache.js'
 
