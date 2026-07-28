@@ -1,9 +1,10 @@
 import { ZodError } from 'zod'
+import logger from '../lib/logger.js'
 
 export default function errorHandler(err, req, res, next) {
   // Handle Zod validation errors
   if (err instanceof ZodError) {
-    console.error('Zod validation failed:', err)
+    logger.error('Zod validation failed:', err)
     const fields = {}
     const issues = err.issues || err.errors || []
     issues.forEach((issue) => {
@@ -25,7 +26,7 @@ export default function errorHandler(err, req, res, next) {
   const message = err.message || 'Something went wrong'
 
   if (status >= 500) {
-    console.error('Unhandled internal server error:', err)
+    logger.error('Unhandled internal server error:', err)
   }
 
   const responseError = {

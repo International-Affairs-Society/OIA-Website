@@ -3,9 +3,11 @@ import multer from 'multer'
 import { authenticate } from '../middleware/authenticate.js'
 import { uploadMedia, getMedia } from '../controllers/media.js'
 
+import os from 'os'
+
 const router = express.Router()
 const upload = multer({
-  storage: multer.memoryStorage(),
+  dest: os.tmpdir(), // Use disk storage for background processing
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
   fileFilter: (req, file, cb) => {
     const allowedMimeTypes = [

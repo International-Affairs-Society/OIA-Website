@@ -1,5 +1,6 @@
-import { PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
+import { GetObjectCommand } from '@aws-sdk/client-s3'
 import { r2 } from '../lib/r2.js'
+import { fileQueue } from '../lib/queues.js'
 import asyncHandler from '../middleware/asyncHandler.js'
 
 // POST /media (Upload public media like event posters)
@@ -15,13 +16,14 @@ export const uploadMedia = asyncHandler(async (req, res) => {
   const filename = `${Date.now()}-${sanitizedFilename}`
   const r2Key = `media/${filename}`
 
-  // Upload buffer to Cloudflare R2
-  await r2.send(new PutObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME || 'documents',
-    Key: r2Key,
-    Body: req.file.buffer,
-    ContentType: req.file.mimetype
-  }))
+  // Enqueue job for background processing
+  await fileQueue.add('uploadMedia', {
+    documentId: `media-${filename}`,
+    filePath: req.file.path,
+    r2Key: r2Key,
+    mimetype: req.file.mimetype,
+    userId: req.user ? req.user.id : 'anonymous'
+  })
 
   const publicUrl = `${process.env.BACKEND_URL || 'http://localhost:3001'}/api/v1/media/${filename}`
 

@@ -1,9 +1,7 @@
 import { z } from 'zod'
 import prisma from '../lib/prisma.js'
 import asyncHandler from '../middleware/asyncHandler.js'
-import pick from '../utils/pick.js'
 import { paginate } from '../utils/paginate.js'
-import supabase from '../lib/supabase.js'
 import { getCached, setCached, invalidateCache } from '../lib/cache.js'
 
 const programBaseSchema = z.object({
