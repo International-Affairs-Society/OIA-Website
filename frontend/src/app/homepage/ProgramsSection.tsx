@@ -174,7 +174,6 @@ export default function ProgramsSection() {
         WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 85%, transparent 100%)",
       }}
     >
-      {/* ── Fluid Cursor Effect (Disabled on mobile & low-end devices) ── */}
       {isDesktop && deviceTier !== "low" && (
         <SplashCursor
           COLOR="#D12027"
@@ -187,11 +186,7 @@ export default function ProgramsSection() {
           PRESSURE_ITERATIONS={deviceTier === "mid" ? 10 : 20}
         />
       )}
-
-      {/* ── Grid Background ── */}
       <CircuitPattern />
-
-      {/* ── SVG Lines — radiate from each floating node to center ── */}
       <svg className="programs-lines absolute inset-0 w-full h-full z-10 pointer-events-none">
         {programs.map((_, i) => (
           <line
@@ -205,8 +200,6 @@ export default function ProgramsSection() {
           />
         ))}
       </svg>
-
-      {/* ── Central PROGRAMS Text ── */}
       <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
         <h2
           className="programs-title"
@@ -223,8 +216,6 @@ export default function ProgramsSection() {
           Programs
         </h2>
       </div>
-
-      {/* ── Floating Node Labels ── */}
       {isLoading ? (
         <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
           <span className="font-sans text-foreground/50 text-sm font-semibold tracking-widest uppercase">Loading programs...</span>
@@ -248,7 +239,6 @@ export default function ProgramsSection() {
               onMouseLeave={() => setHoveredIndex(null)}
               onClick={() => router.push(`/programs`)}
             >
-              {/* Small square marker */}
               <span
                 className="inline-block rounded-sm transition-all duration-300"
                 style={{
@@ -258,7 +248,6 @@ export default function ProgramsSection() {
                     hoveredIndex === i ? "#393939" : "rgba(57, 57, 57, 0.6)",
                 }}
               />
-              {/* Label text */}
               <span
                 className="absolute left-full ml-1 italic whitespace-nowrap transition-all duration-300"
                 style={{

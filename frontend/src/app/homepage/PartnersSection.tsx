@@ -144,10 +144,7 @@ export default function PartnersSection() {
       ref={sectionRef}
       className="relative w-full bg-background overflow-hidden"
     >
-      {/* ── Background Circuit Pattern ── */}
       <CircuitPattern />
-
-      {/* ── Heading Block ── */}
       <div
         ref={headingRef}
         className="relative w-full min-h-[50vh] z-20 flex flex-col items-center overflow-hidden"
@@ -157,8 +154,6 @@ export default function PartnersSection() {
           <p className="w-full text-center font-sans text-[0.85rem] text-foreground/50 mb-6 font-medium tracking-wide uppercase">
             OUR PARTNERS
           </p>
-
-          {/* ── Desktop View (BlurText) ── */}
           <div
             className="hidden md:flex w-full flex-col items-center justify-center"
             style={{ gap: "0px" }}
@@ -208,8 +203,6 @@ export default function PartnersSection() {
               className="w-full text-center font-zodiak font-medium leading-[1.1] tracking-tight text-foreground text-3xl md:text-5xl lg:text-[4.5rem]"
             />
           </div>
-
-          {/* ── Mobile View (Normal Text) ── */}
           <div
             className="flex md:hidden w-full flex-col items-center justify-center gap-1 font-zodiak font-medium leading-[1.1] tracking-tight text-3xl"
           >
@@ -224,8 +217,6 @@ export default function PartnersSection() {
           </div>
         </div>
       </div>
-
-      {/* ── Full Circle Wheel with World Map in Center ── */}
       <div
         className="relative w-full pointer-events-none flex items-center justify-center"
         style={{
@@ -233,7 +224,6 @@ export default function PartnersSection() {
           marginTop: "50px",
         }}
       >
-        {/* ── Paragraph Text at the Inner Top of the Circle ── */}
         <p
           ref={textBelowRef}
           className="absolute z-20 text-center font-sans text-[1.1rem] md:text-xl lg:text-[2rem] text-foreground/70 leading-relaxed font-light px-4 left-1/2 -translate-x-1/2 pointer-events-auto max-w-[90vw] md:max-w-xl lg:max-w-2xl"
@@ -246,8 +236,6 @@ export default function PartnersSection() {
           to world-class education, research opportunities, and cultural exchange
           programs across five continents.
         </p>
-
-        {/* ── Interactive World Map in the CENTER of the circle ── */}
         <div
           className="absolute z-20 top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-auto px-4 md:px-6"
           style={{
@@ -262,20 +250,15 @@ export default function PartnersSection() {
               WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)'
             }}
           >
-            {/* Clickable overlay for mobile only */}
             <a 
               href="/partners" 
               className="absolute inset-0 z-10 block md:hidden cursor-pointer"
               aria-label="Go to Partners page"
             ></a>
-            
-            {/* The actual map */}
             <div className="relative z-0 md:group-hover:opacity-100 transition-opacity">
               <WorldMapSVG />
             </div>
           </div>
-
-          {/* ── Explore More Link (Under the Map) ── */}
           <div className="w-full flex items-center justify-center mt-24 md:mt-12 z-50">
             <a
               href="/partners"
@@ -298,8 +281,6 @@ export default function PartnersSection() {
             </a>
           </div>
         </div>
-
-        {/* The spinning circle track */}
         <div
           ref={wheelRef}
           className="absolute origin-center will-change-transform"
@@ -328,7 +309,6 @@ export default function PartnersSection() {
                   transform: `rotate(${angleDeg}deg)`,
                 }}
               >
-                {/* Image Box */}
                 <div
                   className={`w-full h-full flex items-center justify-center ${img.isLogo
                       ? "overflow-visible"
@@ -346,7 +326,6 @@ export default function PartnersSection() {
                     unoptimized
                   />
                 </div>
-                {/* Rotating Label */}
                 <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 font-sans text-[0.85rem] text-foreground/60 whitespace-nowrap pointer-events-none">
                   {img.label}
                 </span>
@@ -354,18 +333,12 @@ export default function PartnersSection() {
             );
           })}
         </div>
-
-        {/* ── Edge Fade Overlays — make images "cut" at the edges and reappear ── */}
         <div className="absolute top-0 left-0 w-[15vw] h-full bg-gradient-to-r from-background to-transparent z-30 pointer-events-none" />
         <div className="absolute top-0 right-0 w-[15vw] h-full bg-gradient-to-l from-background to-transparent z-30 pointer-events-none" />
         <div className="absolute top-0 left-0 w-full h-[15vh] bg-gradient-to-b from-background to-transparent z-30 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-full h-[15vh] bg-gradient-to-t from-background to-transparent z-30 pointer-events-none" />
       </div>
-
-      {/* ── Bottom Spacer ── */}
       <div className="w-full h-[10vh]" />
-
-      {/* ── Stats Section ── */}
       <div
         ref={statsRef}
         className="relative z-20 w-full px-6 pb-32 flex flex-col md:flex-row items-center justify-center gap-12 md:gap-16 lg:gap-32 flex-wrap"
@@ -397,8 +370,6 @@ export default function PartnersSection() {
           </div>
         ))}
       </div>
-      
-      {/* ── Additional Bottom Spacer to prevent white gap ── */}
       <div className="w-full h-[10vh]" />
     </section>
   );

@@ -211,8 +211,6 @@ const WorldMapSVG = memo(function WorldMapSVG() {
               })
           }
         </Geographies>
-
-        {/* Red dots on partner countries */}
         {PARTNER_COUNTRIES.map((country) => (
           <Marker
             key={country.iso}
@@ -235,7 +233,6 @@ const WorldMapSVG = memo(function WorldMapSVG() {
             onClick={() => {}}
             style={{ cursor: "pointer" }}
           >
-            {/* Pulse ring on hover */}
             {activeISO === country.iso && (
               <circle
                 r={6}
@@ -261,7 +258,6 @@ const WorldMapSVG = memo(function WorldMapSVG() {
                 />
               </circle>
             )}
-            {/* Solid dot */}
             <circle
               r={activeISO === country.iso ? 3.4 : 2.5}
               fill={ACCENT_RED}
@@ -273,8 +269,6 @@ const WorldMapSVG = memo(function WorldMapSVG() {
           </Marker>
         ))}
       </ComposableMap>
-
-      {/* ── Tooltip — University List ── */}
       {tooltip && (
         <div
           data-tooltip
@@ -301,7 +295,6 @@ const WorldMapSVG = memo(function WorldMapSVG() {
               overscrollBehavior: "contain",
             }}
           >
-            {/* Country header */}
             <div
               style={{
                 display: "flex",
@@ -337,8 +330,6 @@ const WorldMapSVG = memo(function WorldMapSVG() {
                 {tooltip.country.universities.length} {tooltip.country.universities.length === 1 ? "partner" : "partners"}
               </span>
             </div>
-
-            {/* University list */}
             <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
               {tooltip.country.universities.map((uni, idx) => (
                 <li
@@ -371,8 +362,6 @@ const WorldMapSVG = memo(function WorldMapSVG() {
               ))}
             </ul>
           </div>
-
-          {/* Arrow pointer */}
           <div
             style={{
               width: 0,

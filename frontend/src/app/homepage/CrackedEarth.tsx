@@ -3,18 +3,15 @@
 export default function CrackedEarth() {
   return (
     <>
-      {/* The cracked pattern layer */}
       <div
         className="absolute inset-0"
         style={{
-          backgroundColor: "#FFFBF2", // Keep base cream color
+          backgroundColor: "#FFFBF2", 
           filter: "url(#cracks)",
           opacity: 0.27,
           zIndex: 1,
         }}
       />
-
-      {/* SVG filter definition — zero-size, invisible */}
       <svg width={0} height={0} className="absolute">
         <filter id="cracks">
           <feTurbulence
@@ -43,7 +40,6 @@ export default function CrackedEarth() {
             <feFuncG type="table" tableValues="1 0" />
             <feFuncB type="table" tableValues="1 0" />
           </feComponentTransfer>
-          {/* Use the warm theme accent for the cracks instead of black */}
           <feFlood floodColor="#9ca38f" result="bgColor" />
           <feComposite operator="in" in="bgColor" in2="invertedEdges" />
         </filter>
