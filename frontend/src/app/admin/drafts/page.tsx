@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader, ConfirmModal, CustomDropdown } from "../components";
+import { SkeletonPulse } from "../optemization_component";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { getDrafts, deleteDraft, DraftItem, DraftType } from "./draftsStorage";
 import { Edit3, Eye, Trash2, FileText, Search } from "lucide-react";
@@ -12,6 +13,7 @@ export default function DraftsPage() {
   const { role } = useAuth();
   
   const [drafts, setDrafts] = useState<DraftItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [filterType, setFilterType] = useState<DraftType | "All">("All");
   
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -22,7 +24,11 @@ export default function DraftsPage() {
 
   useEffect(() => {
     if (role) {
-      getDrafts(role).then(setDrafts);
+      setIsLoading(true);
+      getDrafts(role).then((res) => {
+        setDrafts(res);
+        setIsLoading(false);
+      });
     }
   }, [role]);
 
@@ -81,7 +87,13 @@ export default function DraftsPage() {
         </div>
       </div>
 
-      {filteredDrafts.length === 0 ? (
+      {isLoading ? (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem" }}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <DraftSkeletonCard key={i} />
+          ))}
+        </div>
+      ) : filteredDrafts.length === 0 ? (
         <div style={{ 
           textAlign: "center", padding: "4rem 2rem", backgroundColor: "rgba(181, 189, 160, 0.1)", 
           borderRadius: "12px", border: "1px dashed #b5bda0" 
@@ -204,6 +216,41 @@ export default function DraftsPage() {
         submittingLabel="Deleting..."
         successLabel="Deleted!"
       />
+    </div>
+  );
+}
+
+// ─── Local Component: Skeleton for Draft Card ───
+function DraftSkeletonCard() {
+  return (
+    <div style={{ 
+      backgroundColor: "transparent", border: "1px solid #b5bda0", borderRadius: "8px",
+      padding: "1.5rem", display: "flex", flexDirection: "column",
+      position: "relative", minHeight: "160px"
+    }}>
+      <div style={{ position: "absolute", top: "1rem", right: "1rem", width: "60px", height: "20px", borderRadius: "4px", overflow: "hidden" }}>
+        <SkeletonPulse />
+      </div>
+      
+      <div style={{ width: "80%", height: "20px", borderRadius: "4px", marginBottom: "8px", overflow: "hidden" }}>
+        <SkeletonPulse />
+      </div>
+      
+      <div style={{ width: "50%", height: "14px", borderRadius: "4px", marginBottom: "1.5rem", overflow: "hidden" }}>
+        <SkeletonPulse />
+      </div>
+      
+      <div style={{ marginTop: "auto", display: "flex", gap: "8px" }}>
+        <div style={{ flex: 1, height: "32px", borderRadius: "4px", overflow: "hidden" }}>
+          <SkeletonPulse />
+        </div>
+        <div style={{ width: "32px", height: "32px", borderRadius: "4px", overflow: "hidden" }}>
+          <SkeletonPulse />
+        </div>
+        <div style={{ width: "32px", height: "32px", borderRadius: "4px", overflow: "hidden" }}>
+          <SkeletonPulse />
+        </div>
+      </div>
     </div>
   );
 }
