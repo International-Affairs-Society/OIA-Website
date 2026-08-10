@@ -40,33 +40,50 @@ export default function EventsSection() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchEvents = async () => {
-      try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-        const res = await fetch(`${API_URL}/api/v1/events?eventType=past`);
-        if (res.ok) {
-          const json = await res.json();
-          // Filter out archived, sort if necessary, take top 5
-          const validEvents = (json.data || [])
-            .filter((e: any) => !e.is_archived)
-            .slice(0, 5)
-            .map((e: any) => ({
-              id: e.id,
-              title: e.title,
-              subtitle: e.event_type === "upcoming" ? "Upcoming Event" : "Past Event",
-              description: e.description || "",
-              features: e.highlights || [],
-              posterUrl: e.poster_url || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=800&auto=format&fit=crop"
-            }));
-          setEvents(validEvents);
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+      const MAX_RETRIES = 3;
+      const RETRY_DELAYS = [1000, 2000, 4000]; // exponential backoff (ms)
+
+      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        if (cancelled) return;
+        try {
+          const res = await fetch(`${API_URL}/api/v1/events?eventType=past`);
+          if (res.ok) {
+            const json = await res.json();
+            if (cancelled) return;
+            const validEvents = (json.data || [])
+              .filter((e: any) => !e.is_archived)
+              .slice(0, 5)
+              .map((e: any) => ({
+                id: e.id,
+                title: e.title,
+                subtitle: e.event_type === "upcoming" ? "Upcoming Event" : "Past Event",
+                description: e.description || "",
+                features: e.highlights || [],
+                posterUrl: e.poster_url || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=800&auto=format&fit=crop"
+              }));
+            setEvents(validEvents);
+            setIsLoading(false);
+            return; // success — stop retrying
+          }
+        } catch {
+          // Network error (backend cold-starting) — retry after delay
+          if (attempt < MAX_RETRIES) {
+            await new Promise((res) => setTimeout(res, RETRY_DELAYS[attempt]));
+            continue;
+          }
         }
-      } catch (err) {
-        console.error("Failed to fetch events for homepage:", err);
-      } finally {
-        setIsLoading(false);
       }
+
+      // All retries exhausted
+      if (!cancelled) setIsLoading(false);
     };
+
     fetchEvents();
+    return () => { cancelled = true; };
   }, []);
 
   // centerIndex: which event index is currently in the center slot (position 2)
