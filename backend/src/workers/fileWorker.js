@@ -11,3 +11,11 @@ export const fileWorker = new Worker('fileProcessing', processFileUpload, {
 fileWorker.on('failed', (job, err) => {
   logger.error(`Job ${job.id} failed with error: ${err.message}`)
 })
+
+fileWorker.on('error', (err) => {
+  if (process.env.NODE_ENV === 'production') {
+    logger.error('BullMQ fileWorker error:', err)
+  }
+})
+
+

@@ -101,47 +101,67 @@ export default function UpcomingEventSection() {
   const countdown = useCountdown(displayEvent.date);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchEvent = async () => {
-      try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-        const res = await fetch(`${API_URL}/api/v1/events`);
-        if (res.ok) {
-          const json = await res.json();
-          const now = Date.now();
-          const upcoming = (json.data || [])
-            .filter(
-              (e: any) =>
-                !e.is_archived &&
-                (e.event_type === "upcoming" ||
-                  new Date(e.date || e.start_date).getTime() > now)
-            )
-            .sort(
-              (a: any, b: any) =>
-                new Date(a.date || a.start_date).getTime() -
-                new Date(b.date || b.start_date).getTime()
-            );
-          if (upcoming.length > 0) {
-            const e = upcoming[0];
-            setEvent({
-              id: e.id,
-              title: e.title,
-              description: e.description || "",
-              highlights: e.highlights || [],
-              location: e.location || "Bennett University",
-              date: e.date || e.start_date,
-              posterUrl:
-                (e.poster_url ||
-                "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=800&auto=format&fit=crop").replace("localhost", "127.0.0.1"),
-            });
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+      const MAX_RETRIES = 3;
+      const RETRY_DELAYS = [1000, 2000, 4000];
+
+      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        if (cancelled) return;
+        try {
+          const res = await fetch(`${API_URL}/api/v1/events`);
+          if (res.ok) {
+            const json = await res.json();
+            if (cancelled) return;
+            const now = Date.now();
+            const upcoming = (json.data || [])
+              .filter(
+                (e: any) =>
+                  !e.is_archived &&
+                  (e.event_type === "upcoming" ||
+                    new Date(e.date || e.start_date).getTime() > now)
+              )
+              .sort(
+                (a: any, b: any) =>
+                  new Date(a.date || a.start_date).getTime() -
+                  new Date(b.date || b.start_date).getTime()
+              );
+            if (upcoming.length > 0) {
+              const e = upcoming[0];
+              setEvent({
+                id: e.id,
+                title: e.title,
+                description: e.description || "",
+                highlights: e.highlights || [],
+                location: e.location || "Bennett University",
+                date: e.date || e.start_date,
+                posterUrl:
+                  (e.poster_url ||
+                  "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=800&auto=format&fit=crop").replace("localhost", "127.0.0.1"),
+              });
+              return; // success — stop retrying
+            }
+            // API responded OK but no upcoming events — use fallback, no retry
+            if (!cancelled) setEvent(FALLBACK_EVENT);
             return;
           }
+        } catch {
+          // Network error (backend cold-starting) — retry after delay
+          if (attempt < MAX_RETRIES) {
+            await new Promise((res) => setTimeout(res, RETRY_DELAYS[attempt]));
+            continue;
+          }
         }
-      } catch {
-        // fall through to fallback
       }
-      setEvent(FALLBACK_EVENT);
+
+      // All retries exhausted — fall back to static data
+      if (!cancelled) setEvent(FALLBACK_EVENT);
     };
+
     fetchEvent();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
