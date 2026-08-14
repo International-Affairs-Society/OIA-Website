@@ -206,51 +206,7 @@ export default function IASPageClient() {
             </div>
           </div>
 
-          {/* ── Sound / Ambient indicator — bottom-left ── */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: "32px",
-              left: "36px",
-              zIndex: 4,
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              opacity: 0.55,
-              transition: "opacity 0.3s",
-            }}
-            className="ias-sound-btn"
-          >
-            <div
-              style={{
-                position: "relative",
-                width: "40px",
-                height: "40px",
-                borderRadius: "50%",
-                border: "1px solid rgba(255,255,255,0.3)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              {/* Pulse ring */}
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  borderRadius: "50%",
-                  border: "1px solid rgba(255,255,255,0.3)",
-                  animation: "ias-pulse-ring 2s ease-out infinite",
-                }}
-              />
-              <div style={{ width: "12px", height: "2px", background: "rgba(255,255,255,0.8)", borderRadius: "1px" }} />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.3 }}>
-              <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.7)", fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase" }}>Experience</span>
-              <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.45)", letterSpacing: "0.06em" }}>with sound</span>
-            </div>
-          </div>
+
 
           {/* ── Scroll indicator — bottom-center ── */}
           <div

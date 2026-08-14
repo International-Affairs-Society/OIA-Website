@@ -65,6 +65,7 @@ export default function EventsSection() {
                 features: e.highlights || [],
                 posterUrl: e.poster_url || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=800&auto=format&fit=crop"
               }));
+
             setEvents(validEvents);
             setIsLoading(false);
             return; // success — stop retrying
@@ -227,8 +228,18 @@ export default function EventsSection() {
             Loading engagements...
           </div>
         ) : events.length === 0 ? (
-          <div className="w-full text-center py-12 text-foreground/50 font-medium font-sans">
-            No recent engagements found.
+          <div className="w-full max-w-[800px] h-[450px] mx-auto py-12 px-4">
+            <div className="relative w-full h-full">
+              <CardFlip
+                key="fallback-event"
+                title="Global Engagements"
+                subtitle="Stay Tuned"
+                description="We are currently planning our next series of global engagements and international partnerships. Check back soon for new announcements and opportunities."
+                features={["Global Partnerships", "International Programs", "Student Exchange"]}
+                posterUrl="https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=800&auto=format&fit=crop"
+                isCenter={true}
+              />
+            </div>
           </div>
         ) : (
           <>
