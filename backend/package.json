@@ -10,6 +10,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
+    "build": "prisma generate",
+    "postinstall": "prisma generate",
     "test": "vitest run",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix"
