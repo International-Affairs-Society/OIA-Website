@@ -45,47 +45,23 @@ export default function PartnersSection() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      let mm = gsap.matchMedia();
-
-      mm.add("(max-width: 767px)", () => {
-        if (headingRef.current) {
-          gsap.fromTo(
-            headingRef.current,
-            { opacity: 0, y: 50 },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.8,
-              ease: "power3.out",
-              scrollTrigger: {
-                trigger: headingRef.current,
-                start: "top 70%",
-                toggleActions: "play reverse play reverse",
-              },
-            }
-          );
-        }
-      });
-
-      mm.add("(min-width: 768px)", () => {
-        if (headingRef.current) {
-          gsap.fromTo(
-            headingRef.current,
-            { opacity: 0, y: -50 },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.8,
-              ease: "power3.out",
-              scrollTrigger: {
-                trigger: headingRef.current,
-                start: "top 70%",
-                toggleActions: "play reverse play reverse",
-              },
-            }
-          );
-        }
-      });
+      if (headingRef.current) {
+        gsap.fromTo(
+          headingRef.current,
+          { opacity: 0, y: -50 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: headingRef.current,
+              start: "top 70%",
+              toggleActions: "play reverse play reverse",
+            },
+          }
+        );
+      }
 
       if (wheelRef.current) {
         gsap.fromTo(
@@ -144,7 +120,10 @@ export default function PartnersSection() {
       ref={sectionRef}
       className="relative w-full bg-background overflow-hidden"
     >
+      {/* ── Background Circuit Pattern ── */}
       <CircuitPattern />
+
+      {/* ── Heading Block ── */}
       <div
         ref={headingRef}
         className="relative w-full min-h-[50vh] z-20 flex flex-col items-center overflow-hidden"
@@ -154,8 +133,9 @@ export default function PartnersSection() {
           <p className="w-full text-center font-sans text-[0.85rem] text-foreground/50 mb-6 font-medium tracking-wide uppercase">
             OUR PARTNERS
           </p>
+
           <div
-            className="hidden md:flex w-full flex-col items-center justify-center"
+            className="w-full flex flex-col items-center justify-center"
             style={{ gap: "0px" }}
           >
             <BlurText
@@ -163,16 +143,16 @@ export default function PartnersSection() {
               delay={50}
               animateBy="words"
               direction="bottom"
-              className="w-full text-center font-zodiak font-medium leading-[1.1] tracking-tight text-foreground text-3xl md:text-5xl lg:text-[4.5rem]"
+              className="w-full text-center font-sans font-medium leading-[1.1] tracking-tight text-foreground text-3xl md:text-5xl lg:text-[4.5rem]"
             />
             <BlurText
               text="universities"
               delay={50}
               animateBy="words"
               direction="bottom"
-              className="w-full text-center font-zodiak font-medium leading-[1.1] tracking-tight text-foreground text-3xl md:text-5xl lg:text-[4.5rem]"
+              className="w-full text-center font-sans font-medium leading-[1.1] tracking-tight text-foreground text-3xl md:text-5xl lg:text-[4.5rem]"
             />
-            <div className="w-full flex flex-row flex-wrap items-center justify-center gap-x-3 gap-y-1 text-3xl md:text-5xl lg:text-[4.5rem] font-zodiak font-medium leading-[1.1] tracking-tight">
+            <div className="w-full flex flex-row flex-wrap items-center justify-center gap-x-3 gap-y-1 text-3xl md:text-5xl lg:text-[4.5rem] font-sans font-medium leading-[1.1] tracking-tight">
               <BlurText
                 text="of"
                 delay={50}
@@ -185,7 +165,7 @@ export default function PartnersSection() {
                 delay={50}
                 animateBy="words"
                 direction="bottom"
-                className="text-[#D12027]"
+                className="text-[#D12027] font-semibold"
               />
               <BlurText
                 text="to reach"
@@ -200,23 +180,13 @@ export default function PartnersSection() {
               delay={50}
               animateBy="words"
               direction="bottom"
-              className="w-full text-center font-zodiak font-medium leading-[1.1] tracking-tight text-foreground text-3xl md:text-5xl lg:text-[4.5rem]"
+              className="w-full text-center font-sans font-medium leading-[1.1] tracking-tight text-foreground text-3xl md:text-5xl lg:text-[4.5rem]"
             />
-          </div>
-          <div
-            className="flex md:hidden w-full flex-col items-center justify-center gap-1 font-zodiak font-medium leading-[1.1] tracking-tight text-3xl"
-          >
-            <div className="w-full text-center text-foreground">The international partnered</div>
-            <div className="w-full text-center text-foreground">universities</div>
-            <div className="w-full flex flex-row flex-wrap items-center justify-center gap-x-2 text-center">
-              <span className="text-foreground">of</span>
-              <span className="text-[#D12027]">Bennett University</span>
-              <span className="text-foreground">to reach</span>
-            </div>
-            <div className="w-full text-center text-foreground">horizons globally</div>
           </div>
         </div>
       </div>
+
+      {/* ── Full Circle Wheel with World Map in Center ── */}
       <div
         className="relative w-full pointer-events-none flex items-center justify-center"
         style={{
@@ -224,6 +194,7 @@ export default function PartnersSection() {
           marginTop: "50px",
         }}
       >
+        {/* ── Paragraph Text at the Inner Top of the Circle ── */}
         <p
           ref={textBelowRef}
           className="absolute z-20 text-center font-sans text-[1.1rem] md:text-xl lg:text-[2rem] text-foreground/70 leading-relaxed font-light px-4 left-1/2 -translate-x-1/2 pointer-events-auto max-w-[90vw] md:max-w-xl lg:max-w-2xl"
@@ -236,6 +207,8 @@ export default function PartnersSection() {
           to world-class education, research opportunities, and cultural exchange
           programs across five continents.
         </p>
+
+        {/* ── Interactive World Map in the CENTER of the circle ── */}
         <div
           className="absolute z-20 top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-auto px-4 md:px-6"
           style={{
@@ -244,25 +217,20 @@ export default function PartnersSection() {
           }}
         >
           <div
-            className="w-full relative group"
+            className="w-full"
             style={{
               maskImage: 'linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)',
               WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)'
             }}
           >
-            <a 
-              href="/partners" 
-              className="absolute inset-0 z-10 block md:hidden cursor-pointer"
-              aria-label="Go to Partners page"
-            ></a>
-            <div className="relative z-0 md:group-hover:opacity-100 transition-opacity">
-              <WorldMapSVG />
-            </div>
+            <WorldMapSVG />
           </div>
-          <div className="w-full flex items-center justify-center mt-24 md:mt-12 z-50">
+
+          {/* ── Explore More Link (Under the Map) ── */}
+          <div className="w-full flex items-center justify-center mt-20 sm:mt-24 md:mt-12 translate-y-24 sm:translate-y-28 md:translate-y-0 z-50">
             <a
               href="/partners"
-              className="group flex items-center gap-3 md:gap-4 text-foreground/70 hover:text-[#D12027] transition-colors duration-300 uppercase tracking-widest text-sm md:text-lg lg:text-xl font-semibold"
+              className="group flex items-center gap-3.5 md:gap-4 text-foreground/70 hover:text-[#D12027] transition-colors duration-300 uppercase tracking-widest text-base sm:text-lg md:text-lg lg:text-xl font-semibold"
             >
               Explore More
               <svg
@@ -273,7 +241,7 @@ export default function PartnersSection() {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="w-6 h-6 md:w-8 md:h-8 lg:w-9 lg:h-9 transition-transform duration-300 group-hover:translate-x-2"
+                className="w-7 h-7 md:w-8 md:h-8 lg:w-9 lg:h-9 transition-transform duration-300 group-hover:translate-x-2"
               >
                 <line x1="5" y1="12" x2="19" y2="12"></line>
                 <polyline points="12 5 19 12 12 19"></polyline>
@@ -281,6 +249,8 @@ export default function PartnersSection() {
             </a>
           </div>
         </div>
+
+        {/* The spinning circle track */}
         <div
           ref={wheelRef}
           className="absolute origin-center will-change-transform"
@@ -309,6 +279,7 @@ export default function PartnersSection() {
                   transform: `rotate(${angleDeg}deg)`,
                 }}
               >
+                {/* Image Box */}
                 <div
                   className={`w-full h-full flex items-center justify-center ${img.isLogo
                       ? "overflow-visible"
@@ -322,10 +293,10 @@ export default function PartnersSection() {
                     height={dims.imgH}
                     className={`block w-full h-full ${img.isLogo ? "object-contain" : "object-cover"}`}
                     style={img.scale ? { transform: `scale(${img.scale})` } : undefined}
-                    priority={i < 6}
                     unoptimized
                   />
                 </div>
+                {/* Rotating Label */}
                 <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 font-sans text-[0.85rem] text-foreground/60 whitespace-nowrap pointer-events-none">
                   {img.label}
                 </span>
@@ -333,12 +304,18 @@ export default function PartnersSection() {
             );
           })}
         </div>
+
+        {/* ── Edge Fade Overlays — make images "cut" at the edges and reappear ── */}
         <div className="absolute top-0 left-0 w-[15vw] h-full bg-gradient-to-r from-background to-transparent z-30 pointer-events-none" />
         <div className="absolute top-0 right-0 w-[15vw] h-full bg-gradient-to-l from-background to-transparent z-30 pointer-events-none" />
         <div className="absolute top-0 left-0 w-full h-[15vh] bg-gradient-to-b from-background to-transparent z-30 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-full h-[15vh] bg-gradient-to-t from-background to-transparent z-30 pointer-events-none" />
       </div>
+
+      {/* ── Bottom Spacer ── */}
       <div className="w-full h-[10vh]" />
+
+      {/* ── Stats Section ── */}
       <div
         ref={statsRef}
         className="relative z-20 w-full px-6 pb-32 flex flex-col md:flex-row items-center justify-center gap-12 md:gap-16 lg:gap-32 flex-wrap"
@@ -370,6 +347,8 @@ export default function PartnersSection() {
           </div>
         ))}
       </div>
+      
+      {/* ── Additional Bottom Spacer to prevent white gap ── */}
       <div className="w-full h-[10vh]" />
     </section>
   );

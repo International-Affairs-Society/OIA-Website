@@ -26,8 +26,10 @@ export default function SmoothScroll({
       gsap.config({ force3D: false }); // Disable heavy 3D hardware acceleration for standard tweens
     }
 
-    if (isLowEnd) {
-      // Completely bypass smooth scrolling on low end devices to save CPU/GPU.
+    const isMobile = window.innerWidth <= 768;
+
+    if (isLowEnd || isMobile) {
+      // Completely bypass smooth scrolling on low end devices and mobile to save CPU/GPU and optimize touch.
       return;
     }
 

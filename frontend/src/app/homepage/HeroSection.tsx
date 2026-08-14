@@ -125,7 +125,7 @@ export default function HeroSection() {
           justifyContent: "center",
         }}
       >
-        <div className="pointer-events-auto">
+        <div className="pointer-events-auto max-lg:pointer-events-none">
           <Globe />
         </div>
       </div>

@@ -244,17 +244,46 @@ export default function PartnersPage() {
         }
 
         @media (max-width: 768px) {
-            .partner-continent-container {
-                padding: 0 16px;
-                margin-bottom: 50px;
+            /* Hero: push text higher */
+            .editorial-hero {
+                min-height: 40vh;
+                padding: 80px 20px 20px;
+                align-items: center;
+                justify-content: center;
             }
-            .partner-logo-card {
-                width: 45vw;
-                height: 45vw;
-                padding: 15px;
+            .editorial-hero__line {
+                font-size: clamp(3rem, 14vw, 6rem);
             }
+
+            /* Continent title: tighter on mobile */
             .partner-continent-title {
-                font-size: clamp(4rem, 12vw, 8rem) !important;
+                font-size: clamp(2.4rem, 10vw, 4.5rem) !important;
+            }
+
+            /* Grid container: full-width, tighter padding */
+            .partner-continent-container {
+                padding: 0 12px;
+                margin-bottom: 40px;
+            }
+
+            /* Logo cards: 3 per row using calc */
+            .partner-logo-card {
+                width: calc(33.333% - 8px);
+                height: auto;
+                aspect-ratio: 1 / 1;
+                padding: 10px;
+            }
+
+            /* Logo grid: ensure 3-col wrapping */
+            .partner-logo-grid {
+                gap: 8px !important;
+            }
+        }
+
+        @media (max-width: 380px) {
+            /* Extra small phones: 2 per row */
+            .partner-logo-card {
+                width: calc(50% - 6px);
             }
         }
       `}} />
@@ -316,6 +345,7 @@ export default function PartnersPage() {
 
             {/* Big logo grid */}
             <div
+              className="partner-logo-grid"
               style={{
                 display: "flex",
                 flexWrap: "wrap",

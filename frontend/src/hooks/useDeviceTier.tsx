@@ -40,7 +40,7 @@ function detectDeviceTier(): DeviceTier {
   // If we say `memory <= 8` is Mid, then ALL high-end computers will be classified as Mid!
   // Therefore, if memory is 8, we must rely entirely on CPU cores to determine High vs Mid.
 
-  if (cores <= 4 || (memory !== undefined && memory <= 4)) {
+  if (cores <= 4 || (memory !== undefined && memory <= 6)) {
     finalTier = "low";
   } 
   else if (cores <= 6 || (memory !== undefined && memory < 8)) {
