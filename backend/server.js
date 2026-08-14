@@ -75,6 +75,11 @@ app.get('/', (req, res) => {
   })
 })
 
+// Healthcheck endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() })
+})
+
 // Mount routes
 app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/users', usersRouter)
@@ -111,7 +116,7 @@ app.use((req, res, next) => {
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`)
 })
 
