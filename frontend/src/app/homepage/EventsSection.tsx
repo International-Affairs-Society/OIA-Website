@@ -7,9 +7,10 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import CircuitPattern from "./CircuitPattern";
 import { useDeviceTierContext } from "@/hooks/useDeviceTier";
 
-gsap.registerPlugin(ScrollTrigger);
-
+import { Calendar } from "lucide-react";
 import CardFlip from "@/components/ui/card-flip";
+
+gsap.registerPlugin(ScrollTrigger);
 
 // Mock data removed in favor of backend API
 // Fan layout: 5 visible positions + 2 off-screen positions for enter/exit
@@ -138,7 +139,7 @@ export default function EventsSection() {
 
   // GSAP scroll animations
   useEffect(() => {
-    if (isLoading || events.length === 0) return;
+    if (isLoading) return;
 
     const ctx = gsap.context(() => {
       const elementsToAnimate = gsap.utils.toArray(".animate-heading");
@@ -146,12 +147,12 @@ export default function EventsSection() {
       if (elementsToAnimate.length > 0) {
         gsap.fromTo(
           elementsToAnimate,
-          { opacity: 0, y: 100 },
+          { opacity: 0, y: 80 },
           {
             opacity: 1,
             y: 0,
-            duration: 1.2,
-            delay: 0.5,
+            duration: 1.1,
+            delay: 0.2,
             stagger: 0.15,
             ease: "power3.out",
             force3D: true,
@@ -172,7 +173,7 @@ export default function EventsSection() {
             opacity: 1,
             scale: 1,
             duration: 1.4,
-            delay: 0.8,
+            delay: 0.5,
             ease: "power3.out",
             force3D: true,
             scrollTrigger: {
@@ -186,13 +187,13 @@ export default function EventsSection() {
     }, sectionRef);
 
     return () => ctx.revert();
-  }, [isLoading, events]);
+  }, [isLoading, events.length]);
 
   return (
     <section
       ref={sectionRef}
       id="events"
-      className="relative w-full min-h-0 md:min-h-screen overflow-hidden flex flex-col items-center pt-12 pb-6 md:py-24"
+      className="relative w-full min-h-0 md:min-h-screen overflow-hidden flex flex-col items-center pt-12 pb-16 md:py-24"
       style={{
         backgroundColor: "var(--background)",
       }}
@@ -228,17 +229,62 @@ export default function EventsSection() {
             Loading engagements...
           </div>
         ) : events.length === 0 ? (
-          <div className="w-full max-w-[800px] h-[450px] mx-auto py-12 px-4">
-            <div className="relative w-full h-full">
-              <CardFlip
-                key="fallback-event"
-                title="Global Engagements"
-                subtitle="Stay Tuned"
-                description="We are currently planning our next series of global engagements and international partnerships. Check back soon for new announcements and opportunities."
-                features={["Global Partnerships", "International Programs", "Student Exchange"]}
-                posterUrl="https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=800&auto=format&fit=crop"
-                isCenter={true}
+          <div className="w-full flex items-center justify-center py-4 md:py-6 px-4">
+            <div
+              className="relative w-full max-w-[340px] md:max-w-[380px] h-[340px] md:h-[370px] rounded-[20px] overflow-hidden flex flex-col items-center justify-center p-6 md:p-8 text-center select-none transition-all duration-300 hover:shadow-lg"
+              style={{
+                backgroundColor: "#FFFBF2",
+                border: "1px solid rgba(230, 57, 70, 0.18)",
+                boxShadow: "0 20px 45px -15px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.8) inset",
+              }}
+            >
+              {/* Subtle background glow */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: "radial-gradient(circle at 50% 35%, rgba(209, 32, 39, 0.06) 0%, transparent 65%)",
+                }}
+                aria-hidden="true"
               />
+
+              {/* Icon Container */}
+              <div
+                className="relative flex items-center justify-center w-14 h-14 rounded-full mb-4"
+                style={{
+                  backgroundColor: "rgba(209, 32, 39, 0.08)",
+                  border: "1px solid rgba(209, 32, 39, 0.2)",
+                }}
+              >
+                <Calendar
+                  className="w-6 h-6 text-[#D12027]"
+                  strokeWidth={1.75}
+                />
+              </div>
+
+              {/* Status Badge */}
+              <span
+                className="inline-block px-3 py-0.5 rounded-full text-[10px] font-semibold tracking-widest uppercase mb-2.5"
+                style={{
+                  backgroundColor: "rgba(209, 32, 39, 0.06)",
+                  color: "#D12027",
+                  letterSpacing: "0.12em",
+                }}
+              >
+                Stay Tuned
+              </span>
+
+              {/* Main Title */}
+              <h3
+                className="font-zodiak text-2xl md:text-[1.65rem] font-medium leading-tight text-foreground mb-2"
+                style={{ letterSpacing: "-0.02em" }}
+              >
+                No recent events
+              </h3>
+
+              {/* Subtitle / Description */}
+              <p className="font-sans text-[13px] md:text-sm text-foreground/60 max-w-[270px] leading-relaxed">
+                Past global engagements and international event recaps will appear here once published.
+              </p>
             </div>
           </div>
         ) : (
@@ -391,12 +437,27 @@ export default function EventsSection() {
             </div>
 
             {/* ── MOBILE: Horizontal Sliding Flip Cards ── */}
-            <div className="w-full flex md:hidden overflow-x-auto snap-x snap-mandatory gap-6 px-4 pb-12 pt-4 hide-scrollbar">
+            <div
+              className={`w-full flex md:hidden overflow-x-auto snap-x snap-mandatory pb-8 pt-2 hide-scrollbar ${
+                events.length === 1
+                  ? "justify-center px-6"
+                  : "gap-5 px-6"
+              }`}
+              style={{
+                scrollPaddingLeft: "24px",
+                scrollPaddingRight: "24px",
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
               {events.map((event) => (
                 <div 
                   key={event.id} 
                   className="snap-center flex-shrink-0"
-                  style={{ width: "81vw", height: "430px" }}
+                  style={{
+                    width: events.length === 1 ? "min(84vw, 340px)" : "min(78vw, 310px)",
+                    height: "420px",
+                    margin: events.length === 1 ? "0 auto" : undefined,
+                  }}
                 >
                   <CardFlip
                     title={event.title}
@@ -416,7 +477,7 @@ export default function EventsSection() {
         <div className="events-bottom-spacer" style={{ flexShrink: 0, width: "100%" }} aria-hidden="true" />
 
         {/* ── Explore More Link ── */}
-        <div className="relative z-50">
+        <div className="relative z-50 mt-2 md:mt-4">
           <a
             href="/events/past"
             className="group flex items-center gap-3 text-foreground/70 hover:text-[#D12027] transition-colors duration-300 uppercase tracking-widest text-sm font-semibold"
@@ -447,15 +508,15 @@ export default function EventsSection() {
         .events-label-mb      { margin-bottom: 12px; }
         .events-heading       { font-size: clamp(1.6rem, 7.5vw, 2.2rem); }
         .events-mid-spacer    { height: 20px; }
-        .events-bottom-spacer { height: 20px; }
+        .events-bottom-spacer { height: 24px; }
 
         /* Desktop overrides */
         @media (min-width: 768px) {
-          .events-top-spacer    { height: 10vh; }
+          .events-top-spacer    { height: 8vh; }
           .events-label-mb      { margin-bottom: 16px; }
           .events-heading       { font-size: clamp(2.6rem, 6.1vw, 6.1rem); }
           .events-mid-spacer    { height: 18px; }
-          .events-bottom-spacer { height: 0px; margin-top: -40px; }
+          .events-bottom-spacer { height: 28px; margin-top: 0; }
         }
         @media (min-width: 1024px) {
           .events-heading { font-size: 5.7rem; }

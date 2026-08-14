@@ -38,8 +38,6 @@ export default function SmoothScroll({
     const lenis = new Lenis({
       lerp: isMidEnd ? 0.15 : 0.08, // Lighter, faster lerp on Mid tier to save CPU cycles
       wheelMultiplier: 1.0,
-      smoothWheel: true,
-      smoothTouch: false,
       syncTouch: false,
     });
 
