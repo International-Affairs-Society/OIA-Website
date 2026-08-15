@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "upload.wikimedia.org" },
+      { protocol: "https", hostname: "api.samrai.space" },
       { protocol: "http", hostname: "localhost", port: "3001" },
       { protocol: "http", hostname: "127.0.0.1", port: "3001" },
     ],
