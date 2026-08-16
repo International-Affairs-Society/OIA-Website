@@ -5,6 +5,7 @@ import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import CountdownTimer from "./CountdownTimer";
+import { UpcomingMobileSkeleton } from "./UpcomingSkeleton";
 
 function formatEventDate(startDateStr: string, endDateStr?: string | null) {
   if (!startDateStr) return "";
@@ -228,11 +229,7 @@ export default function MobileUpcoming() {
   }, []);
 
   if (isLoading) {
-    return (
-      <section style={{ backgroundColor: "#FFFDE2", paddingTop: "100px", paddingBottom: "60px", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-space-grotesk)" }}>
-        <p style={{ fontSize: "15px", color: "var(--foreground)", opacity: 0.6 }}>Loading upcoming events...</p>
-      </section>
-    );
+    return <UpcomingMobileSkeleton />;
   }
 
   if (error || events.length === 0) {

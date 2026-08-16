@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import Navbar from "@/app/homepage/Navbar";
 import ProgramsFooter from "../components/ProgramsFooter";
 import Pattern from "../components/Pattern";
+import { ProgramDetailSkeleton } from "../components/ProgramSkeleton";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 
 /* ─── Hero Image Slider (same style as past events) ─── */
@@ -115,7 +116,18 @@ export default function ProgramDetailPage({ params }: { params: Promise<{ id: st
     fetchProgram();
   }, [id]);
 
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (isLoading) {
+    return (
+      <div style={{ position: "relative", minHeight: "100vh", width: "100%", overflow: "hidden", backgroundColor: "#FFFBF2" }}>
+        <Pattern />
+        <div className="fixed top-0 left-0 right-0 z-50">
+          <Navbar />
+        </div>
+        <ProgramDetailSkeleton />
+        <ProgramsFooter />
+      </div>
+    );
+  }
   if (!program) return notFound();
 
   // Build eligibility tags from arrays

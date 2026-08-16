@@ -111,6 +111,22 @@ html.lenis body {
   background: var(--accent);
 }
 
+.events-mobile-slider,
+.hide-scrollbar,
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+.events-mobile-slider::-webkit-scrollbar,
+.hide-scrollbar::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
 /* ===== PARTNERS SECTION — pseudo-elements & keyframes (can't be Tailwind) ===== */
 
 @keyframes dotPulse {

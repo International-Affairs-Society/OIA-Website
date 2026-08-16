@@ -148,7 +148,7 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
       }}
     >
       <div
-        className="px-6 sm:px-8 lg:px-12 py-3 flex items-center justify-between"
+        className="px-4 sm:px-8 lg:px-12 py-2.5 sm:py-3 flex items-center justify-between"
         style={{
           borderRadius: "inherit",
           backgroundColor: isScrolled ? bgScrolled : bgUnscrolled,
@@ -165,18 +165,18 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
             "background-color 0.5s ease-out, backdrop-filter 0.5s ease-out, border-radius 0.5s ease-out",
         }}
       >
-        <div className="flex items-center gap-4 sm:gap-5 shrink-0">
+        <div className="flex items-center gap-2.5 sm:gap-4 lg:gap-5 shrink-0">
           <Image
             src="/homepage assets/bennett logo .png"
             alt="Bennett University Logo"
             width={160}
             height={55}
-            className="h-9 sm:h-10 lg:h-12 w-auto object-contain"
+            className="h-[25px] sm:h-10 lg:h-12 w-auto object-contain"
             unoptimized
             priority
           />
           <div
-            className="w-px h-7 sm:h-8"
+            className="w-px h-5 sm:h-7 lg:h-8"
             style={{ backgroundColor: "var(--muted-3)" }}
           />
           <Image
@@ -184,7 +184,7 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
             alt="International Affairs Society Logo"
             width={160}
             height={55}
-            className="h-9 sm:h-10 lg:h-12 w-auto object-contain"
+            className="h-[25px] sm:h-10 lg:h-12 w-auto object-contain"
             unoptimized
             priority
           />
@@ -207,31 +207,26 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
                     <polyline points="6 9 12 15 18 9"></polyline>
                   </svg>
                 </button>
-                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0 flex flex-col gap-1.5"
+                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0 flex flex-col"
                      style={{
-                       backgroundColor: menuBg,
-                       backdropFilter: "blur(16px)",
-                       border: `1px solid ${borderColor}`,
-                       borderRadius: "12px",
-                       boxShadow: "0 10px 40px rgba(0,0,0,0.08)",
-                       padding: "8px",
+                       backgroundColor: isDarkPage ? "#141414" : "#f5f0e8",
+                       border: isDarkPage ? "1px solid rgba(255,255,255,0.15)" : "1px solid #b5bda0",
+                       borderRadius: "8px",
+                       boxShadow: "0 14px 40px rgba(0,0,0,0.12)",
+                       overflow: "hidden",
+                       padding: "0",
                      }}
                 >
                   {item.dropdown.map((subItem) => (
                     <a
                       key={subItem.label}
                       href={subItem.href}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm tracking-wide transition-colors duration-200 rounded-md hover:bg-[rgba(196,203,183,0.3)]"
-                      style={{ 
-                        fontFamily: "var(--font-space-grotesk)", 
-                        fontWeight: 500,
-                        color: "var(--foreground)"
+                      className="nav-dropdown-item"
+                      style={{
+                        color: isDarkPage ? "#ffffff" : "#1a1a1a",
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = textHover)}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = "var(--foreground)")}
                     >
-                      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: dropdownDot }}></span>
-                      {subItem.label}
+                      <span>{subItem.label}</span>
                     </a>
                   ))}
                 </div>
@@ -255,7 +250,7 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
             )
           ))}
         </div>
-        <div className="flex items-center gap-4 sm:gap-6 lg:gap-8">
+        <div className="flex items-center gap-3.5 sm:gap-6 lg:gap-8 navbar-right-actions">
           {perms.navbar.notification && role !== 'super_admin' && (
             <Link href="/student/profile?tab=notifications">
               <button
@@ -354,7 +349,7 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
           {!isAdminPage && (
             <button
               id="mobile-menu-toggle"
-              className="md:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5 group"
+              className="md:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5 group mr-2.5 sm:mr-0"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Toggle navigation menu"
               aria-expanded={isMobileMenuOpen}
@@ -616,6 +611,60 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
         isDarkTheme={isDarkPage}
       />
     )}
+    <style>{`
+      .nav-dropdown-item {
+        position: relative;
+        display: block;
+        padding: 12px 18px;
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+        color: #1a1a1a;
+        transition: all 0.48s cubic-bezier(0.23, 1, 0.32, 1);
+        white-space: nowrap;
+        font-family: var(--font-space-grotesk);
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0.03em;
+        text-decoration: none;
+        overflow: hidden;
+        box-sizing: border-box;
+      }
+
+      .nav-dropdown-item::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        transform: scaleX(0);
+        width: 100%;
+        height: 100%;
+        background-color: #D12027; /* Bennett Red */
+        z-index: 0;
+        transform-origin: left;
+        transition: transform 0.48s cubic-bezier(0.23, 1, 0.32, 1);
+      }
+
+      .nav-dropdown-item:hover {
+        color: #ffffff !important;
+      }
+
+      .nav-dropdown-item:hover::before {
+        transform: scaleX(1);
+        transform-origin: right;
+      }
+
+      .nav-dropdown-item span {
+        position: relative;
+        z-index: 1;
+      }
+
+      @media (max-width: 768px) {
+        .navbar-right-actions {
+          margin-right: 20px !important;
+        }
+      }
+    `}</style>
     </>
   );
 }
