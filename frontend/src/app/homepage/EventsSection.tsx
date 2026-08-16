@@ -202,19 +202,19 @@ export default function EventsSection() {
       <CircuitPattern />
 
       {/* ── Content ── */}
-      <div className="relative z-10 w-full max-w-[1400px] px-6 mx-auto flex flex-col items-center">
+      <div className="relative z-10 w-full max-w-[1400px] px-0 md:px-6 mx-auto flex flex-col items-center">
 
         {/* Top Spacer */}
         <div className="events-top-spacer" style={{ flexShrink: 0, width: "100%" }} aria-hidden="true" />
 
         {/* Section Header */}
-        <div className="w-full text-center animate-heading">
+        <div className="w-full text-center animate-heading" style={{ paddingLeft: "24px", paddingRight: "24px" }}>
           <p className="font-sans text-[0.85rem] text-foreground/50 font-medium tracking-wide uppercase events-label-mb">
             LATEST EVENTS
           </p>
         </div>
 
-        <div className="w-full text-center px-4 animate-heading">
+        <div className="w-full text-center animate-heading" style={{ paddingLeft: "24px", paddingRight: "24px" }}>
           <h2 className="events-heading font-zodiak font-medium leading-[1.1] tracking-tight text-foreground">
             Relive our recent <span className="text-[#D12027]">global engagements</span>
           </h2>
@@ -438,24 +438,37 @@ export default function EventsSection() {
 
             {/* ── MOBILE: Horizontal Sliding Flip Cards ── */}
             <div
-              className={`w-full flex md:hidden overflow-x-auto snap-x snap-mandatory pb-8 pt-2 hide-scrollbar ${
-                events.length === 1
-                  ? "justify-center px-6"
-                  : "gap-5 px-6"
-              }`}
+              className="events-mobile-slider"
               style={{
-                scrollPaddingLeft: "24px",
-                scrollPaddingRight: "24px",
+                width: "100%",
+                display: "flex",
+                overflowX: "auto",
+                scrollSnapType: "x mandatory",
+                scrollPaddingLeft: "36px",
+                scrollPaddingRight: "36px",
+                paddingTop: "10px",
+                paddingBottom: "24px",
+                gap: "20px",
+                boxSizing: "border-box",
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
                 WebkitOverflowScrolling: "touch",
               }}
             >
+              {/* Physical leading spacer to guarantee visible left padding on all mobile browsers */}
+              <div style={{ flex: "0 0 28px", width: "28px", minWidth: "28px", height: "1px", pointerEvents: "none" }} aria-hidden="true" />
+
               {events.map((event) => (
                 <div 
                   key={event.id} 
-                  className="snap-center flex-shrink-0"
                   style={{
-                    width: events.length === 1 ? "min(84vw, 340px)" : "min(78vw, 310px)",
+                    flex: "0 0 270px",
+                    width: "270px",
+                    minWidth: "270px",
+                    maxWidth: "74vw",
                     height: "420px",
+                    scrollSnapAlign: "center",
+                    boxSizing: "border-box",
                     margin: events.length === 1 ? "0 auto" : undefined,
                   }}
                 >
@@ -469,6 +482,9 @@ export default function EventsSection() {
                   />
                 </div>
               ))}
+
+              {/* Physical trailing spacer so right padding is respected on end scroll */}
+              <div style={{ flex: "0 0 28px", width: "28px", minWidth: "28px", height: "1px", pointerEvents: "none" }} aria-hidden="true" />
             </div>
           </>
         )}
@@ -503,6 +519,18 @@ export default function EventsSection() {
 
       </div>
       <style>{`
+        /* Mobile slider scrollbar removal */
+        .events-mobile-slider::-webkit-scrollbar {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+        }
+        @media (min-width: 768px) {
+          .events-mobile-slider {
+            display: none !important;
+          }
+        }
+
         /* Mobile defaults */
         .events-top-spacer    { height: 5vh; }
         .events-label-mb      { margin-bottom: 12px; }

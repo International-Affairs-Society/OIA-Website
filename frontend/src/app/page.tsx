@@ -5,10 +5,12 @@ import ProgramsSection from "./homepage/ProgramsSection";
 import UpcomingEventSection from "./homepage/UpcomingEventSection";
 import EventsSection from "./homepage/EventsSection";
 import Footer from "./homepage/Footer";
+import SitePreloader from "@/components/SitePreloader";
 
 export default function Home() {
   return (
     <main>
+      <SitePreloader />
       <Navbar />
       <HeroSection />
       <PartnersSection />

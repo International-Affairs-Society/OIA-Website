@@ -8,6 +8,7 @@ import BlurText from "./BlurText";
 import CountUp from "./CountUp";
 import CircuitPattern from "./CircuitPattern";
 import dynamic from 'next/dynamic';
+import { useDeviceTierContext } from "@/hooks/useDeviceTier";
 const WorldMapSVG = dynamic(() => import("./WorldMapSVG"), { ssr: false });
 
 gsap.registerPlugin(ScrollTrigger);
@@ -34,6 +35,10 @@ export default function PartnersSection() {
   const statsRef = useRef<HTMLDivElement>(null);
   const [statsVisible, setStatsVisible] = useState(false);
 
+  const deviceTier = useDeviceTierContext();
+  const isLowTier = deviceTier === "low";
+  const isMidTier = deviceTier === "mid";
+
   const [dims, setDims] = useState({ size: 1600, radius: 800, imgW: 140, imgH: 140 });
 
   useEffect(() => {
@@ -44,6 +49,14 @@ export default function PartnersSection() {
   }, []);
 
   useEffect(() => {
+    let animId: number;
+    let lastTime = performance.now();
+    let currentRotation = -80;
+    let scrollVelocity = 0;
+    let lastScrollY = typeof window !== "undefined" ? window.scrollY : 0;
+    let isIntersecting = false;
+
+    // 1. Heading and Text entrance animations
     const ctx = gsap.context(() => {
       if (headingRef.current) {
         gsap.fromTo(
@@ -58,23 +71,6 @@ export default function PartnersSection() {
               trigger: headingRef.current,
               start: "top 70%",
               toggleActions: "play reverse play reverse",
-            },
-          }
-        );
-      }
-
-      if (wheelRef.current) {
-        gsap.fromTo(
-          wheelRef.current,
-          { rotation: -80 },
-          {
-            rotation: 90,
-            ease: "none",
-            scrollTrigger: {
-              trigger: sectionRef.current,
-              start: "top bottom",
-              end: "bottom top",
-              scrub: 0.8,
             },
           }
         );
@@ -99,8 +95,71 @@ export default function PartnersSection() {
       }
     }, sectionRef);
 
-    return () => ctx.revert();
-  }, []);
+    // 2. High-Performance Continuous Physics Orbit with Scroll Momentum
+    const onScroll = () => {
+      if (!isIntersecting) return;
+      const currentScrollY = window.scrollY;
+      const deltaY = currentScrollY - lastScrollY;
+      lastScrollY = currentScrollY;
+
+      // Impart rotational momentum from scroll speed (scaled by tier)
+      const impulseScale = isLowTier ? 0.08 : isMidTier ? 0.11 : 0.14;
+      scrollVelocity += deltaY * impulseScale;
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    // Physics Animation Frame Loop
+    const loop = (now: number) => {
+      if (isIntersecting) {
+        const dt = Math.min((now - lastTime) / 1000, 0.08); // cap delta time
+        lastTime = now;
+
+        // Ambient continuous drift speed (deg/s)
+        const ambientSpeed = isLowTier ? 5.0 : isMidTier ? 6.5 : 8.0;
+
+        // Apply physical friction decay to scroll momentum
+        const friction = isLowTier ? 0.88 : 0.85;
+        scrollVelocity *= Math.pow(friction, dt * 60);
+
+        // Update total rotation
+        currentRotation += (ambientSpeed + scrollVelocity) * dt;
+
+        if (wheelRef.current) {
+          wheelRef.current.style.transform = `translate3d(0, 0, 0) rotate(${currentRotation}deg)`;
+        }
+      } else {
+        lastTime = now;
+      }
+
+      animId = requestAnimationFrame(loop);
+    };
+
+    // 3. Viewport Observer to pause loop when section is offscreen (saves 100% CPU/GPU)
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isIntersecting = entry.isIntersecting;
+        if (entry.isIntersecting) {
+          lastScrollY = window.scrollY;
+          lastTime = performance.now();
+        }
+      },
+      { threshold: 0 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    animId = requestAnimationFrame(loop);
+
+    return () => {
+      ctx.revert();
+      window.removeEventListener("scroll", onScroll);
+      observer.disconnect();
+      cancelAnimationFrame(animId);
+    };
+  }, [deviceTier, isLowTier, isMidTier]);
 
   /* ── Stats entrance via IntersectionObserver ── */
   useEffect(() => {
@@ -257,6 +316,9 @@ export default function PartnersSection() {
           style={{
             width: `${dims.size}px`,
             height: `${dims.size}px`,
+            transform: "translate3d(0, 0, 0) rotate(-80deg)",
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
           }}
         >
           {FLOATING_IMAGES.map((img, i) => {
@@ -270,13 +332,15 @@ export default function PartnersSection() {
             return (
               <div
                 key={i}
-                className="absolute origin-center pointer-events-auto"
+                className="absolute origin-center pointer-events-auto will-change-transform"
                 style={{
                   left: `${x.toFixed(2)}px`,
                   top: `${y.toFixed(2)}px`,
                   width: `${dims.imgW}px`,
                   height: `${dims.imgH}px`,
-                  transform: `rotate(${angleDeg}deg)`,
+                  transform: `translate3d(0, 0, 0) rotate(${angleDeg}deg)`,
+                  backfaceVisibility: "hidden",
+                  WebkitBackfaceVisibility: "hidden",
                 }}
               >
                 {/* Image Box */}
@@ -318,7 +382,7 @@ export default function PartnersSection() {
       {/* ── Stats Section ── */}
       <div
         ref={statsRef}
-        className="relative z-20 w-full px-6 pb-32 flex flex-col md:flex-row items-center justify-center gap-12 md:gap-16 lg:gap-32 flex-wrap"
+        className="stats-container relative z-20 w-full px-6 pb-32 flex flex-col md:flex-row items-center justify-center gap-12 md:gap-16 lg:gap-32 flex-wrap"
         style={{
           opacity: statsVisible ? 1 : 0,
           transform: statsVisible ? "translateY(0)" : "translateY(60px)",
@@ -350,6 +414,16 @@ export default function PartnersSection() {
       
       {/* ── Additional Bottom Spacer to prevent white gap ── */}
       <div className="w-full h-[10vh]" />
+
+      <style>{`
+        @media (max-width: 768px) {
+          .stats-container {
+            opacity: 1 !important;
+            transform: none !important;
+            transition: none !important;
+          }
+        }
+      `}</style>
     </section>
   );
 }

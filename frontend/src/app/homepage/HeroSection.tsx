@@ -54,7 +54,7 @@ export default function HeroSection() {
 
       {/* Layer 2: Content — stacked vertically */}
       <div
-        className="relative flex flex-col items-center w-full"
+        className="relative flex flex-col items-center w-full px-4 sm:px-6"
         style={{
           zIndex: 10,
           minHeight: "100vh",
@@ -62,11 +62,11 @@ export default function HeroSection() {
       >
         {/* Heading — top center */}
         <h1
+          className="hero-heading"
           style={{
             fontFamily: "var(--font-tan-pearl), serif",
-            fontSize: "clamp(3.1rem, 10.5vw, 5.5rem)",
             fontWeight: 400,
-            lineHeight: 1.2,
+            lineHeight: 1.15,
             letterSpacing: "-0.01em",
             color: "#393939",
             textAlign: "center",
@@ -76,7 +76,8 @@ export default function HeroSection() {
               : "translateY(30px)",
             transition:
               "transform 2s cubic-bezier(0.23, 1, 0.32, 1), opacity 1.5s ease-out",
-            marginTop: "clamp(5rem, 10vh, 8rem)",
+            marginTop: "clamp(4.5rem, 11vh, 8rem)",
+            maxWidth: "100%",
           }}
         >
           {/* Desktop view: 2 lines */}
@@ -103,7 +104,7 @@ export default function HeroSection() {
         </h1>
       </div>
 
-      {/* Layer 1.5: Globe — bottom-left quarter on mobile, centered on desktop */}
+      {/* Layer 1.5: Globe — bottom-right corner on mobile, centered on desktop */}
       <div
         className="absolute bottom-0 pointer-events-none"
         style={{
@@ -131,7 +132,6 @@ export default function HeroSection() {
       </div>
 
       {/* Bottom gradient fade */}
-      {/* zIndex 30 places this OVER the globe (zIndex 20), making it look like the globe is emerging from the fade */}
       <div
         className="absolute bottom-0 left-0 right-0 pointer-events-none"
         style={{
@@ -142,6 +142,26 @@ export default function HeroSection() {
         }}
         aria-hidden="true"
       />
+
+      <style>{`
+        .hero-heading {
+          font-size: clamp(2.55rem, 11vw, 3.45rem);
+          line-height: 1.12;
+          letter-spacing: -0.02em;
+        }
+        @media (min-width: 768px) {
+          .hero-heading {
+            font-size: clamp(3.4rem, 6.4vw, 5.2rem);
+            line-height: 1.15;
+            letter-spacing: -0.01em;
+          }
+        }
+        @media (min-width: 1280px) {
+          .hero-heading {
+            font-size: clamp(4.8rem, 6.8vw, 6.4rem);
+          }
+        }
+      `}</style>
     </section>
   );
 }
