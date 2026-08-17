@@ -8,6 +8,7 @@ import BackgroundMap from "./components/BackgroundMap";
 import ProgramCard from "./components/ProgramCard";
 import ProgramFilters from "./components/ProgramFilters";
 import LeadCaptureModal from "./components/LeadCaptureModal";
+import { ProgramGridSkeleton } from "./components/ProgramSkeleton";
 
 // Format date helper
 const formatDate = (dateString: string) => {
@@ -197,7 +198,7 @@ export default function OtherProgramsPage() {
           }}
         >
           {isLoading ? (
-            <div className="col-span-full text-center py-20 text-[#6b6b6b]">Loading programs...</div>
+            <ProgramGridSkeleton count={6} />
           ) : filteredPrograms.length === 0 ? (
             <div className="col-span-full text-center py-20 text-[#6b6b6b]">No programs found.</div>
           ) : (

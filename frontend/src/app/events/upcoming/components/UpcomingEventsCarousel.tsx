@@ -5,6 +5,7 @@ import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import CountdownTimer from "./CountdownTimer";
+import { UpcomingCarouselSkeleton } from "./UpcomingSkeleton";
 
 /* ── Word cap for description ── */
 const DESC_WORD_LIMIT = 35;
@@ -379,11 +380,7 @@ export default function UpcomingEventsCarousel() {
   };
 
   if (isLoading) {
-    return (
-      <section style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#FFFDE2", fontFamily: "var(--font-space-grotesk)" }}>
-        <p style={{ fontSize: "16px", color: "var(--foreground)", opacity: 0.6 }}>Loading upcoming events...</p>
-      </section>
-    );
+    return <UpcomingCarouselSkeleton />;
   }
 
   if (error || events.length === 0) {

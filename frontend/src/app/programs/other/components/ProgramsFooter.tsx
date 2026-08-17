@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 
 export default function ProgramsFooter() {
   const footerRef = useRef<HTMLElement>(null);
+  const [showDevs, setShowDevs] = useState(false);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -129,23 +130,58 @@ export default function ProgramsFooter() {
 
           {/* Right — Developers */}
           <div className="flex flex-col items-center md:items-start gap-2 text-center md:text-left">
-            <p className="animate-footer-programs font-sans text-[0.8rem] text-[#D12027] font-semibold tracking-widest uppercase mb-2">
-              Developers
-            </p>
-            <p className="animate-footer-programs font-sans text-sm text-foreground/70 leading-relaxed max-w-xs">
-              This website is designed
-            </p>
-            <p className="animate-footer-programs font-sans text-sm text-foreground/70 leading-relaxed max-w-xs">
-              and developed by
-            </p>
-            <p className="animate-footer-programs font-sans text-sm text-foreground font-semibold leading-relaxed max-w-xs mt-1">
-              Shrish & Shivam
-            </p>
+            <button
+              onClick={() => setShowDevs(!showDevs)}
+              className="animate-footer-programs focus:outline-none flex items-center justify-center md:justify-start gap-2 cursor-pointer group"
+              style={{ background: "none", border: "none", padding: 0 }}
+              aria-expanded={showDevs}
+            >
+              <span className="font-sans text-[0.8rem] text-[#D12027] font-semibold tracking-widest uppercase group-hover:opacity-80 transition-opacity">
+                See Developers
+              </span>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#D12027"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{
+                  transform: showDevs ? "rotate(180deg)" : "rotate(0deg)",
+                  transition: "transform 0.35s cubic-bezier(0.23, 1, 0.32, 1)",
+                }}
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+            <div
+              className={`flex flex-col items-center md:items-start gap-1.5 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                showDevs ? "max-h-[200px] opacity-100 mt-2" : "max-h-0 opacity-0 mt-0"
+              }`}
+            >
+              <p className="font-sans text-sm text-foreground/70 leading-relaxed max-w-xs">
+                This website is designed
+              </p>
+              <p className="font-sans text-sm text-foreground/70 leading-relaxed max-w-xs">
+                and developed by
+              </p>
+              <p className="font-sans text-sm text-foreground font-semibold leading-relaxed max-w-xs mt-0.5">
+                Shrish & Shivam
+              </p>
+            </div>
           </div>
         </div>
 
         {/* ── Let's Talk SVG ── */}
-        <div className="animate-footer-programs w-full overflow-hidden mt-8 md:mt-0">
+        <div
+          className="animate-footer-programs w-full overflow-hidden mt-8 md:mt-0"
+          style={{
+            paddingLeft: "clamp(18px, 6vw, 0px)",
+            paddingRight: "clamp(18px, 6vw, 0px)",
+          }}
+        >
           <Image
             src="/homepage assets/lets talk.svg"
             alt="Let's Talk"

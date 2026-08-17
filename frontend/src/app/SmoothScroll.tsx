@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import Lenis from "lenis";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
-import { useDeviceTierContext } from "@/hooks/useDeviceTier";
+import { useDeviceTierContext, detectIsIntegratedGPU } from "@/hooks/useDeviceTier";
 
 export default function SmoothScroll({
   children,
@@ -27,9 +27,12 @@ export default function SmoothScroll({
     }
 
     const isMobile = window.innerWidth <= 768;
+    const isHomePage = pathname === "/" || pathname === "" || pathname === "/#home";
+    const isIntegrated = detectIsIntegratedGPU();
 
-    if (isLowEnd || isMobile) {
-      // Completely bypass smooth scrolling on low end devices and mobile to save CPU/GPU and optimize touch.
+    if (isLowEnd || isMobile || (isHomePage && isIntegrated)) {
+      // Completely bypass smooth scrolling on low end devices, mobile, or on homepage with integrated graphics
+      console.log(`🚀 [SmoothScroll] Lenis bypassed: ${isMobile ? "Mobile" : isLowEnd ? "Low Tier" : isIntegrated && isHomePage ? "Homepage with Integrated GPU" : "Active"}`);
       return;
     }
 
