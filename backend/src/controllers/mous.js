@@ -337,9 +337,10 @@ export const deleteMou = asyncHandler(async (req, res) => {
     })
   }
 
-  // Hard delete since mou table does not have deleted_at
-  await prisma.mous.delete({
-    where: { id }
+  // DATA-02 FIX: soft delete — set deleted_at instead of hard deleting
+  await prisma.mous.update({
+    where: { id },
+    data: { deleted_at: new Date(), updated_at: new Date() }
   })
 
   await prisma.audit_logs.create({

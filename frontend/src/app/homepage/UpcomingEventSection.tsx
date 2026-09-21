@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import CircuitPattern from "./CircuitPattern";
+import { apiFetch } from "@/lib/apiFetch";
 
 // ============================================================
 // DATA CONSTANTS — Replace with API calls when backend is ready
@@ -104,14 +105,13 @@ export default function UpcomingEventSection() {
     let cancelled = false;
 
     const fetchEvent = async () => {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
       const MAX_RETRIES = 3;
       const RETRY_DELAYS = [1000, 2000, 4000];
 
       for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
         if (cancelled) return;
         try {
-          const res = await fetch(`${API_URL}/api/v1/events`);
+          const res = await apiFetch(`/api/v1/events`);
           if (res.ok) {
             const json = await res.json();
             if (cancelled) return;

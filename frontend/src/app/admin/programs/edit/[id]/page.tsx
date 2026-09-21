@@ -6,6 +6,7 @@ import { AdminPageHeader, FormField, CustomDropdown, ConfirmModal } from "../../
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { Plus, Trash2 } from "lucide-react";
 import { AdminFormSkeleton } from "@/app/admin/optemization_component";
+import { apiFetch } from "@/lib/apiFetch";
 
 const SCHOOL_OPTIONS = ["SCSET", "SOAI", "SEAS", "SOM", "SOL", "TSOM", "SOLA", "SOD", "All"];
 const SEMESTER_OPTIONS = ["Semester 1", "Semester 2", "Semester 3", "Semester 4", "Semester 5", "Semester 6", "Semester 7", "Semester 8", "Semester 9", "Semester 10", "All"];
@@ -298,13 +299,10 @@ export default function EditProgramPage({ params }: { params: Promise<{ id: stri
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("access_token");
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
         
         // 1. Fetch Users
-        const usersRes = await fetch(`${API_URL}/api/v1/users`, {
+        const usersRes = await apiFetch(`/api/v1/users`, {
           credentials: "include",
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         if (usersRes.ok) {
           const data = await usersRes.json();
@@ -312,9 +310,8 @@ export default function EditProgramPage({ params }: { params: Promise<{ id: stri
         }
 
         // 2. Fetch MOUs
-        const mousRes = await fetch(`${API_URL}/api/v1/mous`, {
+        const mousRes = await apiFetch(`/api/v1/mous`, {
           credentials: "include",
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         if (mousRes.ok) {
           const data = await mousRes.json();
@@ -326,9 +323,8 @@ export default function EditProgramPage({ params }: { params: Promise<{ id: stri
         }
 
         // 3. Fetch Program Details
-        const programRes = await fetch(`${API_URL}/api/v1/programs/${id}`, {
+        const programRes = await apiFetch(`/api/v1/programs/${id}`, {
           credentials: "include",
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         if (programRes.ok) {
           const prog = await programRes.json();
@@ -409,15 +405,12 @@ export default function EditProgramPage({ params }: { params: Promise<{ id: stri
 
     try {
       setIsUploadingPoster(true);
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch(`${API_URL}/api/v1/media`, {
+      const res = await apiFetch(`/api/v1/media`, {
         method: "POST",
         credentials: "include",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
       });
 
@@ -441,18 +434,15 @@ export default function EditProgramPage({ params }: { params: Promise<{ id: stri
 
     try {
       setIsUploadingGallery(true);
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
       const uploaded: string[] = [];
       for (let i = 0; i < files.length; i++) {
         const formData = new FormData();
         formData.append("file", files[i]);
 
-        const res = await fetch(`${API_URL}/api/v1/media`, {
+        const res = await apiFetch(`/api/v1/media`, {
           method: "POST",
           credentials: "include",
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
           body: formData,
         });
 
@@ -475,8 +465,6 @@ export default function EditProgramPage({ params }: { params: Promise<{ id: stri
 
   const executeSaveProgram = async () => {
     try {
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
       const startD = isComingSoon ? "2099-12-31" : startDate;
       const applyD = isComingSoon ? "2099-12-31" : lastDateToApply;
@@ -526,12 +514,11 @@ export default function EditProgramPage({ params }: { params: Promise<{ id: stri
         }
       };
 
-      const res = await fetch(`${API_URL}/api/v1/programs/${id}`, {
+      const res = await apiFetch(`/api/v1/programs/${id}`, {
         method: "PATCH",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(payload),
       });

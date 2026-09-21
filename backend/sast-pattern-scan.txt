@@ -1,0 +1,26 @@
+﻿=== SAST PATTERN SCAN: OIA Portal Backend ===
+
+--- [1] eval() usage ---
+
+--- [2] exec / execSync (command injection) ---
+C:\Users\HP\Documents\oia-website\backend\src\middleware\rateLimiter.js:60:    await pipeline.exec()
+
+--- [3] Math.random() (weak randomness) ---
+
+--- [4] console.log with sensitive keywords ---
+C:\Users\HP\Documents\oia-website\backend\src\middleware\authenticate.js:33:      console.log('[Auth] Local JWT verify failed:', err.message, '- falling back to Supabase API')
+C:\Users\HP\Documents\oia-website\backend\src\middleware\authenticate.js:37:        console.log('[Auth] Supabase API fallback failed:', supabaseError)
+C:\Users\HP\Documents\oia-website\backend\src\middleware\authenticate.js:47:      console.log('[Auth] Unauthorized email domain:', authUser.email)
+C:\Users\HP\Documents\oia-website\backend\src\middleware\authenticate.js:64:    console.log(`[Auth] Provisioning user: ${decoded.email}, role: ${assignedRole}`)
+
+--- [5] Hardcoded secrets / credentials ---
+
+--- [6] SQL/NoSQL Injection risk (raw query) ---
+
+--- [7] process.env direct exposure in responses ---
+
+--- [8] Missing authentication middleware on router ---
+
+--- [9] Prototype pollution risk ---
+
+--- [10] Regex DoS (ReDoS) patterns ---

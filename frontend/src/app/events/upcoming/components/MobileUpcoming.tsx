@@ -6,6 +6,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import CountdownTimer from "./CountdownTimer";
 import { UpcomingMobileSkeleton } from "./UpcomingSkeleton";
+import { apiFetch } from "@/lib/apiFetch";
 
 function formatEventDate(startDateStr: string, endDateStr?: string | null) {
   if (!startDateStr) return "";
@@ -211,7 +212,7 @@ export default function MobileUpcoming() {
     const fetchEvents = async () => {
       try {
         const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001").replace(/['"]/g, "");
-        const res = await fetch(`${API_URL}/api/v1/events?eventType=upcoming`);
+        const res = await apiFetch(`/api/v1/events?eventType=upcoming`);
         if (res.ok) {
           const json = await res.json();
           setEvents(json.data || []);

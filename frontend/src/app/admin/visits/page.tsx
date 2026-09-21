@@ -7,8 +7,8 @@ import ActionButtons from "../components/ActionButtons";
 import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { Plus, ClipboardCheck } from "lucide-react";
+import { apiFetch } from "@/lib/apiFetch";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export default function VisitsPage() {
   const router = useRouter();
@@ -24,10 +24,7 @@ export default function VisitsPage() {
   useEffect(() => {
     const fetchVisits = async () => {
       try {
-        const token = localStorage.getItem("access_token");
-        const res = await fetch(`${API_URL}/api/v1/visits`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
+        const res = await apiFetch(`/api/v1/visits`);
         if (res.ok) {
           const data = await res.json();
           setVisits(data.data || []);
@@ -51,10 +48,8 @@ export default function VisitsPage() {
 
   const handleDeleteVisit = async (id: string) => {
     try {
-      const token = localStorage.getItem("access_token");
-      const res = await fetch(`${API_URL}/api/v1/visits/${id}`, {
+      const res = await apiFetch(`/api/v1/visits/${id}`, {
         method: "DELETE",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) {
         setVisits(visits.filter(v => v.id !== id));

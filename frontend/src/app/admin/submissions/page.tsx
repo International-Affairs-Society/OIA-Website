@@ -194,9 +194,7 @@ function SubmissionsContent() {
   React.useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/reviews`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` }
-        });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/reviews`);
         if (res.ok) {
           const json = await res.json();
           const mapped = (json.data || []).map((r: any) => ({

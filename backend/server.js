@@ -30,6 +30,7 @@ import draftsRouter from './src/routes/drafts.js'
 
 // Import workers to initialize them
 import './src/workers/fileWorker.js'
+import './src/workers/mouExpiryWorker.js'
 // Import error handler middleware
 import errorHandler from './src/middleware/errorHandler.js'
 
@@ -115,9 +116,18 @@ app.use((req, res, next) => {
 // Global error handler (Must be mounted last)
 app.use(errorHandler)
 
+import { mouExpiryQueue } from './src/lib/queues.js'
+
 const PORT = process.env.PORT || 3001
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, '0.0.0.0', async () => {
   console.log(`Server is running on port ${PORT}`)
+
+  // MOU-01: register daily MOU expiry check (runs at midnight every day)
+  await mouExpiryQueue.add(
+    'checkMouExpiry',
+    {},
+    { repeat: { cron: '0 0 * * *' }, removeOnComplete: true }
+  ).catch(err => console.error('[MOU] Failed to register expiry cron:', err))
 })
 
 export default app

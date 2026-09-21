@@ -1,0 +1,152 @@
+// ===========================================================
+// schema.prisma additions — paste these into schema.prisma
+// to keep Prisma client in sync with migration 001.
+//
+// INSTRUCTION: Merge each block below into the existing
+// schema.prisma file in the positions indicated.
+// Then run: npx prisma generate
+// ===========================================================
+
+// ── Enums to ADD ────────────────────────────────────────────
+
+enum DocType {
+  PASSPORT
+  TRANSCRIPT
+  SOP
+  BANK_STATEMENT
+  PHOTO
+  VACCINATION
+}
+
+enum DocStatus {
+  PENDING
+  VERIFIED
+}
+
+enum ChangeRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ApplicationStage {
+  Submitted
+  Under_Review          @map("Under Review")
+  Documents_Verified    @map("Documents Verified")
+  Offer_Letter          @map("Offer Letter")
+  Visa_Processing       @map("Visa Processing")
+  Enrolled
+  Rejected
+  Withdrawn
+}
+
+// ── New model: universities ──────────────────────────────────
+
+model universities {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  country     String
+  logo_r2_key String?
+  map_lat     Decimal? @db.Decimal(10, 7)
+  map_lng     Decimal? @db.Decimal(10, 7)
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @default(now()) @db.Timestamptz(6)
+}
+
+// ── New model: documents ─────────────────────────────────────
+//   Add "documents  documents[]" to users model
+//   Add "documents  documents[]" to applications model
+
+model documents {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id        String    @db.Uuid
+  application_id String?   @db.Uuid
+  type           DocType
+  r2_key         String
+  status         DocStatus @default(PENDING)
+  verified_by_id String?   @db.Uuid
+  verified_at    DateTime?
+  deleted_at     DateTime? // soft delete
+  created_at     DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime  @default(now()) @db.Timestamptz(6)
+
+  user           users         @relation("user_documents",      fields: [user_id], references: [id], onDelete: Cascade)
+  application    applications? @relation(fields: [application_id], references: [id], onDelete: SetNull)
+  verified_by    users?        @relation("verified_by_documents", fields: [verified_by_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id])
+  @@index([application_id])
+  @@index([status])
+}
+
+// ── New model: change_requests ───────────────────────────────
+//   Add two back-relations to users model:
+//     change_requests_requested  change_requests[] @relation("requested_by")
+//     change_requests_reviewed   change_requests[] @relation("reviewed_by")
+
+model change_requests {
+  id              String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  target_table    String
+  target_id       String?             @db.Uuid
+  action_type     String
+  payload         Json
+  requested_by    String              @db.Uuid
+  reviewed_by     String?             @db.Uuid
+  status          ChangeRequestStatus @default(PENDING)
+  review_comments String?
+  created_at      DateTime            @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime            @default(now()) @db.Timestamptz(6)
+
+  requester       users               @relation("requested_by", fields: [requested_by], references: [id], onDelete: Cascade)
+  reviewer        users?              @relation("reviewed_by",  fields: [reviewed_by],  references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([requested_by])
+}
+
+// ── New model: notification_reads ────────────────────────────
+//   Add "reads  notification_reads[]" to notifications model
+//   Add "notification_reads  notification_reads[]" to users model
+
+model notification_reads {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  notification_id String        @db.Uuid
+  user_id         String        @db.Uuid
+  read_at         DateTime      @default(now()) @db.Timestamptz(6)
+
+  notification    notifications @relation(fields: [notification_id], references: [id], onDelete: Cascade)
+  user            users         @relation(fields: [user_id],         references: [id], onDelete: Cascade)
+
+  @@unique([notification_id, user_id])
+}
+
+// ── Modify: students — add academic fields (APP-01) ──────────
+//   In the existing students model, add:
+
+// semester        String?
+// cgpa            Decimal?  @db.Decimal(4, 2)
+// has_passport    Boolean   @default(false)
+// passport_number String?
+// gender          String?
+// erp_synced_at   DateTime?
+
+// ── Modify: programs / mous — add deleted_at (DATA-02) ───────
+//   In existing programs model, add:   deleted_at  DateTime?
+//   In existing mous model, add:       deleted_at  DateTime?
+
+// ── Modify: applications — change current_stage to enum ──────
+//   Replace:  current_stage  String   @default("Submitted")
+//   With:     current_stage  ApplicationStage  @default(Submitted)
+
+// ── Modify: audit_logs — extend columns (AUDIT-01) ───────────
+//   Add:
+//     performed_by_id String?   @db.Uuid
+//     previous_value  String?
+//     new_value       String?
+//     performed_by    users?    @relation(fields: [performed_by_id], references: [id], onDelete: SetNull)
+
+// ── Modify: mou_documents — add r2_key (MOU-02) ─────────────
+//   Add:
+//     r2_key      String?   // nullable during migration period
+//     uploaded_by String?   @db.Uuid
+//     created_at  DateTime  @default(now()) @db.Timestamptz(6)

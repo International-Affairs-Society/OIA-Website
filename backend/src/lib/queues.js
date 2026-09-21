@@ -3,8 +3,9 @@ import { redis } from './redis.js'
 import logger from './logger.js'
 
 // Define queues
-export const fileQueue = new Queue('fileProcessing', { connection: redis })
-export const emailQueue = new Queue('emailNotifications', { connection: redis })
+export const fileQueue        = new Queue('fileProcessing',    { connection: redis })
+export const emailQueue       = new Queue('emailNotifications', { connection: redis })
+export const mouExpiryQueue   = new Queue('mouExpiry',          { connection: redis })  // MOU-01
 
 fileQueue.on('error', (err) => {
   if (process.env.NODE_ENV === 'production') {

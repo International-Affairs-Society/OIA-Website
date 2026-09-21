@@ -19,7 +19,7 @@ export const redis = new Redis(redisConfig, {
 })
 
 let lastLoggedErrorTime = 0
-let errorCount = 0
+let errorCount = 0 // eslint-disable-line no-unused-vars -- intentional counter; value incremented for future telemetry
 
 redis.on('connect', () => {
   logger.info('✅ Connected to Redis')

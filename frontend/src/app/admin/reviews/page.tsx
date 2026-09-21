@@ -4,6 +4,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { AdminPageHeader, FormField, FilterBar, ProgramReadOnlyForm, UpcomingEventReadOnlyForm, PastEventReadOnlyForm, MOUReadOnlyForm, ConfirmModal, VisitReadOnlyForm } from "@/app/admin/components";
 import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 import { MOCK_REVIEWS, ReviewItem, ReviewType, ReviewComment } from "@/app/admin/data/mockReviews";
+import { apiFetch } from "@/lib/apiFetch";
 
 /* ── Type label helpers ── */
 function getTypeLabel(type: ReviewType): string {
@@ -102,14 +103,10 @@ function ReviewsContent() {
   const [showApproveConfirm, setShowApproveConfirm] = useState(false);
   const [showCancelApprovalConfirm, setShowCancelApprovalConfirm] = useState(false);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
   const fetchReviews = async () => {
     try {
-      const token = localStorage.getItem("access_token");
-      const res = await fetch(`${API_URL}/api/v1/reviews`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const res = await apiFetch(`/api/v1/reviews`);
       if (res.ok) {
         const data = await res.json();
         setReviews((data.data || []).map((r: any) => ({
@@ -504,12 +501,10 @@ function ReviewsContent() {
         isDestructive={true}
         onConfirm={async () => {
           try {
-            const token = localStorage.getItem("access_token");
-            const res = await fetch(`${API_URL}/api/v1/reviews/${selected.id}/request-changes`, {
+            const res = await apiFetch(`/api/v1/reviews/${selected.id}/request-changes`, {
               method: "PATCH",
               headers: {
                 "Content-Type": "application/json",
-                ...(token ? { Authorization: `Bearer ${token}` } : {})
               },
               body: JSON.stringify({ text: commentText })
             });
@@ -540,10 +535,8 @@ function ReviewsContent() {
         cancelLabel="Cancel"
         onConfirm={async () => {
           try {
-            const token = localStorage.getItem("access_token");
-            const res = await fetch(`${API_URL}/api/v1/reviews/${selected.id}/approve`, {
+            const res = await apiFetch(`/api/v1/reviews/${selected.id}/approve`, {
               method: "PATCH",
-              headers: token ? { Authorization: `Bearer ${token}` } : {}
             });
             if (res.ok) {
               fetchReviews();
@@ -572,10 +565,8 @@ function ReviewsContent() {
         isDestructive={true}
         onConfirm={async () => {
           try {
-            const token = localStorage.getItem("access_token");
-            const res = await fetch(`${API_URL}/api/v1/reviews/${selected.id}/reject`, {
+            const res = await apiFetch(`/api/v1/reviews/${selected.id}/reject`, {
               method: "PATCH",
-              headers: token ? { Authorization: `Bearer ${token}` } : {}
             });
             if (res.ok) {
               fetchReviews();

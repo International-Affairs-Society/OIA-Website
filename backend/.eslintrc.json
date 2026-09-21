@@ -4,13 +4,26 @@
     "es2021": true,
     "jest": true
   },
-  "extends": "eslint:recommended",
+  "extends": ["eslint:recommended", "plugin:security/recommended-legacy"],
+  "plugins": ["security"],
   "parserOptions": {
     "ecmaVersion": 12,
     "sourceType": "module"
   },
   "rules": {
     "no-unused-vars": ["error", { "argsIgnorePattern": "^req$|^res$|^next$|^err$" }],
-    "no-undef": "error"
+    "no-undef": "error",
+    "security/detect-object-injection": "warn",
+    "security/detect-non-literal-fs-filename": "warn",
+    "security/detect-non-literal-require": "warn",
+    "security/detect-possible-timing-attacks": "warn",
+    "security/detect-eval-with-expression": "error",
+    "security/detect-new-buffer": "error",
+    "security/detect-disable-mustache-escape": "error",
+    "security/detect-no-csrf-before-method-override": "warn",
+    "security/detect-unsafe-regex": "error",
+    "security/detect-buffer-noassert": "error",
+    "security/detect-pseudoRandomBytes": "error",
+    "security/detect-non-literal-regexp": "warn"
   }
 }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AdminPageHeader, FormField, CustomDropdown, ConfirmModal } from "../../../components";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { AdminFormSkeleton } from "@/app/admin/optemization_component";
+import { apiFetch } from "@/lib/apiFetch";
 
 export default function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -42,13 +43,9 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("access_token");
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
         
         // 1. Fetch MOUs
-        const mousRes = await fetch(`${API_URL}/api/v1/mous`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
+        const mousRes = await apiFetch(`/api/v1/mous`);
         let loadedMous = [{ value: "", label: "None" }];
         if (mousRes.ok) {
           const mousJson = await mousRes.json();
@@ -60,9 +57,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
         }
 
         // 2. Fetch Event details
-        const eventRes = await fetch(`${API_URL}/api/v1/events/${id}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
+        const eventRes = await apiFetch(`/api/v1/events/${id}`);
         if (eventRes.ok) {
           const event = await eventRes.json();
           setTitle(event.title || "");
@@ -110,17 +105,14 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
 
     try {
       setIsUploadingGallery(true);
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
       const uploaded: string[] = [];
       for (let i = 0; i < files.length; i++) {
         const formData = new FormData();
         formData.append("file", files[i]);
 
-        const res = await fetch(`${API_URL}/api/v1/media`, {
+        const res = await apiFetch(`/api/v1/media`, {
           method: "POST",
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
           body: formData,
         });
 
@@ -144,15 +136,12 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
 
     try {
       setIsUploadingPoster(true);
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch(`${API_URL}/api/v1/media`, {
+      const res = await apiFetch(`/api/v1/media`, {
         method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
       });
 
@@ -200,8 +189,6 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
     }
 
     try {
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
       const payload = {
         title,
         description,
@@ -217,11 +204,10 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
         galleryUrls: eventType === "past" ? galleryUrls : undefined,
       };
 
-      const res = await fetch(`${API_URL}/api/v1/events/${id}`, {
+      const res = await apiFetch(`/api/v1/events/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(payload),
       });

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { AdminPageHeader, AdminTable, FilterBar } from "@/app/admin/components";
 import { AdminPageSkeleton } from "@/app/admin/optemization_component";
+import { apiFetch } from "@/lib/apiFetch";
 
 interface Lead {
   id: string;
@@ -19,13 +20,9 @@ export default function ProgramLeadsPage() {
   const fetchLeads = async (search = "") => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
       const queryParam = search ? `?search=${encodeURIComponent(search)}` : "";
       
-      const res = await fetch(`${API_URL}/api/v1/program-leads${queryParam}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const res = await apiFetch(`/api/v1/program-leads${queryParam}`);
       if (res.ok) {
         const json = await res.json();
         setLeads((json.data || []).map((l: any) => ({

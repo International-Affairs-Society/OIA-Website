@@ -36,7 +36,7 @@ export const getOverview = asyncHandler(async (req, res) => {
 export const getApplicationsAnalytics = asyncHandler(async (req, res) => {
   // Get count by stage
   const stageGrouping = await prisma.applications.groupBy({
-    by: ['stage'],
+    by: ['current_stage'],  // DB-02 FIX: was 'stage'
     _count: {
       id: true
     }
@@ -45,7 +45,7 @@ export const getApplicationsAnalytics = asyncHandler(async (req, res) => {
   // Format stage breakdown
   const stageBreakdown = {}
   stageGrouping.forEach(group => {
-    stageBreakdown[group.stage] = group._count.id
+    stageBreakdown[group.current_stage] = group._count.id  // DB-02 FIX: was group.stage
   })
 
   // Get count by program
@@ -60,12 +60,12 @@ export const getApplicationsAnalytics = asyncHandler(async (req, res) => {
   const programIds = programGrouping.map(g => g.program_id)
   const programs = await prisma.programs.findMany({
     where: { id: { in: programIds } },
-    select: { id: true, title: true }
+    select: { id: true, name: true }  // DB-02 FIX: was 'title' (field doesn't exist in schema)
   })
 
   const programMap = {}
   programs.forEach(p => {
-    programMap[p.id] = p.title
+    programMap[p.id] = p.name  // DB-02 FIX: was p.title
   })
 
   const programBreakdown = programGrouping.map(group => ({
@@ -82,21 +82,21 @@ export const getApplicationsAnalytics = asyncHandler(async (req, res) => {
 
 // GET /analytics/events (STAFF, LEADERSHIP only)
 export const getEventsAnalytics = asyncHandler(async (req, res) => {
-  const [totalEvents, typeGrouping, visibilityGrouping] = await Promise.all([
+  const [totalEvents, typeGrouping, statusGrouping] = await Promise.all([
     prisma.events.count(),
     prisma.events.groupBy({
-      by: ['type'],
+      by: ['event_type'],  // DB-02 FIX: was 'type'
       _count: { id: true }
     }),
     prisma.events.groupBy({
-      by: ['visibility'],
+      by: ['status'],  // DB-02 FIX: was 'visibility'
       _count: { id: true }
     })
   ])
 
   res.json({
     totalEvents,
-    byType: typeGrouping.map(g => ({ type: g.type, count: g._count.id })),
-    byVisibility: visibilityGrouping.map(g => ({ visibility: g.visibility, count: g._count.id }))
+    byType:   typeGrouping.map(g   => ({ type:   g.event_type, count: g._count.id })),
+    byStatus: statusGrouping.map(g => ({ status: g.status,     count: g._count.id }))
   })
 })

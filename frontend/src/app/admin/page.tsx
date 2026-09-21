@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { apiFetch } from "@/lib/apiFetch";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -11,24 +12,7 @@ import { AdminDashboardSkeleton } from "@/app/admin/optemization_component";
 
 const WorldMapSVG = dynamic(() => import("@/app/homepage/WorldMapSVG"), { ssr: false });
 
-import {
-  UNIVERSITY_COORDS,
-  MOCK_MOUS,
-  MOCK_TREND_DATA,
-  MOCK_STATUS_DATA,
-  MOCK_SCHOOL_DATA,
-  MOCK_BOTTLENECK_DATA,
-  MOCK_MOU_YEAR_DATA,
-  MOCK_MOU_TYPE_DATA,
-  MOCK_MOU_STATUS_SUMMARY,
-  MOCK_APP_PROGRAM_BREAKDOWN,
-  MOCK_APP_SEMESTER_DATA,
-  MOCK_APP_GENDER_DATA,
-  MOCK_PROGRAM_TYPE_DATA,
-  MOCK_PROGRAM_YEAR_DATA,
-  MOCK_PROGRAM_SCHOOL_COVERAGE,
-  MOCK_PROGRAM_STATUS_SUMMARY,
-} from "./data/mockData";
+import { UNIVERSITY_COORDS } from "./data/mockData";
 
 // ─── CUSTOM TOOLTIP ───
 function CustomTooltip({ active, payload, label }: any) {
@@ -331,6 +315,7 @@ export default function AdminDashboardPage() {
   const [mousList, setMousList] = useState<any[]>([]);
   const [applicationsList, setApplicationsList] = useState<any[]>([]);
   const [programsList, setProgramsList] = useState<any[]>([]);
+  const [overviewData, setOverviewData] = useState<any>({});
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -344,16 +329,17 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("access_token");
-        const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-        
-        const [mousRes, appsRes, progsRes] = await Promise.all([
-          fetch(`${API_URL}/api/v1/mous`, { headers }),
-          fetch(`${API_URL}/api/v1/applications`, { headers }),
-          fetch(`${API_URL}/api/v1/programs`, { headers })
+        const [mousRes, appsRes, progsRes, overviewRes] = await Promise.all([
+          apiFetch(`/api/v1/analytics/overview`),
+          apiFetch(`/api/v1/mous`),
+          apiFetch(`/api/v1/applications`),
+          apiFetch(`/api/v1/programs`)
         ]);
 
+        if (overviewRes && overviewRes.ok) {
+          const res = await overviewRes.json();
+          setOverviewData(res);
+        }
         if (mousRes.ok) {
           const res = await mousRes.json();
           setMousList(res.data || []);
@@ -1022,7 +1008,7 @@ export default function AdminDashboardPage() {
                 <Panel>
                   <SectionTitle title="Application Volume" subtitle="This year vs last year, by month" />
                   <ResponsiveContainer width="100%" height={220}>
-                    <BarChart data={MOCK_TREND_DATA} barCategoryGap="30%">
+                    <BarChart data={appTrendData} barCategoryGap="30%">
                       <CartesianGrid vertical={false} stroke="#b5bda0" strokeOpacity={0.4} />
                       <XAxis dataKey="month" tick={{ fill: "#6b6b6b", fontSize: 11 }} axisLine={{ stroke: "#b5bda0" }} tickLine={false} />
                       <YAxis tick={{ fill: "#6b6b6b", fontSize: 11 }} axisLine={false} tickLine={false} width={30} />
@@ -1042,7 +1028,7 @@ export default function AdminDashboardPage() {
                       <ResponsiveContainer width="100%" height={150}>
                         <PieChart>
                           <Pie
-                            data={MOCK_STATUS_DATA}
+                            data={appStatusData}
                             innerRadius={45}
                             outerRadius={65}
                             dataKey="value"
@@ -1051,7 +1037,7 @@ export default function AdminDashboardPage() {
                             endAngle={-270}
                             isAnimationActive={false}
                           >
-                            {MOCK_STATUS_DATA.map((d, i) => <Cell key={i} fill={d.color} />)}
+                            {appStatusData.map((d, i) => <Cell key={i} fill={d.color} />)}
                           </Pie>
                           <RechartsTooltip content={<CustomTooltip />} />
                         </PieChart>
@@ -1062,7 +1048,7 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                      {MOCK_STATUS_DATA.map((d) => (
+                      {appStatusData.map((d) => (
                         <div key={d.name} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12, color: "#6b6b6b" }}>
                           <span style={{ width: 12, height: 12, background: d.color, display: "inline-block", borderRadius: 2, flexShrink: 0 }} />
                           <span style={{ minWidth: 70 }}>{d.name}</span>
@@ -1081,13 +1067,13 @@ export default function AdminDashboardPage() {
                 <Panel>
                   <SectionTitle title="By School / Department" subtitle="Application count per school" />
                   <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={MOCK_SCHOOL_DATA} layout="vertical" margin={{ left: 0, right: 40 }}>
+                    <BarChart data={schoolCounts} layout="vertical" margin={{ left: 0, right: 40 }}>
                       <CartesianGrid horizontal={false} stroke="#b5bda0" strokeOpacity={0.4} />
                       <YAxis dataKey="school" type="category" width={90} tick={{ fontSize: 11, fill: "#6b6b6b" }} axisLine={false} tickLine={false} />
                       <XAxis type="number" hide />
                       <RechartsTooltip content={<CustomTooltip />} />
                       <Bar dataKey="count" name="Applications" barSize={14} isAnimationActive={false}>
-                        {MOCK_SCHOOL_DATA.map((d, i) => (
+                        {schoolCounts.map((d, i) => (
                           <Cell key={i} fill={d.count === schoolMax ? "#5c6b47" : "#a89b7a"} />
                         ))}
                         <LabelList dataKey="count" position="right" style={{ fontSize: 11, fill: "#6b6b6b" }} />
@@ -1100,13 +1086,13 @@ export default function AdminDashboardPage() {
                 <Panel>
                   <SectionTitle title="Program-wise Applications" subtitle="Applications per program type" />
                   <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={MOCK_APP_PROGRAM_BREAKDOWN.slice(0, 6)} layout="vertical" margin={{ left: 10, right: 40 }}>
+                    <BarChart data={appProgramBreakdown.slice(0, 6)} layout="vertical" margin={{ left: 10, right: 40 }}>
                       <CartesianGrid horizontal={false} stroke="#b5bda0" strokeOpacity={0.4} />
                       <YAxis dataKey="program" type="category" width={isMobile ? 80 : 120} tick={{ fontSize: 11, fill: "#6b6b6b" }} axisLine={false} tickLine={false} />
                       <XAxis type="number" hide />
                       <RechartsTooltip content={<CustomTooltip />} />
                       <Bar dataKey="applications" name="Applications" barSize={14} isAnimationActive={false}>
-                        {MOCK_APP_PROGRAM_BREAKDOWN.slice(0, 6).map((d, i) => (
+                        {appProgramBreakdown.slice(0, 6).map((d, i) => (
                           <Cell key={i} fill={i === 0 ? "#5c6b47" : "#a89b7a"} />
                         ))}
                         <LabelList dataKey="applications" position="right" style={{ fontSize: 11, fill: "#6b6b6b" }} />
@@ -1122,7 +1108,7 @@ export default function AdminDashboardPage() {
                 <Panel>
                   <SectionTitle title="Semester-wise Distribution" subtitle="Applications by current semester" />
                   <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={MOCK_APP_SEMESTER_DATA} barCategoryGap="20%">
+                    <BarChart data={appSemesterData} barCategoryGap="20%">
                       <CartesianGrid vertical={false} stroke="#b5bda0" strokeOpacity={0.4} />
                       <XAxis dataKey="semester" tick={{ fill: "#6b6b6b", fontSize: 11 }} axisLine={{ stroke: "#b5bda0" }} tickLine={false} />
                       <YAxis tick={{ fill: "#6b6b6b", fontSize: 11 }} axisLine={false} tickLine={false} width={30} />
@@ -1141,19 +1127,19 @@ export default function AdminDashboardPage() {
                     <div style={{ position: "relative", width: 140, height: 140 }}>
                       <ResponsiveContainer width="100%" height={140}>
                         <PieChart>
-                          <Pie data={MOCK_APP_GENDER_DATA} innerRadius={42} outerRadius={62} dataKey="value" paddingAngle={2} startAngle={90} endAngle={-270} isAnimationActive={false}>
-                            {MOCK_APP_GENDER_DATA.map((d, i) => <Cell key={i} fill={d.color} />)}
+                          <Pie data={appGenderData} innerRadius={42} outerRadius={62} dataKey="value" paddingAngle={2} startAngle={90} endAngle={-270} isAnimationActive={false}>
+                            {appGenderData.map((d, i) => <Cell key={i} fill={d.color} />)}
                           </Pie>
                           <RechartsTooltip content={<CustomTooltip />} />
                         </PieChart>
                       </ResponsiveContainer>
                       <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", textAlign: "center" }}>
-                        <div style={{ fontSize: "1.4rem", fontWeight: 300, color: "#1a1a1a" }}>{MOCK_APP_GENDER_DATA.reduce((a, b) => a + b.value, 0)}</div>
+                        <div style={{ fontSize: "1.4rem", fontWeight: 300, color: "#1a1a1a" }}>{appGenderData.reduce((a, b) => a + b.value, 0)}</div>
                         <div style={{ fontSize: 10, color: "#6b6b6b" }}>Total</div>
                       </div>
                     </div>
                     <div style={{ display: "flex", gap: 24 }}>
-                      {MOCK_APP_GENDER_DATA.map(d => (
+                      {appGenderData.map(d => (
                         <div key={d.name} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#6b6b6b" }}>
                           <span style={{ width: 12, height: 12, background: d.color, display: "inline-block", borderRadius: 2 }} />
                           {d.name}: <span style={{ fontWeight: 600, color: "#1a1a1a" }}>{d.value}</span>
@@ -1198,10 +1184,10 @@ export default function AdminDashboardPage() {
             <div>
               {/* KPI Cards */}
               <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: isMobile ? "0.75rem" : "1rem", marginBottom: "1.25rem" }}>
-                <StatCard label="Total Programs" value={String(MOCK_PROGRAM_STATUS_SUMMARY.total)} delta="+3" positive isMobile={isMobile} />
-                <StatCard label="Active Programs" value={String(MOCK_PROGRAM_STATUS_SUMMARY.active)} delta="+2" positive isMobile={isMobile} />
-                <StatCard label="Archived" value={String(MOCK_PROGRAM_STATUS_SUMMARY.archived)} delta="+1" positive={false} isMobile={isMobile} />
-                <StatCard label="Avg Duration" value={MOCK_PROGRAM_STATUS_SUMMARY.avgDuration} delta="—" positive isMobile={isMobile} />
+                <StatCard label="Total Programs" value={String(programStatusSummary.total)} delta="+3" positive isMobile={isMobile} />
+                <StatCard label="Active Programs" value={String(programStatusSummary.active)} delta="+2" positive isMobile={isMobile} />
+                <StatCard label="Archived" value={String(programStatusSummary.archived)} delta="+1" positive={false} isMobile={isMobile} />
+                <StatCard label="Avg Duration" value={programStatusSummary.avgDuration} delta="—" positive isMobile={isMobile} />
               </div>
 
               {/* Filters */}
@@ -1222,7 +1208,7 @@ export default function AdminDashboardPage() {
                   label="Program Type"
                   options={[
                     { label: "All Types", value: "" },
-                    ...MOCK_PROGRAM_TYPE_DATA.map(d => ({ label: d.name, value: d.name }))
+                    ...programTypeData.map(d => ({ label: d.name, value: d.name }))
                   ]}
                   value={progTypeFilter}
                   onChange={setProgTypeFilter}
@@ -1247,7 +1233,7 @@ export default function AdminDashboardPage() {
                       <ResponsiveContainer width="100%" height={150}>
                         <PieChart>
                           <Pie
-                            data={MOCK_PROGRAM_TYPE_DATA}
+                            data={programTypeData}
                             innerRadius={45}
                             outerRadius={65}
                             dataKey="value"
@@ -1256,18 +1242,18 @@ export default function AdminDashboardPage() {
                             endAngle={-270}
                             isAnimationActive={false}
                           >
-                            {MOCK_PROGRAM_TYPE_DATA.map((d, i) => <Cell key={i} fill={d.color} />)}
+                            {programTypeData.map((d, i) => <Cell key={i} fill={d.color} />)}
                           </Pie>
                           <RechartsTooltip content={<CustomTooltip />} />
                         </PieChart>
                       </ResponsiveContainer>
                       <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", textAlign: "center" }}>
-                        <div style={{ fontSize: "1.6rem", fontWeight: 300, color: "#1a1a1a" }}>{MOCK_PROGRAM_STATUS_SUMMARY.total}</div>
+                        <div style={{ fontSize: "1.6rem", fontWeight: 300, color: "#1a1a1a" }}>{programStatusSummary.total}</div>
                         <div style={{ fontSize: 10, color: "#6b6b6b" }}>Total</div>
                       </div>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      {MOCK_PROGRAM_TYPE_DATA.map(d => (
+                      {programTypeData.map(d => (
                         <div key={d.name} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#6b6b6b" }}>
                           <span style={{ width: 10, height: 10, background: d.color, display: "inline-block", borderRadius: 2, flexShrink: 0 }} />
                           <span style={{ minWidth: 120 }}>{d.name}</span>
@@ -1282,7 +1268,7 @@ export default function AdminDashboardPage() {
                 <Panel>
                   <SectionTitle title="Programs Created per Year" subtitle="Growth of program offerings" />
                   <ResponsiveContainer width="100%" height={220}>
-                    <BarChart data={MOCK_PROGRAM_YEAR_DATA} barCategoryGap="30%">
+                    <BarChart data={programYearData} barCategoryGap="30%">
                       <CartesianGrid vertical={false} stroke="#b5bda0" strokeOpacity={0.4} />
                       <XAxis dataKey="year" tick={{ fill: "#6b6b6b", fontSize: 11 }} axisLine={{ stroke: "#b5bda0" }} tickLine={false} />
                       <YAxis tick={{ fill: "#6b6b6b", fontSize: 11 }} axisLine={false} tickLine={false} width={30} />
@@ -1301,13 +1287,13 @@ export default function AdminDashboardPage() {
                 <Panel>
                   <SectionTitle title="School Coverage" subtitle="Programs available per school" />
                   <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={MOCK_PROGRAM_SCHOOL_COVERAGE} layout="vertical" margin={{ left: 0, right: 40 }}>
+                    <BarChart data={programSchoolCoverage} layout="vertical" margin={{ left: 0, right: 40 }}>
                       <CartesianGrid horizontal={false} stroke="#b5bda0" strokeOpacity={0.4} />
                       <YAxis dataKey="school" type="category" width={60} tick={{ fontSize: 11, fill: "#6b6b6b" }} axisLine={false} tickLine={false} />
                       <XAxis type="number" hide />
                       <RechartsTooltip content={<CustomTooltip />} />
                       <Bar dataKey="programs" name="Programs" barSize={14} isAnimationActive={false}>
-                        {MOCK_PROGRAM_SCHOOL_COVERAGE.map((d, i) => (
+                        {programSchoolCoverage.map((d, i) => (
                           <Cell key={i} fill={d.programs === progSchoolMax ? "#5c6b47" : "#a89b7a"} />
                         ))}
                         <LabelList dataKey="programs" position="right" style={{ fontSize: 11, fill: "#6b6b6b" }} />
@@ -1321,9 +1307,9 @@ export default function AdminDashboardPage() {
                   <SectionTitle title="Program Status Overview" subtitle="Current program portfolio health" />
                   <div style={{ display: "flex", flexDirection: "column", gap: 16, paddingTop: 16 }}>
                     {[
-                      { label: "Active Programs", value: MOCK_PROGRAM_STATUS_SUMMARY.active, total: MOCK_PROGRAM_STATUS_SUMMARY.total, color: "#5c6b47" },
-                      { label: "Archived", value: MOCK_PROGRAM_STATUS_SUMMARY.archived, total: MOCK_PROGRAM_STATUS_SUMMARY.total, color: "#a89b7a" },
-                      { label: "Coming Soon", value: MOCK_PROGRAM_STATUS_SUMMARY.comingSoon, total: MOCK_PROGRAM_STATUS_SUMMARY.total, color: "#8b7e62" },
+                      { label: "Active Programs", value: programStatusSummary.active, total: programStatusSummary.total, color: "#5c6b47" },
+                      { label: "Archived", value: programStatusSummary.archived, total: programStatusSummary.total, color: "#a89b7a" },
+                      { label: "Coming Soon", value: programStatusSummary.comingSoon, total: programStatusSummary.total, color: "#8b7e62" },
                     ].map(item => (
                       <div key={item.label}>
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
@@ -1345,7 +1331,7 @@ export default function AdminDashboardPage() {
                   <div style={{ marginTop: 24, padding: "16px", backgroundColor: "rgba(92, 107, 71, 0.06)", borderRadius: 8, border: "1px solid rgba(181, 189, 160, 0.3)" }}>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                       <div style={{ textAlign: "center" }}>
-                        <div style={{ fontSize: "1.4rem", fontWeight: 300, color: "#5c6b47" }}>{MOCK_PROGRAM_STATUS_SUMMARY.avgDuration}</div>
+                        <div style={{ fontSize: "1.4rem", fontWeight: 300, color: "#5c6b47" }}>{programStatusSummary.avgDuration}</div>
                         <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em", color: "#6b6b6b", marginTop: 4 }}>Avg Duration</div>
                       </div>
                       <div style={{ textAlign: "center" }}>

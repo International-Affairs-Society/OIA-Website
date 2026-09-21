@@ -183,6 +183,13 @@ export const getProgramById = asyncHandler(async (req, res) => {
     })
   }
 
+  // SEC-05 FIX: public callers cannot see draft or archived programs
+  if (!isStaffOrLeadership && (prog.status !== 'published' || prog.is_archived || prog.deleted_at)) {
+    return res.status(404).json({
+      error: { code: 'NOT_FOUND', message: 'Program not found' }
+    })
+  }
+
   let mouMap = new Map()
   if (prog.mou && isUuid(prog.mou)) {
     const mou = await prisma.mous.findUnique({
@@ -353,9 +360,10 @@ export const deleteProgram = asyncHandler(async (req, res) => {
     })
   }
 
-  // Hard delete since programs table does not have deleted_at
-  await prisma.programs.delete({
-    where: { id }
+  // DATA-02 FIX: soft delete — set deleted_at instead of hard deleting
+  await prisma.programs.update({
+    where: { id },
+    data: { deleted_at: new Date(), updated_at: new Date() }
   })
 
   await prisma.audit_logs.create({

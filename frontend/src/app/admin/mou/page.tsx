@@ -5,6 +5,7 @@ import { AdminPageHeader, AdminTable, ActionButtons, StatusBadge, FilterBar } fr
 import { usePermission } from "@/app/admin/roles/usePermission";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { AdminPageSkeleton } from "@/app/admin/optemization_component";
+import { apiFetch } from "@/lib/apiFetch";
 
 const MOU_TYPE_OPTIONS = [
   "Semester Exchange", "Global Immersion", "Inbound Immersion", 
@@ -41,12 +42,8 @@ export default function MOUsPage() {
   const fetchMous = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
       
-      const res = await fetch(`${API_URL}/api/v1/mous`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const res = await apiFetch(`/api/v1/mous`);
       if (res.ok) {
         const json = await res.json();
         setMous(json.data || []);
@@ -64,12 +61,9 @@ export default function MOUsPage() {
 
   const handleDeleteMou = async (id: string) => {
     try {
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
       
-      const res = await fetch(`${API_URL}/api/v1/mous/${id}`, {
+      const res = await apiFetch(`/api/v1/mous/${id}`, {
         method: "DELETE",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
       if (res.ok) {

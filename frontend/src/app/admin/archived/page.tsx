@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/apiFetch";
 "use client";
 import React, { useState, useEffect } from "react";
 import { AdminPageHeader, FilterBar } from "@/app/admin/components";
@@ -34,13 +35,11 @@ export default function ArchivedPage() {
   const fetchArchivedItems = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("access_token");
-      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-
+            
       const [resEvents, resPrograms, resMous] = await Promise.all([
-        fetch(`${API_URL}/api/v1/events?is_archived=true`, { headers }),
-        fetch(`${API_URL}/api/v1/programs?is_archived=true`, { headers }),
-        fetch(`${API_URL}/api/v1/mous?is_archived=true`, { headers })
+        apiFetch(`/api/v1/events?is_archived=true`),
+        apiFetch(`/api/v1/programs?is_archived=true`),
+        apiFetch(`/api/v1/mous?is_archived=true`)
       ]);
 
       const eventsData = resEvents.ok ? await resEvents.json() : { data: [] };
@@ -113,13 +112,13 @@ export default function ArchivedPage() {
       else if (selectedItem.type === "MOU") endpoint = `/api/v1/mous/${selectedItem.originalId}`;
 
       if (modalAction === "unarchive") {
-        await fetch(`${API_URL}${endpoint}`, {
+        await apiFetch(`${endpoint}`, {
           method: "PATCH",
           headers,
           body: JSON.stringify({ is_archived: false, isArchived: false })
         });
       } else if (modalAction === "delete") {
-        await fetch(`${API_URL}${endpoint}`, {
+        await apiFetch(`${endpoint}`, {
           method: "DELETE",
           headers
         });

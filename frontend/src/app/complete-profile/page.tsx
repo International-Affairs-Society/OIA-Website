@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { User, Phone, Image as ImageIcon, GraduationCap, BookOpen, Loader2 } from "lucide-react";
+import { apiFetch } from "@/lib/apiFetch";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export default function CompleteProfilePage() {
   const { user, isLoading } = useAuth();
@@ -48,7 +48,7 @@ export default function CompleteProfilePage() {
         payload.course = course;
       }
 
-      const res = await fetch(`${API_URL}/api/v1/users/${user.id}`, {
+      const res = await apiFetch(`/api/v1/users/${user.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -157,7 +157,7 @@ export default function CompleteProfilePage() {
                   formData.append("file", file);
                   
                   try {
-                    const res = await fetch(`${API_URL}/api/v1/media`, {
+                    const res = await apiFetch(`/api/v1/media`, {
                       method: "POST",
                       body: formData,
                       credentials: "include"

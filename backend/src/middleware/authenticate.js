@@ -15,7 +15,6 @@ export async function authenticate(req, res, next) {
     }
 
     if (!token) {
-      console.log('[Auth] No session token provided')
       return res.status(401).json({
         error: { code: 'UNAUTHORIZED', message: 'No session token provided' }
       })

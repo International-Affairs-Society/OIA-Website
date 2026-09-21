@@ -88,9 +88,7 @@ export default function VisitDetailsPage() {
   useEffect(() => {
     const fetchVisit = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/visits/${id}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` }
-        });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/visits/${id}`);
         if (res.ok) {
           const data = await res.json();
           const mapped = {
