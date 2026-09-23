@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
 }
 
 enum Role {
@@ -120,40 +120,42 @@ model users {
   gender       Gender?
   photo_url    String?
   role         Role     @default(general)
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  updated_at DateTime @default(now()) @db.Timestamptz(6)
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime @default(now()) @db.Timestamptz(6)
 
-  students   students?
-  programs   programs[]
-  events     events[]
-  mous       mous[]
-  reviews    reviews[]
-  visits     visits[]
-  notifications notifications[]
-  drafts     drafts[]
+  students        students?
+  programs        programs[]
+  events          events[]
+  mous            mous[]
+  reviews         reviews[]
+  visits          visits[]
+  notifications   notifications[]
+  drafts          drafts[]
+  documents       documents[]
+  change_requests change_requests[]
 }
 
 model students {
-  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id         String   @unique @db.Uuid
-  enrollment_no   String   @unique
-  school          String?
-  course          String?
+  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id       String  @unique @db.Uuid
+  enrollment_no String  @unique
+  school        String?
+  course        String?
 
-  user            users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  applications    applications[]
+  user         users          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  applications applications[]
 }
 
 model programs {
-  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id                  String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                String
   duration            String?
   partner             String?
-  mou                 String   @default("None")
+  mou                 String        @default("None")
   program_type        String
   country             String
-  start_date          DateTime @db.Date
-  last_date_to_apply  DateTime @db.Date
+  start_date          DateTime      @db.Date
+  last_date_to_apply  DateTime      @db.Date
   schools_eligible    String[]
   semesters_eligible  String[]
   courses_eligible    String[]
@@ -161,78 +163,81 @@ model programs {
   highlights          String[]
   fee_summary         String?
   fee_breakdown       String?
-  show_living_cost    Boolean  @default(false)
+  show_living_cost    Boolean       @default(false)
   estimated_stay_cost String?
   living_cost_details String?
-  use_default_form    Boolean  @default(true)
+  use_default_form    Boolean       @default(true)
   custom_fields       Json?
-  is_archived         Boolean  @default(false)
+  is_archived         Boolean       @default(false)
   status              ProgramStatus @default(draft)
-  created_by          String   @db.Uuid
-  created_at          DateTime @default(now()) @db.Timestamptz(6)
-  updated_at          DateTime @default(now()) @db.Timestamptz(6)
+  created_by          String        @db.Uuid
+  created_at          DateTime      @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime      @default(now()) @db.Timestamptz(6)
 
-  author              users    @relation(fields: [created_by], references: [id])
-  applications        applications[]
+  author       users          @relation(fields: [created_by], references: [id])
+  applications applications[]
+  deleted_at   DateTime?      @db.Timestamptz(6)
 }
 
 model events {
-  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title               String
-  subtitle            String?
-  event_type          EventType
-  description         String?
-  location            String?
-  date                DateTime @db.Date
-  end_date            DateTime? @db.Date
-  highlights          String[]  @default([])
-  poster_ratio        Float?
-  linked_mou_id       String?  @db.Uuid
-  is_archived         Boolean  @default(false)
-  add_to_homepage     Boolean  @default(false)
-  registration_link   String?
-  poster_url          String?
-  gallery_urls        String[]
-  status              EventStatus @default(draft)
-  created_by          String   @db.Uuid
-  created_at          DateTime @default(now()) @db.Timestamptz(6)
-  updated_at          DateTime @default(now()) @db.Timestamptz(6)
+  id                String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title             String
+  subtitle          String?
+  event_type        EventType
+  description       String?
+  location          String?
+  date              DateTime    @db.Date
+  end_date          DateTime?   @db.Date
+  highlights        String[]    @default([])
+  poster_ratio      Float?
+  linked_mou_id     String?     @db.Uuid
+  is_archived       Boolean     @default(false)
+  add_to_homepage   Boolean     @default(false)
+  registration_link String?
+  poster_url        String?
+  gallery_urls      String[]
+  status            EventStatus @default(draft)
+  created_by        String      @db.Uuid
+  created_at        DateTime    @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime    @default(now()) @db.Timestamptz(6)
 
-  author              users    @relation(fields: [created_by], references: [id])
-  mou                 mous?    @relation(fields: [linked_mou_id], references: [id])
+  author     users     @relation(fields: [created_by], references: [id])
+  mou        mous?     @relation(fields: [linked_mou_id], references: [id])
+  deleted_at DateTime? @db.Timestamptz(6)
 
   // Indexes for common query patterns
   @@index([event_type, status, is_archived]) // Main public listing filter
-  @@index([add_to_homepage, status])         // Homepage event widget
-  @@index([date])                            // ORDER BY date
+  @@index([add_to_homepage, status]) // Homepage event widget
+  @@index([date]) // ORDER BY date
 }
 
-
 model mous {
-  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id                   String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                 String
   partner_university   String
   country              String
   type                 MOUType
-  status               MOUStatus @default(Active)
+  status               MOUStatus       @default(Active)
   duration             String?
-  start_date           DateTime @db.Date
-  expiry_date          DateTime @db.Date
+  start_date           DateTime        @db.Date
+  expiry_date          DateTime        @db.Date
   applicable_semesters String[]
   eligible_schools     String[]
   eligible_courses     String[]
   notes                String?
-  is_archived          Boolean  @default(false)
+  is_archived          Boolean         @default(false)
   review_status        MOUReviewStatus @default(draft)
-  created_by           String   @db.Uuid
-  created_at           DateTime @default(now()) @db.Timestamptz(6)
-  updated_at           DateTime @default(now()) @db.Timestamptz(6)
+  created_by           String          @db.Uuid
+  created_at           DateTime        @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime        @default(now()) @db.Timestamptz(6)
 
-  author               users    @relation(fields: [created_by], references: [id])
-  events               events[]
-  partner_pocs         mou_partner_pocs[]
-  our_pocs             mou_our_pocs[]
-  documents            mou_documents[]
+  author       users              @relation(fields: [created_by], references: [id])
+  events       events[]
+  partner_pocs mou_partner_pocs[]
+  our_pocs     mou_our_pocs[]
+  documents    mou_documents[]
+  renewals     mou_renewals[]
+  deleted_at   DateTime?          @db.Timestamptz(6)
 }
 
 model mou_partner_pocs {
@@ -243,7 +248,7 @@ model mou_partner_pocs {
   email          String
   contact_number String
 
-  mou            mous   @relation(fields: [mou_id], references: [id], onDelete: Cascade)
+  mou mous @relation(fields: [mou_id], references: [id], onDelete: Cascade)
 }
 
 model mou_our_pocs {
@@ -255,7 +260,7 @@ model mou_our_pocs {
   email          String
   contact_number String
 
-  mou            mous    @relation(fields: [mou_id], references: [id], onDelete: Cascade)
+  mou mous @relation(fields: [mou_id], references: [id], onDelete: Cascade)
 }
 
 model mou_documents {
@@ -264,7 +269,7 @@ model mou_documents {
   name   String
   url    String
 
-  mou    mous   @relation(fields: [mou_id], references: [id], onDelete: Cascade)
+  mou mous @relation(fields: [mou_id], references: [id], onDelete: Cascade)
 }
 
 model applications {
@@ -277,8 +282,9 @@ model applications {
   submitted_at           DateTime @default(now()) @db.Timestamptz(6)
   updated_at             DateTime @default(now()) @db.Timestamptz(6)
 
-  student                students @relation(fields: [student_id], references: [id], onDelete: Cascade)
-  program                programs @relation(fields: [program_id], references: [id], onDelete: Cascade)
+  student    students  @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  program    programs  @relation(fields: [program_id], references: [id], onDelete: Cascade)
+  deleted_at DateTime? @db.Timestamptz(6)
 
   @@unique([student_id, program_id])
 }
@@ -293,21 +299,22 @@ model program_leads {
 }
 
 model visits {
-  id           String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  university   String
-  date         DateTime          @db.Date
-  status       VisitStatus       @default(pending)
-  purpose      String?
-  highlights   String[]
-  photos       String[]
-  created_by   String            @db.Uuid
-  created_at   DateTime          @default(now()) @db.Timestamptz(6)
-  updated_at   DateTime          @default(now()) @db.Timestamptz(6)
+  id         String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  university String
+  date       DateTime    @db.Date
+  status     VisitStatus @default(pending)
+  purpose    String?
+  highlights String[]
+  photos     String[]
+  created_by String      @db.Uuid
+  created_at DateTime    @default(now()) @db.Timestamptz(6)
+  updated_at DateTime    @default(now()) @db.Timestamptz(6)
 
-  author       users             @relation(fields: [created_by], references: [id])
-  delegations  visit_delegations[]
-  our_pocs     visit_our_pocs[]
-  reports      visit_reports[]
+  author      users               @relation(fields: [created_by], references: [id])
+  delegations visit_delegations[]
+  our_pocs    visit_our_pocs[]
+  reports     visit_reports[]
+  deleted_at  DateTime?           @db.Timestamptz(6)
 }
 
 model visit_delegations {
@@ -319,7 +326,7 @@ model visit_delegations {
   country     String
   university  String
 
-  visit       visits @relation(fields: [visit_id], references: [id], onDelete: Cascade)
+  visit visits @relation(fields: [visit_id], references: [id], onDelete: Cascade)
 }
 
 model visit_our_pocs {
@@ -331,7 +338,7 @@ model visit_our_pocs {
   email          String
   contact_number String
 
-  visit          visits  @relation(fields: [visit_id], references: [id], onDelete: Cascade)
+  visit visits @relation(fields: [visit_id], references: [id], onDelete: Cascade)
 }
 
 model visit_reports {
@@ -340,7 +347,7 @@ model visit_reports {
   name     String
   url      String
 
-  visit    visits @relation(fields: [visit_id], references: [id], onDelete: Cascade)
+  visit visits @relation(fields: [visit_id], references: [id], onDelete: Cascade)
 }
 
 model audit_logs {
@@ -368,7 +375,7 @@ model reviews {
   comments           Json?
   data               Json
 
-  author             users        @relation(fields: [submitted_by], references: [id])
+  author users @relation(fields: [submitted_by], references: [id])
 }
 
 model notifications {
@@ -381,20 +388,62 @@ model notifications {
   recipient_count  Int?     @default(0)
   sent_at          DateTime @default(now()) @db.Timestamptz(6)
 
-  sender           users?   @relation(fields: [sent_by_id], references: [id])
+  sender users? @relation(fields: [sent_by_id], references: [id])
 }
-
-
 
 model drafts {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  type       String   // "MOU", "Event", "Program", "Visit"
-  title      String?  
-  data       Json     // Stores the exact React state payload
+  type       String // "MOU", "Event", "Program", "Visit"
+  title      String?
+  data       Json // Stores the exact React state payload
   user_id    String   @db.Uuid
   created_at DateTime @default(now()) @db.Timestamptz(6)
   updated_at DateTime @default(now()) @db.Timestamptz(6)
 
-  user       users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user users @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
+model documents {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  url        String
+  mimetype   String?
+  owner_id   String   @db.Uuid
+  status     String   @default("quarantine")
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+
+  owner users @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+}
+
+model universities {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  country    String
+  website    String?
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model change_requests {
+  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  entity_type  String
+  entity_id    String       @db.Uuid
+  requested_by String       @db.Uuid
+  changes      Json
+  status       ReviewStatus @default(pending)
+  created_at   DateTime     @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime     @default(now()) @db.Timestamptz(6)
+
+  requester users @relation(fields: [requested_by], references: [id], onDelete: Cascade)
+}
+
+model mou_renewals {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  mou_id      String   @db.Uuid
+  start_date  DateTime @db.Date
+  expiry_date DateTime @db.Date
+  renewed_at  DateTime @default(now()) @db.Timestamptz(6)
+
+  mou mous @relation(fields: [mou_id], references: [id], onDelete: Cascade)
+}

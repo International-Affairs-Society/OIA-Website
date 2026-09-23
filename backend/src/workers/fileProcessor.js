@@ -1,51 +1,70 @@
-import fs from 'fs/promises'
-import { PutObjectCommand } from '@aws-sdk/client-s3'
+import { GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import prisma from '../lib/prisma.js'
 import { r2 } from '../lib/r2.js'
 import logger from '../lib/logger.js'
+import NodeClam from 'clamscan'
 
 export const processFileUpload = async (job) => {
-  const { documentId, filePath, r2Key, mimetype, userId } = job.data
+  const { documentId, r2Key, userId } = job.data
+  const logId = documentId || r2Key
 
   try {
-    const logId = documentId || r2Key
-    logger.info(`Processing file upload for ${logId}`)
+    logger.info(`Starting ClamAV scan for ${logId}`)
 
-    // Read the file from the temporary disk location
-    const fileBuffer = await fs.readFile(filePath)
-
-    // Upload to Cloudflare R2
-    await r2.send(new PutObjectCommand({
+    // Fetch the file stream from R2
+    const getRes = await r2.send(new GetObjectCommand({
       Bucket: process.env.R2_BUCKET_NAME || 'documents',
-      Key: r2Key,
-      Body: fileBuffer,
-      ContentType: mimetype
+      Key: r2Key
     }))
 
-    logger.info(`Successfully uploaded ${r2Key}`)
-
-  } catch (error) {
-    const logId = documentId || r2Key
-    logger.error(`Failed to process upload for ${logId}:`, error)
-    
-    // Create a notification for the user about the failure
-    await prisma.notifications.create({
-      data: {
-        type: 'SYSTEM_ALERT',
-        recipient_filter: `user:${userId}`,
-        subject: 'File Upload Failed',
-        body_html: `Your upload for ${r2Key.split('/').pop()} failed to process. Please try again.`,
-        recipient_count: 1
+    // Initialize ClamScan (falls back to local clamdscan if daemon isn't configured)
+    const clamscan = await new NodeClam().init({
+      removeInfected: false, 
+      clamdscan: {
+        host: process.env.CLAMAV_HOST || '127.0.0.1',
+        port: process.env.CLAMAV_PORT || 3310,
+        localFallback: true,
       }
     })
 
-    throw error // Re-throw to trigger BullMQ retry/fail logic
-  } finally {
-    // Always clean up the temporary file
-    try {
-      await fs.unlink(filePath)
-    } catch (cleanupError) {
-      logger.error(`Failed to delete temporary file ${filePath}:`, cleanupError)
+    const { isInfected, viruses } = await clamscan.scanStream(getRes.Body)
+
+    if (isInfected) {
+      logger.warn(`Malware detected in ${logId}: ${viruses.join(', ')}`)
+      
+      // 1. Delete the infected file from R2
+      await r2.send(new DeleteObjectCommand({
+        Bucket: process.env.R2_BUCKET_NAME || 'documents',
+        Key: r2Key
+      }))
+
+      // 2. Mark document as REJECTED in DB
+      await prisma.documents.update({
+        where: { id: documentId },
+        data: { status: 'REJECTED', updated_at: new Date() }
+      })
+
+      // 3. Notify user
+      await prisma.notifications.create({
+        data: {
+          type: 'SECURITY_ALERT',
+          recipient_filter: `user:${userId}`,
+          subject: 'Upload Rejected (Malware Detected)',
+          body_html: `Your upload was rejected by our security scanners because it contained malware: ${viruses.join(', ')}`,
+          recipient_count: 1
+        }
+      })
+    } else {
+      logger.info(`File ${logId} is clean.`)
+      
+      // Update status to verified/clean (it was quarantined initially, wait, in documents.js it was PENDING)
+      await prisma.documents.update({
+        where: { id: documentId },
+        data: { status: 'VERIFIED', updated_at: new Date() }
+      })
     }
+  } catch (error) {
+    logger.error(`Failed to scan upload for ${logId}:`, error)
+    throw error // Trigger retry
   }
 }

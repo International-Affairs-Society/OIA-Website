@@ -261,27 +261,28 @@ export const updateApplicationStage = asyncHandler(async (req, res) => {
     })
   }
 
-  const updatedApp = await prisma.applications.update({
-    where: { id },
-    data: {
-      current_stage: parsed.stage,
-      status:        parsed.status || app.status,
-      updated_at:    new Date()
-    },
-    include: { student: { include: { user: true } }, program: true }
-  })
-
-  // AUDIT-01: log stage change with before/after values
-  await writeAudit({
-    itemId:        id,
-    action:        'Updated',
-    itemTitle:     `Application ${generateAppNumber(app)}`,
-    itemType:      'Program', // placeholder — extend AuditItemType to include 'Application'
-    performedBy:   req.user,
-    previousValue: app.current_stage,
-    newValue:      parsed.stage,
-    details:       `Stage changed from '${app.current_stage}' to '${parsed.stage}'`
-  })
+  const [updatedApp] = await prisma.$transaction([
+    prisma.applications.update({
+      where: { id },
+      data: {
+        current_stage: parsed.stage,
+        status:        parsed.status || app.status,
+        updated_at:    new Date()
+      },
+      include: { student: { include: { user: true } }, program: true }
+    }),
+    prisma.audit_logs.create({
+      data: {
+        item_id: id,
+        action: 'Updated',
+        item_title: `Application APP`,
+        item_type: 'Program',
+        performed_by_name: req.user.name || 'Unknown',
+        performed_by_role: req.user.role || 'general',
+        details: `Stage changed from '${app.current_stage}' to '${parsed.stage}'`
+      }
+    })
+  ])
 
   res.json(formatApplication(updatedApp))
 })

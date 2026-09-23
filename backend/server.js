@@ -4,6 +4,7 @@ import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
 import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
+import DOMPurify from 'isomorphic-dompurify'
 // Load environment variables
 dotenv.config()
 
@@ -66,6 +67,22 @@ app.use(limiter)
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
+
+app.use((req, res, next) => {
+  if (req.body && typeof req.body === 'object') {
+    const sanitize = (obj) => {
+      for (const key in obj) {
+        if (typeof obj[key] === 'string') {
+          obj[key] = DOMPurify.sanitize(obj[key])
+        } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+          sanitize(obj[key])
+        }
+      }
+    }
+    sanitize(req.body)
+  }
+  next()
+})
 
 // Base root endpoint
 app.get('/', (req, res) => {

@@ -1,8 +1,31 @@
 import prisma from '../lib/prisma.js'
 import asyncHandler from '../middleware/asyncHandler.js'
+import redis from '../lib/redis.js'
+import { z } from 'zod'
+
+const getCache = async (key) => {
+  try {
+    const data = await redis.get(key)
+    return data ? JSON.parse(data) : null
+  } catch (e) {
+    return null
+  }
+}
+
+const setCache = async (key, data, ttl) => {
+  try {
+    await redis.set(key, JSON.stringify(data), 'EX', ttl)
+  } catch (e) {
+    // ignore
+  }
+}
 
 // GET /analytics/overview (STAFF, LEADERSHIP only)
 export const getOverview = asyncHandler(async (req, res) => {
+  const cacheKey = 'analytics:overview'
+  const cached = await getCache(cacheKey)
+  if (cached) return res.json(cached)
+
   const [
     totalUsers,
     totalApplications,
@@ -21,7 +44,7 @@ export const getOverview = asyncHandler(async (req, res) => {
     prisma.mous.count({ where: { status: 'Active', is_archived: false } })
   ])
 
-  res.json({
+  const result = {
     totalUsers,
     totalApplications,
     pendingApplications,
@@ -29,14 +52,20 @@ export const getOverview = asyncHandler(async (req, res) => {
     activeStudents,
     upcomingEvents,
     activeMous
-  })
+  }
+  await setCache(cacheKey, result, 300)
+  res.json(result)
 })
 
 // GET /analytics/applications (STAFF, LEADERSHIP only)
 export const getApplicationsAnalytics = asyncHandler(async (req, res) => {
+  const cacheKey = 'analytics:applications'
+  const cached = await getCache(cacheKey)
+  if (cached) return res.json(cached)
+
   // Get count by stage
   const stageGrouping = await prisma.applications.groupBy({
-    by: ['current_stage'],  // DB-02 FIX: was 'stage'
+    by: ['current_stage'],
     _count: {
       id: true
     }
@@ -45,7 +74,7 @@ export const getApplicationsAnalytics = asyncHandler(async (req, res) => {
   // Format stage breakdown
   const stageBreakdown = {}
   stageGrouping.forEach(group => {
-    stageBreakdown[group.current_stage] = group._count.id  // DB-02 FIX: was group.stage
+    stageBreakdown[group.current_stage] = group._count.id
   })
 
   // Get count by program
@@ -60,12 +89,12 @@ export const getApplicationsAnalytics = asyncHandler(async (req, res) => {
   const programIds = programGrouping.map(g => g.program_id)
   const programs = await prisma.programs.findMany({
     where: { id: { in: programIds } },
-    select: { id: true, name: true }  // DB-02 FIX: was 'title' (field doesn't exist in schema)
+    select: { id: true, name: true }
   })
 
   const programMap = {}
   programs.forEach(p => {
-    programMap[p.id] = p.name  // DB-02 FIX: was p.title
+    programMap[p.id] = p.name
   })
 
   const programBreakdown = programGrouping.map(group => ({
@@ -74,29 +103,37 @@ export const getApplicationsAnalytics = asyncHandler(async (req, res) => {
     count: group._count.id
   }))
 
-  res.json({
+  const result = {
     stageBreakdown,
     programBreakdown
-  })
+  }
+  await setCache(cacheKey, result, 300)
+  res.json(result)
 })
 
 // GET /analytics/events (STAFF, LEADERSHIP only)
 export const getEventsAnalytics = asyncHandler(async (req, res) => {
+  const cacheKey = 'analytics:events'
+  const cached = await getCache(cacheKey)
+  if (cached) return res.json(cached)
+
   const [totalEvents, typeGrouping, statusGrouping] = await Promise.all([
     prisma.events.count(),
     prisma.events.groupBy({
-      by: ['event_type'],  // DB-02 FIX: was 'type'
+      by: ['event_type'],
       _count: { id: true }
     }),
     prisma.events.groupBy({
-      by: ['status'],  // DB-02 FIX: was 'visibility'
+      by: ['status'],
       _count: { id: true }
     })
   ])
 
-  res.json({
+  const result = {
     totalEvents,
     byType:   typeGrouping.map(g   => ({ type:   g.event_type, count: g._count.id })),
     byStatus: statusGrouping.map(g => ({ status: g.status,     count: g._count.id }))
-  })
+  }
+  await setCache(cacheKey, result, 300)
+  res.json(result)
 })
