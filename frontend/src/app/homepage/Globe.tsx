@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
+import { useInView } from "framer-motion";
 
 // Dynamically import react-globe.gl to prevent SSR issues (WebGL needs window/document)
 const GlobeGL = dynamic(() => import("react-globe.gl"), {
@@ -94,8 +95,21 @@ export interface GlobeProps {
 export default function Globe({ compact }: GlobeProps = {}) {
   const globeEl = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(containerRef, { amount: 0.2 });
   const [countries, setCountries] = useState({ features: [] });
   const [globeSize, setGlobeSize] = useState(compact ? 600 : 2500);
+
+  // Toggle rotation based on visibility
+  useEffect(() => {
+    if (globeEl.current) {
+      try {
+        const controls = globeEl.current.controls();
+        if (controls) {
+          controls.autoRotate = isInView;
+        }
+      } catch {}
+    }
+  }, [isInView]);
 
   useEffect(() => {
     if (compact) {
