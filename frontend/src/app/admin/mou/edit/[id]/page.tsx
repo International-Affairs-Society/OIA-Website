@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { AdminPageHeader, FormField, CustomDropdown, ConfirmModal } from "../../../components";
 import { AdminFormSkeleton } from "@/app/admin/optemization_component";
 import { useAuth } from "@/app/admin/roles/AuthContext";
+import { apiFetch } from "@/lib/apiFetch";
 
 const MOU_TYPE_OPTIONS = [
   { value: "Semester Exchange", label: "Semester Exchange" },
@@ -56,12 +57,8 @@ export default function EditMOUPage() {
     const fetchMou = async () => {
       try {
         setIsLoading(true);
-        const token = localStorage.getItem("access_token");
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
         
-        const res = await fetch(`${API_URL}/api/v1/mous/${id}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
+        const res = await apiFetch(`/api/v1/mous/${id}`);
 
         if (res.ok) {
           const data = await res.json();
@@ -98,14 +95,11 @@ export default function EditMOUPage() {
 
     try {
       setIsSaving(true);
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-      const res = await fetch(`${API_URL}/api/v1/mous/${id}`, {
+      const res = await apiFetch(`/api/v1/mous/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
           name,

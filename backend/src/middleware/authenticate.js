@@ -30,9 +30,11 @@ export async function authenticate(req, res, next) {
         user_metadata: decodedToken.user_metadata || {}
       }
     } catch (err) {
+      console.log('[Auth] Local JWT verify failed:', err.message, '- falling back to Supabase API')
       // Fallback: verification with Supabase API if local fails
       const { data: { user: supabaseUser }, error: supabaseError } = await supabaseSingleton.auth.getUser(token)
       if (supabaseError || !supabaseUser) {
+        console.log('[Auth] Supabase API fallback failed:', supabaseError)
         return res.status(401).json({
           error: { code: 'UNAUTHORIZED', message: 'Invalid or expired session token' }
         })
@@ -42,6 +44,7 @@ export async function authenticate(req, res, next) {
 
     // Domain check — defence in depth
     if (!authUser.email?.endsWith('@bennett.edu.in')) {
+      console.log('[Auth] Unauthorized email domain:', authUser.email)
       return res.status(403).json({
         error: { code: 'FORBIDDEN', message: 'Unauthorized email domain' }
       })
@@ -53,14 +56,12 @@ export async function authenticate(req, res, next) {
       name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email.split('@')[0]
     }
 
-    // Attach app-level user from public.users with JIT Provisioning
-    // Determine role based on email pattern
-    // Student format: s25cseu2042@bennett.edu.in (letter + digits + letters + digits)
     const isStudent = /^[a-z]\d{2}[a-z]+\d+@bennett\.edu\.in$/i.test(decoded.email)
     const assignedRole = isStudent ? 'student' : 'general'
     const displayName = decoded.name || decoded.preferred_username || decoded.email.split('@')[0]
-    // Enrollment number is the email prefix for student accounts
     const enrollmentNo = decoded.email.split('@')[0].toLowerCase()
+
+    console.log(`[Auth] Provisioning user: ${decoded.email}, role: ${assignedRole}`)
 
     // Upsert by email — handles cases where auth UUID changes (e.g. after schema resets)
     const appUser = await prisma.users.upsert({
@@ -90,6 +91,7 @@ export async function authenticate(req, res, next) {
     req.user = appUser
     next()
   } catch (err) {
+    console.error('[Auth] Middleware error:', err)
     next(err)
   }
 }

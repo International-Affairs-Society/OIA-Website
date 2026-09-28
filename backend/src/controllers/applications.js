@@ -2,6 +2,8 @@ import { z } from 'zod'
 import prisma from '../lib/prisma.js'
 import asyncHandler from '../middleware/asyncHandler.js'
 import { paginate } from '../utils/paginate.js'
+import { checkEligibility } from '../services/eligibilityService.js'
+import { writeAudit } from '../services/auditService.js'
 
 // Validation Schemas
 const applicationCreateSchema = z.object({
@@ -189,6 +191,18 @@ export const createApplication = asyncHandler(async (req, res) => {
     })
   }
 
+  // APP-02 FIX: eligibility check before creating application
+  const { eligible, reasons } = checkEligibility(student, program)
+  if (!eligible) {
+    return res.status(422).json({
+      error: {
+        code:    'INELIGIBLE',
+        message: 'You are not eligible for this program',
+        reasons
+      }
+    })
+  }
+
   // Check if student already applied (UNIQUE constraint)
   const existingApp = await prisma.applications.findUnique({
     where: {
@@ -205,13 +219,26 @@ export const createApplication = asyncHandler(async (req, res) => {
     })
   }
 
+  // APP-01 FIX: snapshot academic data at submission time
+  const academicSnapshot = {
+    school:        student.school   || null,
+    course:        student.course   || null,
+    semester:      student.semester || null,
+    cgpa:          student.cgpa     ? student.cgpa.toString() : null,
+    has_passport:  student.has_passport,
+    captured_at:   new Date().toISOString()
+  }
+
   const createdApp = await prisma.applications.create({
     data: {
-      student_id: student.id,
-      program_id: programId,
-      current_stage: 'Submitted',
-      status: 'Application Submitted',
-      custom_field_responses: parsed.customFieldResponses || null
+      student_id:            student.id,
+      program_id:            programId,
+      current_stage:         'Submitted',
+      status:                'Application Submitted',
+      custom_field_responses: {
+        ...(parsed.customFieldResponses || {}),
+        _snapshot: academicSnapshot
+      }
     },
     include: { student: { include: { user: true } }, program: true }
   })
@@ -234,15 +261,28 @@ export const updateApplicationStage = asyncHandler(async (req, res) => {
     })
   }
 
-  const updatedApp = await prisma.applications.update({
-    where: { id },
-    data: {
-      current_stage: parsed.stage,
-      status: parsed.status || app.status,
-      updated_at: new Date()
-    },
-    include: { student: { include: { user: true } }, program: true }
-  })
+  const [updatedApp] = await prisma.$transaction([
+    prisma.applications.update({
+      where: { id },
+      data: {
+        current_stage: parsed.stage,
+        status:        parsed.status || app.status,
+        updated_at:    new Date()
+      },
+      include: { student: { include: { user: true } }, program: true }
+    }),
+    prisma.audit_logs.create({
+      data: {
+        item_id: id,
+        action: 'Updated',
+        item_title: `Application APP`,
+        item_type: 'Program',
+        performed_by_name: req.user.name || 'Unknown',
+        performed_by_role: req.user.role || 'general',
+        details: `Stage changed from '${app.current_stage}' to '${parsed.stage}'`
+      }
+    })
+  ])
 
   res.json(formatApplication(updatedApp))
 })

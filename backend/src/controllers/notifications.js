@@ -33,12 +33,32 @@ export const getMyNotifications = asyncHandler(async (req, res) => {
 
   const paginatedResult = await paginate(prisma.notifications, req.query, {
     where,
+    include: {
+      reads: {
+        where: { user_id: req.user.id },
+        select: { read_at: true }
+      }
+    },
     orderBy: { sent_at: 'desc' }
   })
 
+  // Map read status from the junction table
+  const data = paginatedResult.data.map(notif => ({
+    id:              notif.id,
+    type:            notif.type,
+    recipientFilter: notif.recipient_filter,
+    subject:         notif.subject,
+    bodyHtml:        notif.body_html,
+    sentById:        notif.sent_by_id,
+    recipientCount:  notif.recipient_count,
+    sentAt:          notif.sent_at,
+    read:            notif.reads?.length > 0,
+    readAt:          notif.reads?.[0]?.read_at || null
+  }))
+
   res.json({
-    data: paginatedResult.data.map(formatNotification),
-    page: paginatedResult.page,
+    data,
+    page:  paginatedResult.page,
     limit: paginatedResult.limit,
     total: paginatedResult.total
   })
@@ -80,12 +100,22 @@ export const markNotificationRead = asyncHandler(async (req, res) => {
     })
   }
 
-  // Since read status is not in final schema, we return a mock success
-  res.json({
-    id,
-    read: true,
-    message: 'Notification marked as read (mocked)'
+  // NOTIF-01 FIX: persist read status to DB via junction table
+  await prisma.notification_reads.upsert({
+    where: {
+      notification_id_user_id: {
+        notification_id: id,
+        user_id:         req.user.id
+      }
+    },
+    update: { read_at: new Date() },
+    create: {
+      notification_id: id,
+      user_id:         req.user.id
+    }
   })
+
+  res.json({ id, read: true })
 })
 
 // POST /notifications (STAFF, LEADERSHIP only - Create a notification)

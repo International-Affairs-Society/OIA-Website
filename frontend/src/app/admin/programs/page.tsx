@@ -4,8 +4,8 @@ import { useRouter } from "next/navigation";
 import { AdminPageHeader, AdminTable, ActionButtons, StatusBadge } from "@/app/admin/components";
 import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 import { useAuth } from "@/app/admin/roles/AuthContext";
+import { apiFetch } from "@/lib/apiFetch";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export default function ProgramsPage() {
   const router = useRouter();
@@ -17,10 +17,7 @@ export default function ProgramsPage() {
   const fetchPrograms = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem("access_token");
-      const res = await fetch(`${API_URL}/api/v1/programs`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const res = await apiFetch(`/api/v1/programs`);
       if (res.ok) {
         const data = await res.json();
         setPrograms((data.data || []).map((p: any) => ({
@@ -45,10 +42,8 @@ export default function ProgramsPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      const token = localStorage.getItem("access_token");
-      const res = await fetch(`${API_URL}/api/v1/programs/${id}`, {
+      const res = await apiFetch(`/api/v1/programs/${id}`, {
         method: "DELETE",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) {
         setPrograms(programs.filter((p) => p.id !== id));
@@ -65,12 +60,10 @@ export default function ProgramsPage() {
 
   const handleToggleArchive = async (row: any) => {
     try {
-      const token = localStorage.getItem("access_token");
-      const res = await fetch(`${API_URL}/api/v1/programs/${row.id}`, {
+      const res = await apiFetch(`/api/v1/programs/${row.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ is_archived: !row.is_archived }),
       });

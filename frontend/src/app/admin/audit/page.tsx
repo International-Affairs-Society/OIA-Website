@@ -33,9 +33,7 @@ export default function AuditTrailPage() {
         if (startDate) queryParams.append("startDate", startDate);
         if (endDate) queryParams.append("endDate", endDate);
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/audit?${queryParams.toString()}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` }
-        });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/audit?${queryParams.toString()}`);
         if (res.ok) {
           const json = await res.json();
           const mapped = (json.data || []).map((log: any) => ({

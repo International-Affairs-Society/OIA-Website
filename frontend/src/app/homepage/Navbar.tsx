@@ -71,9 +71,7 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen, visible = tru
     if (role === "super_admin") {
       const fetchReviews = async () => {
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/reviews`, {
-            headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` }
-          });
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/reviews`);
           if (res.ok) {
             const json = await res.json();
             setReviews((json.data || []).map((r: any) => ({

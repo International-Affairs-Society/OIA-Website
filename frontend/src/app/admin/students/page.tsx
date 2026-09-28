@@ -4,8 +4,8 @@ import { useRouter } from "next/navigation";
 import { AdminPageHeader, AdminTable, FilterBar } from "@/app/admin/components";
 import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 import CustomDropdown from "@/app/admin/components/CustomDropdown";
+import { apiFetch } from "@/lib/apiFetch";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 const SCHOOL_OPTIONS = [
   { label: "SCSET – School of Computer Science Engineering & Technology", value: "SCSET" },
@@ -65,10 +65,7 @@ export default function StudentsPage() {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const token = localStorage.getItem("access_token");
-        const res = await fetch(`${API_URL}/api/v1/student-records`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
+        const res = await apiFetch(`/api/v1/student-records`);
         if (res.ok) {
           const data = await res.json();
           setStudents((data.data || []).map((s: any) => ({

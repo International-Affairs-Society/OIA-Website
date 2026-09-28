@@ -15,9 +15,7 @@ export default function ViewMOUPage() {
   React.useEffect(() => {
     const fetchMou = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/mous/${id}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` }
-        });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/mous/${id}`);
         if (res.ok) {
           const data = await res.json();
           // Map to match the expected format for the page

@@ -4,6 +4,7 @@ import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
 import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
+import DOMPurify from 'isomorphic-dompurify'
 // Load environment variables
 dotenv.config()
 
@@ -30,6 +31,7 @@ import draftsRouter from './src/routes/drafts.js'
 
 // Import workers to initialize them
 import './src/workers/fileWorker.js'
+import './src/workers/mouExpiryWorker.js'
 // Import error handler middleware
 import errorHandler from './src/middleware/errorHandler.js'
 
@@ -65,6 +67,22 @@ app.use(limiter)
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
+
+app.use((req, res, next) => {
+  if (req.body && typeof req.body === 'object') {
+    const sanitize = (obj) => {
+      for (const key in obj) {
+        if (typeof obj[key] === 'string') {
+          obj[key] = DOMPurify.sanitize(obj[key])
+        } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+          sanitize(obj[key])
+        }
+      }
+    }
+    sanitize(req.body)
+  }
+  next()
+})
 
 // Base root endpoint
 app.get('/', (req, res) => {
@@ -115,9 +133,18 @@ app.use((req, res, next) => {
 // Global error handler (Must be mounted last)
 app.use(errorHandler)
 
+import { mouExpiryQueue } from './src/lib/queues.js'
+
 const PORT = process.env.PORT || 3001
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, '0.0.0.0', async () => {
   console.log(`Server is running on port ${PORT}`)
+
+  // MOU-01: register daily MOU expiry check (runs at midnight every day)
+  await mouExpiryQueue.add(
+    'checkMouExpiry',
+    {},
+    { repeat: { cron: '0 0 * * *' }, removeOnComplete: true }
+  ).catch(err => console.error('[MOU] Failed to register expiry cron:', err))
 })
 
 export default app

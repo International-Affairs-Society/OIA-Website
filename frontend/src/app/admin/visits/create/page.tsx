@@ -6,6 +6,7 @@ import { AdminPageHeader, FormField, ConfirmModal } from "../../components";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { Plus, Trash2, Upload, AlertCircle, CheckCircle, X, FileText, Loader2 } from "lucide-react";
 import { saveDraft, getDraftById } from "@/app/admin/drafts/draftsStorage";
+import { apiFetch } from "@/lib/apiFetch";
 
 function DynamicHighlightsInput({ 
   label, 
@@ -118,12 +119,8 @@ export default function CreateVisitPage() {
     const fetchData = async () => {
       try {
         const [uRes, eRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/users`, {
-            headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` }
-          }),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/events?eventType=upcoming`, {
-            headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` }
-          })
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/users`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/events?eventType=upcoming`)
         ]);
         if (uRes.ok) {
           const uJson = await uRes.json();
@@ -199,8 +196,6 @@ export default function CreateVisitPage() {
 
   const uploadPhotosList = async (files: FileList) => {
     setIsUploadingPhotos(true);
-    const token = localStorage.getItem("access_token");
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
     const uploadedUrls: string[] = [];
 
     for (let i = 0; i < files.length; i++) {
@@ -209,9 +204,8 @@ export default function CreateVisitPage() {
       const formData = new FormData();
       formData.append("file", file);
       try {
-        const res = await fetch(`${API_URL}/api/v1/media`, {
+        const res = await apiFetch(`/api/v1/media`, {
           method: "POST",
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
           body: formData,
         });
         if (res.ok) {
@@ -243,15 +237,12 @@ export default function CreateVisitPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     setIsUploadingReport(true);
-    const token = localStorage.getItem("access_token");
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
     const formData = new FormData();
     formData.append("file", file);
     try {
-      const res = await fetch(`${API_URL}/api/v1/media`, {
+      const res = await apiFetch(`/api/v1/media`, {
         method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
       });
       if (res.ok) {
@@ -271,8 +262,6 @@ export default function CreateVisitPage() {
 
   const handleConfirmSubmit = async () => {
     try {
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
       const payload = {
         university,
@@ -290,11 +279,10 @@ export default function CreateVisitPage() {
         reports: reportFileUrl ? [{ name: reportFileName, url: reportFileUrl }] : []
       };
 
-      const res = await fetch(`${API_URL}/api/v1/visits`, {
+      const res = await apiFetch(`/api/v1/visits`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         body: JSON.stringify(payload),
       });

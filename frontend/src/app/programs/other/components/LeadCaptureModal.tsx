@@ -68,7 +68,6 @@ export default function LeadCaptureModal() {
     }
 
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
       const payload = {
         name: name.trim(),
         phone: number.trim(),
@@ -76,7 +75,7 @@ export default function LeadCaptureModal() {
         source_page: typeof window !== "undefined" ? window.location.pathname : "/programs/other"
       };
 
-      const res = await fetch(`${API_URL}/api/v1/program-leads`, {
+      const res = await apiFetch(`/api/v1/program-leads`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

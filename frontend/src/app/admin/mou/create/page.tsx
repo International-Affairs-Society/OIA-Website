@@ -6,6 +6,7 @@ import { AdminPageHeader, FormField, CustomDropdown, ConfirmModal } from "../../
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { Plus, Trash2 } from "lucide-react";
 import { saveDraft, getDraftById } from "@/app/admin/drafts/draftsStorage";
+import { apiFetch } from "@/lib/apiFetch";
 
 const SCHOOL_OPTIONS = ["SCSET", "SOAI", "SEAS", "SOM", "SOL", "TSOM", "SOLA", "SOD", "All"];
 const SEMESTER_OPTIONS = ["Semester 1", "Semester 2", "Semester 3", "Semester 4", "Semester 5", "Semester 6", "Semester 7", "Semester 8", "Semester 9", "Semester 10", "All"];
@@ -59,12 +60,8 @@ export default function CreateMOUPage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const token = localStorage.getItem("access_token");
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
         
-        const res = await fetch(`${API_URL}/api/v1/users`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
+        const res = await apiFetch(`/api/v1/users`);
         if (res.ok) {
           const json = await res.json();
           setUsers(json.data || []);
@@ -156,8 +153,6 @@ export default function CreateMOUPage() {
 
     try {
       setIsSaving(true);
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
       const payload = {
         name,
@@ -187,11 +182,10 @@ export default function CreateMOUPage() {
         documents: []
       };
 
-      const res = await fetch(`${API_URL}/api/v1/mous`, {
+      const res = await apiFetch(`/api/v1/mous`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         body: JSON.stringify(payload)
       });

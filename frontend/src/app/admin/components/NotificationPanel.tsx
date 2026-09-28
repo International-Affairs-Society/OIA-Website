@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { ReviewItem } from "@/app/admin/data/mockReviews";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import LiquidGlass from "@/components/LiquidGlass";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface NotificationPanelProps {
   isOpen: boolean;
@@ -268,7 +269,7 @@ export default function NotificationPanel({ isOpen, onClose, reviews, systemAler
                   <div style={{
                       fontSize: "12px", color: theme.textSecondary, margin: "0 0 8px", lineHeight: 1.5,
                     }}
-                    dangerouslySetInnerHTML={{ __html: alert.bodyHtml || alert.body_html }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(alert.bodyHtml || alert.body_html) }}
                   />
                   <div
                     style={{

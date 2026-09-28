@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader, FormField, CustomDropdown, ConfirmModal } from "../../components";
 import { useAuth } from "@/app/admin/roles/AuthContext";
+import { apiFetch } from "@/lib/apiFetch";
 
 const MAX_WORDS = 80;
 
@@ -38,11 +39,7 @@ export default function CreatePastEventPage() {
   useEffect(() => {
     const fetchMous = async () => {
       try {
-        const token = localStorage.getItem("access_token");
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-        const res = await fetch(`${API_URL}/api/v1/mous`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
+        const res = await apiFetch(`/api/v1/mous`);
         if (res.ok) {
           const json = await res.json();
           const mapped = (json.data || []).map((m: any) => ({
@@ -72,17 +69,14 @@ export default function CreatePastEventPage() {
 
     try {
       setIsUploadingGallery(true);
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
       const uploaded: string[] = [];
       for (let i = 0; i < files.length; i++) {
         const formData = new FormData();
         formData.append("file", files[i]);
 
-        const res = await fetch(`${API_URL}/api/v1/media`, {
+        const res = await apiFetch(`/api/v1/media`, {
           method: "POST",
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
           body: formData,
         });
 
@@ -106,15 +100,12 @@ export default function CreatePastEventPage() {
 
     try {
       setIsUploadingPoster(true);
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch(`${API_URL}/api/v1/media`, {
+      const res = await apiFetch(`/api/v1/media`, {
         method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
       });
 
@@ -153,8 +144,6 @@ export default function CreatePastEventPage() {
     }
 
     try {
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
       const payload = {
         title,
         description,
@@ -169,11 +158,10 @@ export default function CreatePastEventPage() {
         eventType: "past"
       };
 
-      const res = await fetch(`${API_URL}/api/v1/events`, {
+      const res = await apiFetch(`/api/v1/events`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(payload),
       });

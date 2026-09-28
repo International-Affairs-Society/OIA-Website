@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
+import { sanitizeHtml } from "@/lib/sanitize";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Navbar from "@/app/homepage/Navbar";
@@ -249,11 +250,11 @@ export default function ProgramDetailPage({ params }: { params: Promise<{ id: st
               </span>
             </div>
 
-            {/* Fee Breakdown — renders admin HTML exactly as entered */}
+            {/* Fee Breakdown — sanitised before rendering to prevent stored XSS (SEC-04) */}
             <div
               className="fee-breakdown-content"
               style={{ fontFamily: "var(--font-outfit)", fontSize: "15px", lineHeight: 1.8, color: "#393939", padding: "1.5rem 0" }}
-              dangerouslySetInnerHTML={{ __html: program.feeBreakdownHtml }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(program.feeBreakdownHtml) }}
             />
           </div>
         </section>

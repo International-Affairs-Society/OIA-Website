@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { TabGroup, AdminTable, StatusBadge, FormField } from "@/app/admin/components";
 import { AdminFormSkeleton } from "@/app/admin/optemization_component";
+import { apiFetch } from "@/lib/apiFetch";
 
 export default function StudentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -20,11 +21,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
   const fetchStudentDetails = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-      const res = await fetch(`${API_URL}/api/v1/student-records/${id}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const res = await apiFetch(`/api/v1/student-records/${id}`);
       if (res.ok) {
         const json = await res.json();
         setStudent(json);
@@ -41,11 +38,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
 
   const fetchAlerts = async (userId: string) => {
     try {
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-      const res = await fetch(`${API_URL}/api/v1/notifications?type=ALERT&recipientFilter=user:${userId}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const res = await apiFetch(`/api/v1/notifications?type=ALERT&recipientFilter=user:${userId}`);
       if (res.ok) {
         const json = await res.json();
         setAlerts((json.data || []).map((notif: any) => ({
@@ -69,13 +62,10 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
 
     try {
       setIsSendingAlert(true);
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-      const res = await fetch(`${API_URL}/api/v1/notifications`, {
+      const res = await apiFetch(`/api/v1/notifications`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           type: "ALERT",

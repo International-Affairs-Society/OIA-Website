@@ -9,6 +9,7 @@ import { useDeviceTierContext } from "@/hooks/useDeviceTier";
 
 import { Calendar } from "lucide-react";
 import CardFlip from "@/components/ui/card-flip";
+import { apiFetch } from "@/lib/apiFetch";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -44,14 +45,13 @@ export default function EventsSection() {
     let cancelled = false;
 
     const fetchEvents = async () => {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
       const MAX_RETRIES = 3;
       const RETRY_DELAYS = [1000, 2000, 4000]; // exponential backoff (ms)
 
       for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
         if (cancelled) return;
         try {
-          const res = await fetch(`${API_URL}/api/v1/events?eventType=past`);
+          const res = await apiFetch(`/api/v1/events?eventType=past`);
           if (res.ok) {
             const json = await res.json();
             if (cancelled) return;

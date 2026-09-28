@@ -2,6 +2,7 @@ import { z } from 'zod'
 import prisma from '../lib/prisma.js'
 import asyncHandler from '../middleware/asyncHandler.js'
 import { paginate } from '../utils/paginate.js'
+import { getSignedR2Url } from '../utils/r2Sign.js'
 
 // Validation Schema for creation
 const mouBaseSchema = z.object({
@@ -99,7 +100,11 @@ async function formatMou(mou) {
     created_by: mou.created_by,
     our_pocs: mou.our_pocs || [],
     partner_pocs: mou.partner_pocs || [],
-    documents: mou.documents || [],
+    documents: await Promise.all((mou.documents || []).map(async (doc) => ({
+      ...doc,
+      url: await getSignedR2Url(doc.url) || doc.url,
+      urlExpiresAt: new Date(Date.now() + 900 * 1000)
+    }))),
     created_at: mou.created_at,
     updated_at: mou.updated_at
   }
@@ -337,9 +342,10 @@ export const deleteMou = asyncHandler(async (req, res) => {
     })
   }
 
-  // Hard delete since mou table does not have deleted_at
-  await prisma.mous.delete({
-    where: { id }
+  // DATA-02 FIX: soft delete — set deleted_at instead of hard deleting
+  await prisma.mous.update({
+    where: { id },
+    data: { deleted_at: new Date(), updated_at: new Date() }
   })
 
   await prisma.audit_logs.create({

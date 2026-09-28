@@ -72,15 +72,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, isLoading, pathname, router]);
 
-  // Fetch user data from backend using the HTTP-only cookie
+  // Fetch user data from backend using the HttpOnly cookie set by /auth/set-cookie
   const fetchMe = async () => {
     try {
-      const token = localStorage.getItem("access_token");
+      // SEC-03 FIX: no localStorage token — rely solely on HttpOnly cookie via credentials: 'include'
       const res = await fetch(`${API_URL}/api/v1/auth/me`, {
         credentials: "include",
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
         cache: 'no-store'
       });
       if (res.ok) {
@@ -103,9 +100,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          localStorage.setItem("access_token", session.access_token);
-        } else {
-          localStorage.removeItem("access_token");
+          // SEC-03 FIX: store token in HttpOnly cookie via backend endpoint only
+          // Do NOT write to localStorage
+          await fetch(`${API_URL}/api/v1/auth/set-cookie`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              access_token:  session.access_token,
+              refresh_token: session.refresh_token,
+            }),
+            credentials: "include"
+          });
         }
       } catch (err) {
         console.error("Error retrieving Supabase session on mount:", err);
@@ -119,38 +124,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // 2. Listen for Supabase auth events (like completing the OAuth redirect)
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // Silently update the token in localStorage without triggering re-renders
-      if (session) {
-        localStorage.setItem("access_token", session.access_token);
-      } else {
-        localStorage.removeItem("access_token");
-      }
+      // SEC-03 FIX: DO NOT write token to localStorage
+      // The HttpOnly cookie is set by the backend — it is inaccessible to JS.
 
-      // Skip all events that fire on tab focus / token refresh
-      // Only handle genuine first sign-ins and sign-outs
-      if (event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") {
+      if (event === "TOKEN_REFRESHED" && session) {
+        // Silently refresh the backend cookie when Supabase refreshes the token
+        await fetch(`${API_URL}/api/v1/auth/set-cookie`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            access_token:  session.access_token,
+            refresh_token: session.refresh_token,
+          }),
+          credentials: "include"
+        }).catch(() => {});
         return;
       }
 
+      if (event === "INITIAL_SESSION") return;
+
       if (event === "SIGNED_IN" && session) {
-        // If we already initialized (user is loaded), skip the full sign-in flow.
-        // This prevents the "Loading..." flash on tab switch.
         if (hasInitializedRef.current) return;
 
         setIsLoading(true);
         try {
-          // Send tokens to backend to set HttpOnly cookies
           await fetch(`${API_URL}/api/v1/auth/set-cookie`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              access_token: session.access_token,
+              access_token:  session.access_token,
               refresh_token: session.refresh_token,
             }),
             credentials: "include"
           });
-          
-          // Now fetch the user profile from backend
+
           await fetchMe();
           hasInitializedRef.current = true;
         } catch (error) {

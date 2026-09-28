@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { AdminPageHeader, AdminTable, StatusBadge, FilterBar } from "@/app/admin/components";
 import CustomDropdown from "@/app/admin/components/CustomDropdown";
 import { AdminPageSkeleton } from "@/app/admin/optemization_component";
+import { apiFetch } from "@/lib/apiFetch";
 
 // Hardcoded options matching the programs section
 const SCHOOL_OPTIONS = [
@@ -144,16 +145,10 @@ export default function ApplicationsPage() {
   const fetchApplications = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
       
       const [appRes, progRes] = await Promise.all([
-        fetch(`${API_URL}/api/v1/applications`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }),
-        fetch(`${API_URL}/api/v1/programs`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        })
+        apiFetch(`/api/v1/applications`),
+        apiFetch(`/api/v1/programs`)
       ]);
 
       if (appRes.ok) {
@@ -273,14 +268,11 @@ export default function ApplicationsPage() {
     if (massStatus === "other") return alert("Please add a custom status first.");
 
     try {
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
       
-      const res = await fetch(`${API_URL}/api/v1/applications/bulk/status`, {
+      const res = await apiFetch(`/api/v1/applications/bulk/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
           applicationIds: Array.from(selectedIds),

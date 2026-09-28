@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/apiFetch";
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -117,19 +118,11 @@ export default function EditVisitPage({ params }: { params: Promise<{ id: string
     const fetchData = async () => {
       try {
         setIsLoadingVisit(true);
-        const token = localStorage.getItem("access_token");
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
         
         const [uRes, eRes, vRes] = await Promise.all([
-          fetch(`${API_URL}/api/v1/users`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          fetch(`${API_URL}/api/v1/events?eventType=upcoming`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          fetch(`${API_URL}/api/v1/visits/${id}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
+          apiFetch(`/api/v1/users`),
+          apiFetch(`/api/v1/events?eventType=upcoming`),
+          apiFetch(`/api/v1/visits/${id}`)
         ]);
         
         if (uRes.ok) {
@@ -220,8 +213,6 @@ export default function EditVisitPage({ params }: { params: Promise<{ id: string
 
   const uploadPhotosList = async (files: FileList) => {
     setIsUploadingPhotos(true);
-    const token = localStorage.getItem("access_token");
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
     const uploadedUrls: string[] = [];
 
     for (let i = 0; i < files.length; i++) {
@@ -230,9 +221,8 @@ export default function EditVisitPage({ params }: { params: Promise<{ id: string
       const formData = new FormData();
       formData.append("file", file);
       try {
-        const res = await fetch(`${API_URL}/api/v1/media`, {
+        const res = await apiFetch(`/api/v1/media`, {
           method: "POST",
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
           body: formData,
         });
         if (res.ok) {
@@ -264,15 +254,12 @@ export default function EditVisitPage({ params }: { params: Promise<{ id: string
     const file = e.target.files?.[0];
     if (!file) return;
     setIsUploadingReport(true);
-    const token = localStorage.getItem("access_token");
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
     const formData = new FormData();
     formData.append("file", file);
     try {
-      const res = await fetch(`${API_URL}/api/v1/media`, {
+      const res = await apiFetch(`/api/v1/media`, {
         method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
       });
       if (res.ok) {
@@ -292,8 +279,6 @@ export default function EditVisitPage({ params }: { params: Promise<{ id: string
 
   const handleConfirmSubmit = async () => {
     try {
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
       const payload = {
         university,
@@ -311,12 +296,8 @@ export default function EditVisitPage({ params }: { params: Promise<{ id: string
         reports: reportFileUrl ? [{ name: reportFileName, url: reportFileUrl }] : []
       };
 
-      const res = await fetch(`${API_URL}/api/v1/visits/${id}`, {
+      const res = await apiFetch(`/api/v1/visits/${id}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
         body: JSON.stringify(payload),
       });
 

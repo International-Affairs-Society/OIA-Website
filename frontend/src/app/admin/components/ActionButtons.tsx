@@ -33,14 +33,15 @@ export default function ActionButtons({
   const [isDeleting, setIsDeleting] = useState(false);
   const isConfirming = confirmingDeleteId && confirmingDeleteId === rowId;
 
-  const buttonStyle = (color: string): React.CSSProperties => ({
+  const buttonStyle = (color: string, disabled: boolean = false): React.CSSProperties => ({
     background: "none",
     border: "none",
-    cursor: "pointer",
+    cursor: disabled ? "not-allowed" : "pointer",
     padding: "0 6px",
     fontSize: "13px",
     color: color,
     textDecoration: "none",
+    opacity: disabled ? 0.5 : 1,
   });
 
   const divider = <span style={{ color: "#b5bda0", margin: "0 4px" }}>|</span>;
@@ -57,13 +58,17 @@ export default function ActionButtons({
           <>
             <span>Confirm delete?</span>
             <button
-              style={buttonStyle("#c0392b")}
+              style={buttonStyle("#c0392b", isDeleting)}
+              disabled={isDeleting}
               onClick={async (e) => {
                 e.stopPropagation();
+                if (isDeleting) return; // Prevent double click
                 if (onConfirmDelete && rowId) {
                   setIsDeleting(true);
                   try {
                     await onConfirmDelete(rowId);
+                  } catch (error) {
+                    console.error(error);
                   } finally {
                     setIsDeleting(false);
                   }
@@ -74,7 +79,8 @@ export default function ActionButtons({
             </button>
             {divider}
             <button
-              style={buttonStyle("#6b6b6b")}
+              style={buttonStyle("#6b6b6b", isDeleting)}
+              disabled={isDeleting}
               onClick={(e) => {
                 e.stopPropagation();
                 if (onCancelDelete) onCancelDelete();

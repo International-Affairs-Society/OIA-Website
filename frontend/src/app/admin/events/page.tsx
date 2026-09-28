@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { AdminPageHeader, AdminTable, ActionButtons, StatusBadge, AdminButton } from "@/app/admin/components";
 import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 import { useAuth } from "@/app/admin/roles/AuthContext";
+import { apiFetch } from "@/lib/apiFetch";
 
 export default function EventsPage() {
   const router = useRouter();
@@ -23,11 +24,7 @@ export default function EventsPage() {
   const fetchEvents = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-      const res = await fetch(`${API_URL}/api/v1/events`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const res = await apiFetch(`/api/v1/events`);
       if (res.ok) {
         const json = await res.json();
         setEvents(json.data || []);
@@ -45,11 +42,8 @@ export default function EventsPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-      const res = await fetch(`${API_URL}/api/v1/events/${id}`, {
+      const res = await apiFetch(`/api/v1/events/${id}`, {
         method: "DELETE",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) {
         setEvents(events.filter((e) => e.id !== id));
@@ -66,14 +60,11 @@ export default function EventsPage() {
 
   const handleToggleArchive = async (row: any) => {
     try {
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
       // Zod schema validates body.isArchived (camelCase)
-      const res = await fetch(`${API_URL}/api/v1/events/${row.id}`, {
+      const res = await apiFetch(`/api/v1/events/${row.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ isArchived: !row.is_archived }),
       });

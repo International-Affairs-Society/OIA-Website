@@ -1,5 +1,6 @@
 
-import { DeleteObjectCommand } from '@aws-sdk/client-s3'
+import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
+import fs from 'fs/promises'
 import prisma from '../lib/prisma.js'
 import { r2 } from '../lib/r2.js'
 import asyncHandler from '../middleware/asyncHandler.js'
@@ -7,6 +8,8 @@ import { getSignedR2Url } from '../utils/r2Sign.js'
 import { paginate } from '../utils/paginate.js'
 import logger from '../lib/logger.js'
 import { fileQueue } from '../lib/queues.js'
+import { validateFileSignature } from '../services/fileValidationService.js'
+import { writeAudit } from '../services/auditService.js'
 
 // Format helper
 async function formatDocument(doc, includeUrl = false) {
@@ -84,12 +87,22 @@ export const getDocumentById = asyncHandler(async (req, res) => {
     })
   }
 
-  // Permission check: must be owner, ADMIN, or SUPER_ADMIN (EDITORs act as owner)
-  if ((req.user.role === 'STUDENT' || req.user.role === 'EDITOR') && doc.user_id !== req.user.id) {
+  // SEC-01 FIX: role comparisons use lowercase (matches authenticate.js storage)
+  if ((req.user.role === 'student' || req.user.role === 'editor') && doc.user_id !== req.user.id) {
     return res.status(403).json({
       error: { code: 'FORBIDDEN', message: 'Access denied' }
     })
   }
+
+  // AUDIT-01: log document view when a signed URL is generated
+  await writeAudit({
+    itemId:      doc.id,
+    action:      'Updated', // closest AuditAction — 'Viewed' not in enum; extend enum if needed
+    itemTitle:   doc.r2_key.split('/').pop(),
+    itemType:    'Program', // placeholder — extend AuditItemType enum to include 'Document'
+    performedBy: req.user,
+    details:     `Document viewed by ${req.user.email}`
+  })
 
   res.json(await formatDocument(doc, true))
 })
@@ -113,7 +126,7 @@ export const uploadDocument = asyncHandler(async (req, res) => {
     })
   }
 
-  // If application_id is provided, verify it exists and is owned by user (unless staff/leadership)
+  // SEC-01 FIX: lowercase role comparison
   if (applicationId) {
     const app = await prisma.applications.findUnique({ where: { id: applicationId } })
     if (!app) {
@@ -121,35 +134,62 @@ export const uploadDocument = asyncHandler(async (req, res) => {
         error: { code: 'VALIDATION_ERROR', message: 'Application not found', fields: { applicationId: 'Application does not exist' } }
       })
     }
-    if ((req.user.role === 'STUDENT' || req.user.role === 'EDITOR') && app.user_id !== req.user.id) {
+    if ((req.user.role === 'student' || req.user.role === 'editor') && app.student?.user_id !== req.user.id) {
       return res.status(403).json({
         error: { code: 'FORBIDDEN', message: 'Access denied' }
       })
     }
   }
 
-  // Sanitize original filename
+  // SEC-02 FIX: server-side file signature validation before anything else
+  const validation = await validateFileSignature(
+    req.file.path,
+    req.file.mimetype,
+    req.file.originalname
+  )
+  if (!validation.valid) {
+    // Clean up the rejected temp file immediately
+    await fs.unlink(req.file.path).catch(() => {})
+    return res.status(400).json({
+      error: { code: 'INVALID_FILE', message: 'File failed security validation', details: validation.errors }
+    })
+  }
+
   const sanitizedFilename = req.file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')
   const r2Key = `documents/${req.user.id}/${Date.now()}-${sanitizedFilename}`
 
-  // Save metadata to DB
+  // SEC-06 FIX: upload directly to R2 in the API handler (not in the worker)
+  // This makes the flow multi-server safe — workers never touch local disk paths.
+  let fileBuffer
+  try {
+    fileBuffer = await fs.readFile(req.file.path)
+    await r2.send(new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME || 'documents',
+      Key: r2Key,
+      Body: fileBuffer,
+      ContentType: req.file.mimetype
+    }))
+  } finally {
+    // Always clean up temp file regardless of outcome
+    await fs.unlink(req.file.path).catch(() => {})
+  }
+
+  // Persist to DB — file is now safely in R2
   const doc = await prisma.documents.create({
     data: {
-      user_id: req.user.id,
+      user_id:        req.user.id,
       application_id: applicationId || null,
-      type: upperCategory,
-      r2_key: r2Key,
-      status: 'PENDING'
+      type:           upperCategory,
+      r2_key:         r2Key,
+      status:         'PENDING'
     }
   })
 
-  // Enqueue job for background processing
-  await fileQueue.add('uploadDocument', {
+  // Enqueue post-processing job with R2 key (not local path)
+  await fileQueue.add('scanDocument', {
     documentId: doc.id,
-    filePath: req.file.path,
-    r2Key: r2Key,
-    mimetype: req.file.mimetype,
-    userId: req.user.id
+    r2Key:      r2Key,
+    userId:     req.user.id
   })
 
   res.status(201).json(await formatDocument(doc, false))
@@ -179,11 +219,23 @@ export const verifyDocument = asyncHandler(async (req, res) => {
   const updated = await prisma.documents.update({
     where: { id },
     data: {
-      status: dbStatus,
+      status:         dbStatus,
       verified_by_id: req.user.id,
-      verified_at: new Date(),
-      updated_at: new Date()
+      verified_at:    new Date(),
+      updated_at:     new Date()
     }
+  })
+
+  // AUDIT-01: log verification
+  await writeAudit({
+    itemId:        doc.id,
+    action:        verificationStatus === 'verified' ? 'Approved' : 'Rejected',
+    itemTitle:     doc.r2_key.split('/').pop(),
+    itemType:      'Program', // placeholder — extend AuditItemType to include 'Document'
+    performedBy:   req.user,
+    previousValue: doc.status,
+    newValue:      dbStatus,
+    details:       `Document ${verificationStatus} by ${req.user.email}`
   })
 
   res.json(await formatDocument(updated, false))
@@ -203,7 +255,8 @@ export const deleteDocument = asyncHandler(async (req, res) => {
   // Delete permissions:
   // - Students/Editors can only delete their OWN document if it is still PENDING
   // - SUPER_ADMIN and ADMIN can delete any document
-  if (req.user.role !== 'SUPER_ADMIN' && req.user.role !== 'ADMIN') {
+  // SEC-01 FIX: use lowercase role names
+  if (req.user.role !== 'super_admin' && req.user.role !== 'admin') {
     if (doc.user_id !== req.user.id) {
       return res.status(403).json({
         error: { code: 'FORBIDDEN', message: 'Access denied' }
@@ -226,9 +279,20 @@ export const deleteDocument = asyncHandler(async (req, res) => {
     logger.error('Failed to delete object from R2:', doc.r2_key, err)
   }
 
-  // Delete from DB
-  await prisma.documents.delete({
-    where: { id }
+  // DATA-02 FIX: soft delete — set deleted_at instead of hard deleting
+  await prisma.documents.update({
+    where: { id },
+    data: { deleted_at: new Date(), updated_at: new Date() }
+  })
+
+  // AUDIT-01: log deletion
+  await writeAudit({
+    itemId:      doc.id,
+    action:      'Deleted',
+    itemTitle:   doc.r2_key.split('/').pop(),
+    itemType:    'Program', // placeholder — extend AuditItemType to include 'Document'
+    performedBy: req.user,
+    details:     `Document deleted by ${req.user.email}`
   })
 
   res.json({ message: 'Document deleted successfully' })
