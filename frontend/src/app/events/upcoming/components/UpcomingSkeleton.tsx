@@ -16,10 +16,7 @@ export function UpcomingCarouselSkeleton() {
         width: "100%",
         height: "100vh",
         overflow: "hidden",
-        backgroundColor: "#FFFDE2",
-        backgroundImage:
-          "linear-gradient(0deg, transparent 24%, rgba(0,0,0,0.06) 25%, rgba(0,0,0,0.06) 26%, transparent 27%, transparent 74%, rgba(0,0,0,0.06) 75%, rgba(0,0,0,0.06) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(0,0,0,0.06) 25%, rgba(0,0,0,0.06) 26%, transparent 27%, transparent 74%, rgba(0,0,0,0.06) 75%, rgba(0,0,0,0.06) 76%, transparent 77%, transparent)",
-        backgroundSize: "55px 55px",
+        backgroundColor: "transparent",
       }}
     >
       {/* Left Dial Skeleton */}
@@ -225,10 +222,7 @@ export function UpcomingMobileSkeleton() {
       style={{
         position: "relative",
         width: "100%",
-        backgroundColor: "#FFFDE2",
-        backgroundImage:
-          "linear-gradient(0deg, transparent 24%, rgba(0,0,0,0.06) 25%, rgba(0,0,0,0.06) 26%, transparent 27%, transparent 74%, rgba(0,0,0,0.06) 75%, rgba(0,0,0,0.06) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(0,0,0,0.06) 25%, rgba(0,0,0,0.06) 26%, transparent 27%, transparent 74%, rgba(0,0,0,0.06) 75%, rgba(0,0,0,0.06) 76%, transparent 77%, transparent)",
-        backgroundSize: "55px 55px",
+        backgroundColor: "transparent",
         paddingTop: "100px",
         paddingBottom: "60px",
         minHeight: "100vh",

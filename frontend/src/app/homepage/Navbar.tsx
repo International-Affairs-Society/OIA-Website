@@ -51,9 +51,13 @@ const ADMIN_BUTTON = {
   id: "nav-admin",
 };
 
-// ============================================================
+export interface NavbarProps {
+  onAdminMenuToggle?: () => void;
+  adminMenuOpen?: boolean;
+  visible?: boolean;
+}
 
-export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMenuToggle?: () => void; adminMenuOpen?: boolean } = {}) {
+export default function Navbar({ onAdminMenuToggle, adminMenuOpen, visible = true }: NavbarProps = {}) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -130,9 +134,12 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
     <>
     <nav
       id="main-navbar"
+      suppressHydrationWarning
       className={isAdminPage ? "relative z-50 w-full" : "fixed left-0 right-0 z-50"}
       style={{
-        animation: "slideDown 0.8s ease-out forwards",
+        transform: !isAdminPage && !visible ? "translateY(-100%)" : "translateY(0)",
+        opacity: !isAdminPage && !visible ? 0 : 1,
+        pointerEvents: !isAdminPage && !visible ? "none" : "auto",
         top: isScrolled ? "14px" : "0px",
         margin: isScrolled ? "0 24px" : "0",
         borderRadius: isScrolled ? "16px" : "0",
@@ -140,7 +147,7 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
           ? `1px solid ${borderScrolledColor}`
           : "1px solid transparent",
         transition:
-          "top 0.5s cubic-bezier(0.23,1,0.32,1), margin 0.5s cubic-bezier(0.23,1,0.32,1), border-radius 0.5s ease-out, box-shadow 0.5s ease-out, border-color 0.5s ease-out",
+          "transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease-out, top 0.5s cubic-bezier(0.23,1,0.32,1), margin 0.5s cubic-bezier(0.23,1,0.32,1), border-radius 0.5s ease-out, box-shadow 0.5s ease-out, border-color 0.5s ease-out",
         boxShadow: isScrolled
           ? "0 8px 32px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.03)"
           : "none",
@@ -442,7 +449,7 @@ export default function Navbar({ onAdminMenuToggle, adminMenuOpen }: { onAdminMe
         }}
       >
         <LiquidGlass 
-          backgroundColor={isDarkPage ? "rgba(15, 15, 15, 0.65)" : "rgba(255, 251, 242, 0.65)"} 
+          backgroundColor={isDarkPage ? "rgba(15, 15, 15, 0.65)" : "rgba(245, 240, 232, 0.65)"} 
           borderColor={isDarkPage ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.4)"}
         />
         <div

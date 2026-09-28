@@ -118,7 +118,7 @@ export default function ProgramDetailPage({ params }: { params: Promise<{ id: st
 
   if (isLoading) {
     return (
-      <div style={{ position: "relative", minHeight: "100vh", width: "100%", overflow: "hidden", backgroundColor: "#FFFBF2" }}>
+      <div style={{ position: "relative", minHeight: "100vh", width: "100%", overflow: "hidden", backgroundColor: "#f5f0e8" }}>
         <Pattern />
         <div className="fixed top-0 left-0 right-0 z-50">
           <Navbar />
@@ -138,7 +138,7 @@ export default function ProgramDetailPage({ params }: { params: Promise<{ id: st
   if (program.courses && program.courses.length > 0) eligibilityTags.push({ label: "Courses", values: program.courses });
 
   return (
-    <div style={{ position: "relative", minHeight: "100vh", width: "100%", overflow: "hidden", backgroundColor: "#FFFBF2" }}>
+    <div style={{ position: "relative", minHeight: "100vh", width: "100%", overflow: "hidden", backgroundColor: "#f5f0e8" }}>
       <Pattern />
 
       <div className="fixed top-0 left-0 right-0 z-50">

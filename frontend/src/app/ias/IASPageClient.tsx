@@ -201,7 +201,7 @@ export default function IASPageClient() {
                   margin: "20px auto 0",
                 }}
               >
-                Cultivating global leaders through diplomacy, cross-cultural dialogue, and bold international discourse.
+                Shaping global minds through diplomacy and discourse.
               </p>
             </div>
           </div>
@@ -298,19 +298,12 @@ export default function IASPageClient() {
                   margin: 0,
                 }}
               >
-                Diplomacy
+                Global Vision.
                 <br />
                 <span style={{
                   color: "#D12027",
                   textShadow: "0 0 80px rgba(209,32,39,0.35)",
-                }}>Driven</span>
-                <br />
-                Global Minds
-                <br />
-                <span style={{
-                  color: "#D12027",
-                  textShadow: "0 0 80px rgba(209,32,39,0.35)",
-                }}>Built</span>
+                }}>Tactical Leadership.</span>
               </h2>
             </div>
 
@@ -333,10 +326,7 @@ export default function IASPageClient() {
                   letterSpacing: "0.01em",
                 }}
               >
-                We cultivate future leaders in international affairs through
-                diplomacy simulations, cross-cultural dialogue, and global
-                policy workshops — turning bold ideas into actionable change
-                through cutting-edge discourse and fearless collaboration.
+                As the premier student-led international relations society at Bennett University, we turn global awareness into practical leadership. Through diplomatic simulations, expert lectures, and policy research, we empower students to shape global policy.
               </p>
 
 

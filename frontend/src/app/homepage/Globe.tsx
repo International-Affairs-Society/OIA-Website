@@ -2,108 +2,135 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
-import { useDeviceTierContext } from "@/hooks/useDeviceTier";
 
 // Dynamically import react-globe.gl to prevent SSR issues (WebGL needs window/document)
 const GlobeGL = dynamic(() => import("react-globe.gl"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#e63946]"></div>
+    <div style={{
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}>
+      <div style={{
+        width: 48,
+        height: 48,
+        borderRadius: '50%',
+        border: '2px solid transparent',
+        borderTopColor: '#9CA38F',
+        borderBottomColor: '#9CA38F',
+        animation: 'spin 1s linear infinite',
+      }} />
     </div>
   ),
 });
 
-const CITIES = [
-  { name: "New York", lat: 40.7128, lng: -74.006 },
-  { name: "London", lat: 51.5074, lng: -0.1276 },
-  { name: "Tokyo", lat: 35.6895, lng: 139.6917 },
-  { name: "Sydney", lat: -33.8688, lng: 151.2093 },
-  { name: "Sao Paulo", lat: -23.5505, lng: -46.6333 },
-  { name: "Cairo", lat: 30.0444, lng: 31.2357 },
-  { name: "Delhi", lat: 28.6139, lng: 77.209 },
-  { name: "Moscow", lat: 55.7558, lng: 37.6173 },
-  { name: "Cape Town", lat: -33.9249, lng: 18.4241 },
-  { name: "Beijing", lat: 39.9042, lng: 116.4074 },
+const INDIA_COORDS = { lat: 20.5937, lng: 78.9629 };
+
+export interface CountryData {
+  name: string;
+  lat: number;
+  lng: number;
+  time: string;
+}
+
+export const LISTED_COUNTRIES: CountryData[] = [
+  { name: "AUSTRALIA", lat: -25.2744, lng: 133.7751, time: "10h" },
+  { name: "CANADA", lat: 56.1304, lng: -106.3468, time: "14h" },
+  { name: "FRANCE", lat: 46.2276, lng: 2.2137, time: "8.5h" },
+  { name: "GERMANY", lat: 51.1657, lng: 10.4515, time: "8h" },
+  { name: "GREECE", lat: 39.0742, lng: 21.8243, time: "7h" },
+  { name: "INDONESIA", lat: -0.7893, lng: 113.9213, time: "5.5h" },
+  { name: "IRELAND", lat: 53.1424, lng: -7.6921, time: "9.5h" },
+  { name: "ITALY", lat: 41.8719, lng: 12.5674, time: "8h" },
+  { name: "MALAYSIA", lat: 4.2105, lng: 101.9758, time: "5h" },
+  { name: "NETHERLANDS", lat: 52.1326, lng: 5.2913, time: "8.5h" },
+  { name: "NEW ZEALAND", lat: -40.9006, lng: 174.8860, time: "15h" },
+  { name: "RUSSIA", lat: 55.7558, lng: 37.6173, time: "6h" },
+  { name: "SINGAPORE", lat: 1.3521, lng: 103.8198, time: "5h" },
+  { name: "SOUTH AFRICA", lat: -30.5595, lng: 22.9375, time: "10h" },
+  { name: "SOUTH KOREA", lat: 35.9078, lng: 127.7669, time: "6.5h" },
+  { name: "SPAIN", lat: 40.4637, lng: -3.7492, time: "9h" },
+  { name: "SWITZERLAND", lat: 46.8182, lng: 8.2275, time: "8h" },
+  { name: "THAILAND", lat: 15.8700, lng: 100.9925, time: "4h" },
+  { name: "UNITED ARAB EMIRATES (UAE)", lat: 23.4241, lng: 53.8478, time: "3.5h" },
+  { name: "UNITED KINGDOM", lat: 55.3781, lng: -3.4360, time: "9h" },
+  { name: "UNITED STATES (USA)", lat: 37.0902, lng: -95.7129, time: "15h" },
+  { name: "VIETNAM", lat: 14.0583, lng: 108.2772, time: "4.5h" },
 ];
 
-// Pre-generate arcs with fixed initial gaps (not random on every render)
-const ALL_ARCS = (() => {
-  const result = [];
-  for (let i = 0; i < 15; i++) {
-    const c1 = CITIES[i % CITIES.length];
-    const c2 = CITIES[(i + 3) % CITIES.length];
-    if (c1.name !== c2.name) {
-      result.push({
-        startLat: c1.lat,
-        startLng: c1.lng,
-        endLat: c2.lat,
-        endLng: c2.lng,
-        color: "#e63946",
-        initialGap: (i * 0.7) % 5,
-      });
-    }
-  }
-  return result;
-})();
+const HIGHLIGHTED_ISO = [
+  "IND", "AUS", "CAN", "FRA", "DEU", "GRC", "IDN", "IRL", "ISR", "ITA",
+  "JAM", "LTU", "MYS", "MDV", "MLT", "MNG", "MAR", "NLD", "NZL", "NGA",
+  "RUS", "SGP", "ZAF", "KOR", "ESP", "CHE", "TWN", "THA", "ARE", "GBR",
+  "USA", "VNM"
+];
 
-// Low-end devices get fewer arcs (5 instead of 15) to reduce GPU draw calls
-const LOW_END_ARCS = ALL_ARCS.slice(0, 5);
+// Generate arcs from India to other countries
+const ARCS_DATA = LISTED_COUNTRIES.map((c, i) => ({
+  startLat: INDIA_COORDS.lat,
+  startLng: INDIA_COORDS.lng,
+  endLat: c.lat,
+  endLng: c.lng,
+  color: "#e63946",
+  initialGap: (i * 0.4) % 5,
+}));
 
-// Stable callback functions (defined outside component to prevent re-creation)
-const POLYGON_CAP_COLOR = () => "#C4CBB7";
-const POLYGON_SIDE_COLOR = () => "rgba(196, 203, 183, 0.2)";
-const POLYGON_STROKE_COLOR = () => "#9CA38F";
+// Stable callback functions
+const POLYGON_CAP_COLOR = (d: any) => HIGHLIGHTED_ISO.includes(d?.properties?.ADM0_A3) ? "#C4CBB7" : "transparent";
+const POLYGON_SIDE_COLOR = () => "transparent";
+const POLYGON_STROKE_COLOR = () => "#393939"; // Using heading grey for borders
 const ARC_COLOR = (d: any) => d.color;
 const ARC_INITIAL_GAP = (d: any) => d.initialGap;
 const EMPTY_LABEL = () => "";
-const NOOP = () => {};
-
-// --- MOU Marker types ---
-export interface MOUMarker {
-  name: string;
-  coords: [number, number];
-  status: "active" | "expired" | "draft" | "dormant";
-  country?: string;
-}
+const NOOP = () => { };
 
 export interface GlobeProps {
-  mouMarkers?: MOUMarker[];
   compact?: boolean;
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  active: "#5c6b47",
-  expired: "#c0392b",
-  draft: "#a89b7a",
-  dormant: "#a89b7a",
-};
-
-export default function Globe({ mouMarkers, compact }: GlobeProps = {}) {
+export default function Globe({ compact }: GlobeProps = {}) {
   const globeEl = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [countries, setCountries] = useState({ features: [] });
   const [globeSize, setGlobeSize] = useState(compact ? 600 : 2500);
-  const deviceTier = useDeviceTierContext();
-  const isLowEnd = deviceTier === "low";
 
-  // Select arcs based on device tier (fewer on low-end)
-  const ARCS = isLowEnd ? LOW_END_ARCS : ALL_ARCS;
-
-  // Detect screen size for responsive globe
   useEffect(() => {
     if (compact) {
-      setGlobeSize(600);
+      setGlobeSize(545); // 4% reduction
       return;
     }
     const updateSize = () => {
       const w = window.innerWidth;
-      if (w < 768) {
-        setGlobeSize(800);
+      const isMobileDevice = w < 768;
+
+      if (globeEl.current) {
+        try {
+          const controls = globeEl.current.controls();
+          if (controls) {
+            controls.enableRotate = !isMobileDevice;
+          }
+        } catch {}
+      }
+
+      if (w < 380) {
+        setGlobeSize(370);
+      } else if (w < 480) {
+        setGlobeSize(420);
+      } else if (w < 640) {
+        setGlobeSize(470);
+      } else if (w < 768) {
+        setGlobeSize(500);
       } else if (w < 1024) {
-        setGlobeSize(2000);
+        setGlobeSize(470);
+      } else if (w < 1280) {
+        setGlobeSize(518);
+      } else if (w < 1536) {
+        setGlobeSize(653);
       } else {
-        setGlobeSize(2500);
+        setGlobeSize(727);
       }
     };
     updateSize();
@@ -121,141 +148,115 @@ export default function Globe({ mouMarkers, compact }: GlobeProps = {}) {
       .catch((err) => console.error("Failed to load map data", err));
   }, []);
 
-  // Create globe material — MeshBasicMaterial is much cheaper than MeshPhongMaterial
-  // (no per-pixel lighting calculations, just flat color + transparency)
+  // Create globe material — transparent/wireframe look
   const [globeMaterial, setGlobeMaterial] = useState<any>(null);
   useEffect(() => {
     import("three").then((THREE) => {
       setGlobeMaterial(
         new THREE.MeshBasicMaterial({
-          color: "#939185",
+          color: "#F6EEDD", // Same as bg to make it look transparent
           transparent: true,
-          opacity: 0.4,
+          opacity: 0.1,
           depthWrite: true,
         })
       );
     });
   }, []);
 
-  // Build points data from mouMarkers
-  const pointsData = useMemo(() => {
-    if (!mouMarkers) return [];
-    return mouMarkers.map((m) => ({
-      lat: m.coords[0],
-      lng: m.coords[1],
-      name: m.name,
-      status: m.status,
-      country: m.country || "",
-      color: STATUS_COLORS[m.status] || "#a89b7a",
-      size: m.status === "dormant" ? 0.4 : 0.6,
-    }));
-  }, [mouMarkers]);
-
-  // ─── CONTROLS SETUP + ZOOM LOCK ───
-  // Uses setInterval at 500ms instead of rAF (60x less CPU than every-frame polling).
-  // Also caps devicePixelRatio on low-end for fewer rendered pixels.
+  // ─── CONTROLS SETUP ───
   useEffect(() => {
     let intervalId: ReturnType<typeof setInterval>;
-    let lockedDistance = 0;
+    let initialized = false;
 
     const setupControls = () => {
       if (!globeEl.current) return;
 
       try {
         const controls = globeEl.current.controls();
-        if (controls) {
+        if (controls && !initialized) {
+          initialized = true;
+          const isMobileDevice = window.innerWidth < 768;
           controls.autoRotate = true;
-          controls.autoRotateSpeed = compact ? 0.6 : 0.4;
-          controls.enableRotate = true;
+          controls.autoRotateSpeed = 0.5;
+          controls.enableRotate = !isMobileDevice;
           controls.enablePan = false;
           controls.enableZoom = false;
 
-          if (lockedDistance === 0) {
-            const dist = controls.getDistance();
-            if (dist > 0) lockedDistance = dist;
-          }
-          if (lockedDistance > 0) {
-            controls.minDistance = lockedDistance;
-            controls.maxDistance = lockedDistance;
-          }
-        }
+          // Set initial camera position looking at India
+          globeEl.current.pointOfView({ lat: 20.5937, lng: 78.9629, altitude: 2.2 }, 0);
 
-        // Cap pixel ratio on low-end
-        if (isLowEnd) {
-          const renderer = globeEl.current.renderer();
-          if (renderer) {
-            renderer.setPixelRatio(1);
+          const dist = controls.getDistance();
+          if (dist > 0) {
+            controls.minDistance = dist;
+            controls.maxDistance = dist;
           }
+
+          clearInterval(intervalId);
         }
       } catch {
         // controls not ready yet
       }
     };
 
-    // Check every 500ms instead of every frame — 60x less CPU overhead
-    intervalId = setInterval(setupControls, 500);
-    // Also run once immediately
+    intervalId = setInterval(setupControls, 200);
     setupControls();
 
     return () => clearInterval(intervalId);
-  }, [compact, isLowEnd]);
+  }, []);
 
-  // Point callbacks
-  const pointColor = useCallback((d: any) => d.color, []);
-  const pointAlt = useCallback(() => 0.01, []);
-  const pointRadius = useCallback((d: any) => d.size, []);
-  const pointLabel = useCallback((d: any) => {
-    return `<div style="background:#1a1a1a;color:#f5f0e8;padding:8px 12px;border-radius:0;font-size:12px;font-family:inherit;line-height:1.4;">
-      <strong>${d.name}</strong><br/>
-      <span style="text-transform:capitalize">${d.status}</span>${d.country ? ` · ${d.country}` : ""}
-    </div>`;
+  const [isMobile, setIsMobile] = useState(() => (typeof window !== "undefined" ? window.innerWidth < 768 : false));
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
     <div
       ref={containerRef}
-      className="relative overflow-visible"
-      style={{ width: compact ? "100%" : globeSize, height: compact ? 380 : globeSize }}
+      style={{
+        position: 'relative',
+        overflow: 'visible',
+        width: compact ? '100%' : globeSize,
+        height: compact ? 380 : globeSize,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        pointerEvents: isMobile ? 'none' : 'auto',
+      }}
     >
       <GlobeGL
-          ref={globeEl}
-          width={compact ? 600 : globeSize}
-          height={compact ? 380 : globeSize}
-          backgroundColor="rgba(0,0,0,0)"
-          showAtmosphere={true}
-          atmosphereColor="#EEE0B7"
-          atmosphereAltitude={0.15}
-          showGlobe={true}
-          globeMaterial={globeMaterial}
+        ref={globeEl}
+        width={compact ? 600 : globeSize}
+        height={compact ? 380 : globeSize}
+        backgroundColor="rgba(0,0,0,0)"
+        showAtmosphere={false} // Removed atmosphere for clean wireframe look
+        showGlobe={true}
+        globeMaterial={globeMaterial}
 
-          // Polygons
-          polygonsData={countries.features}
-          polygonCapColor={POLYGON_CAP_COLOR}
-          polygonSideColor={POLYGON_SIDE_COLOR}
-          polygonStrokeColor={POLYGON_STROKE_COLOR}
-          polygonAltitude={0.005}
-          onPolygonHover={NOOP}
-          polygonLabel={EMPTY_LABEL}
+        // Polygons — wireframe look with highlighted countries
+        polygonsData={countries.features}
+        polygonCapColor={POLYGON_CAP_COLOR}
+        polygonSideColor={POLYGON_SIDE_COLOR}
+        polygonStrokeColor={POLYGON_STROKE_COLOR}
+        polygonAltitude={0.002}
+        onPolygonHover={NOOP}
+        polygonLabel={EMPTY_LABEL}
 
-          // Arcs — only show when NOT using mouMarkers
-          arcsData={mouMarkers ? [] : ARCS}
-          arcColor={ARC_COLOR}
-          arcAltitudeAutoScale={0.6}
-          arcStroke={0.1}
-          arcDashLength={0.9}
-          arcDashGap={4}
-          arcDashAnimateTime={3000}
-          arcDashInitialGap={ARC_INITIAL_GAP}
-          onArcHover={NOOP}
-          arcLabel={EMPTY_LABEL}
-
-          // Point markers for MOUs
-          pointsData={pointsData}
-          pointColor={pointColor}
-          pointAltitude={pointAlt}
-          pointRadius={pointRadius}
-          pointLabel={pointLabel}
-        />
+        // Arcs — Red lines emerging from India
+        arcsData={ARCS_DATA}
+        arcColor={ARC_COLOR}
+        arcAltitudeAutoScale={0.4}
+        arcStroke={0.6}
+        arcDashLength={0.4}
+        arcDashGap={1}
+        arcDashAnimateTime={2000}
+        arcDashInitialGap={ARC_INITIAL_GAP}
+        onArcHover={NOOP}
+        arcLabel={EMPTY_LABEL}
+      />
     </div>
   );
 }

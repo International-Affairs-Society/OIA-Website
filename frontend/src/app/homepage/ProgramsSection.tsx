@@ -170,8 +170,6 @@ export default function ProgramsSection() {
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? "translateY(0)" : "translateY(-60px)",
         transition: "opacity 1s ease-out, transform 1s ease-out",
-        maskImage: "linear-gradient(to bottom, black 0%, black 85%, transparent 100%)",
-        WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 85%, transparent 100%)",
       }}
     >
       {isDesktop && deviceTier !== "low" && (

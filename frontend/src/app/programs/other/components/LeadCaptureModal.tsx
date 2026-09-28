@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/app/admin/roles/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { GlobeIcon, ArrowRight, Sparkles } from "lucide-react";
+import { GlobeIcon, ArrowRight } from "lucide-react";
 
 export default function LeadCaptureModal() {
   const { isAuthenticated } = useAuth();
@@ -334,7 +334,6 @@ export default function LeadCaptureModal() {
                 e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.15)";
               }}
             >
-              <Sparkles size={16} />
               Explore Programs
               <ArrowRight size={16} />
             </motion.button>

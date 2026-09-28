@@ -369,11 +369,7 @@ export default function PartnersSection() {
           })}
         </div>
 
-        {/* ── Edge Fade Overlays — make images "cut" at the edges and reappear ── */}
-        <div className="absolute top-0 left-0 w-[15vw] h-full bg-gradient-to-r from-background to-transparent z-30 pointer-events-none" />
-        <div className="absolute top-0 right-0 w-[15vw] h-full bg-gradient-to-l from-background to-transparent z-30 pointer-events-none" />
-        <div className="absolute top-0 left-0 w-full h-[15vh] bg-gradient-to-b from-background to-transparent z-30 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-full h-[15vh] bg-gradient-to-t from-background to-transparent z-30 pointer-events-none" />
+
       </div>
 
       {/* ── Bottom Spacer ── */}
