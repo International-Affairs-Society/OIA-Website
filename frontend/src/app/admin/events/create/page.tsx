@@ -58,16 +58,16 @@ export default function CreateEventPage() {
       <div className="admin-form-container" style={{ border: "1px solid #b5bda0", padding: "2rem", backgroundColor: "#f5f0e8", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
         <form onSubmit={(e) => { e.preventDefault(); router.push("/admin/events"); }}>
           <FormField label="Title" required>
-            <input type="text" placeholder="Enter here" value={title} onChange={e => setTitle(e.target.value)} />
+            <input type="text" placeholder="Enter event title" value={title} onChange={e => setTitle(e.target.value)} required minLength={2} maxLength={200} autoComplete="off" />
           </FormField>
           <FormField label="Description">
-            <textarea rows={4} placeholder="Enter here..." value={description} onChange={e => setDescription(e.target.value)} />
+            <textarea rows={4} placeholder="Enter event description..." value={description} onChange={e => setDescription(e.target.value)} maxLength={2000} />
           </FormField>
           <FormField label="Date">
             <input type="date" value={date} onChange={e => setDate(e.target.value)} />
           </FormField>
           <FormField label="Location">
-            <input type="text" placeholder="Enter here" value={location} onChange={e => setLocation(e.target.value)} />
+            <input type="text" placeholder="Enter location" value={location} onChange={e => setLocation(e.target.value)} maxLength={200} autoComplete="off" />
           </FormField>
           <FormField label="Link MOU">
             <CustomDropdown

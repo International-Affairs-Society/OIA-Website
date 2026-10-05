@@ -3,7 +3,7 @@
 import React, { memo } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 
-const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+const GEO_URL = "/geo-data/countries-110m.json";
 
 const BackgroundMap = memo(() => {
   return (
