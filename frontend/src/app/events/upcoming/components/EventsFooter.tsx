@@ -1,51 +1,16 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
-import gsap from "gsap";
-import ScrollTrigger from "gsap/ScrollTrigger";
 
 export default function EventsFooter() {
-  const footerRef = useRef<HTMLElement>(null);
   const [showDevs, setShowDevs] = useState(false);
-
-  useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
-    let mm = gsap.matchMedia();
-
-    mm.add("(min-width: 768px)", () => {
-      const elements = gsap.utils.toArray(".animate-footer-events");
-      gsap.fromTo(
-        elements,
-        { opacity: 0, y: 50 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          delay: 0.5,
-          stagger: 0.05,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: footerRef.current,
-            start: "top 85%",
-            toggleActions: "play none none reverse",
-          },
-        }
-      );
-    });
-
-    return () => mm.revert();
-  }, []);
 
   return (
     <footer
-      ref={footerRef}
-      className="relative w-full overflow-hidden flex flex-col items-center"
+      className="relative z-20 w-full overflow-hidden flex flex-col items-center"
       style={{
-        backgroundColor: "#FFFDE2",
-        backgroundImage:
-          "linear-gradient(0deg, transparent 24%, rgba(0,0,0,0.08) 25%, rgba(0,0,0,0.08) 26%, transparent 27%, transparent 74%, rgba(0,0,0,0.08) 75%, rgba(0,0,0,0.08) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(0,0,0,0.08) 25%, rgba(0,0,0,0.08) 26%, transparent 27%, transparent 74%, rgba(0,0,0,0.08) 75%, rgba(0,0,0,0.08) 76%, transparent 77%, transparent)",
-        backgroundSize: "55px 55px",
+        backgroundColor: "transparent",
       }}
     >
       {/* ── Main Content ── */}

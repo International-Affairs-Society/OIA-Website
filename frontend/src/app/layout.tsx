@@ -98,6 +98,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${outfit.variable} ${instrumentSerif.variable} ${spaceGrotesk.variable} ${libreBodoni.variable} ${robotoCondensed.variable} ${atavian.variable} ${tanPearl.variable} ${gmarketSans.variable} ${boska.variable} ${zodiak.variable} antialiased`}
     >
       <head>
@@ -109,7 +110,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://raw.githubusercontent.com" />
         <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
       </head>
-      <body className="antialiased">
+      <body className="antialiased" suppressHydrationWarning>
         <AuthWrapper>
           <SmoothScroll>{children}</SmoothScroll>
         </AuthWrapper>

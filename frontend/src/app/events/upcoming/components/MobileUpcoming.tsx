@@ -235,7 +235,7 @@ export default function MobileUpcoming() {
 
   if (error || events.length === 0) {
     return (
-      <section style={{ backgroundColor: "#FFFDE2", paddingTop: "100px", paddingBottom: "60px", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-space-grotesk)" }}>
+      <section style={{ backgroundColor: "transparent", paddingTop: "100px", paddingBottom: "60px", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-space-grotesk)" }}>
         <p style={{ fontSize: "15px", color: "var(--foreground)", opacity: 0.6 }}>No upcoming events scheduled at the moment.</p>
       </section>
     );
@@ -245,10 +245,7 @@ export default function MobileUpcoming() {
     <section
       className="relative w-full"
       style={{
-        backgroundColor: "#FFFDE2",
-        backgroundImage:
-          "linear-gradient(0deg, transparent 24%, rgba(0,0,0,0.08) 25%, rgba(0,0,0,0.08) 26%, transparent 27%, transparent 74%, rgba(0,0,0,0.08) 75%, rgba(0,0,0,0.08) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(0,0,0,0.08) 25%, rgba(0,0,0,0.08) 26%, transparent 27%, transparent 74%, rgba(0,0,0,0.08) 75%, rgba(0,0,0,0.08) 76%, transparent 77%, transparent)",
-        backgroundSize: "55px 55px",
+        backgroundColor: "transparent",
         paddingTop: "100px",
         paddingBottom: "60px",
         minHeight: "100vh",

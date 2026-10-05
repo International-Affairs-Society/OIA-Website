@@ -2,13 +2,13 @@
 @source "../../src";
 
 :root {
-  --background: #FFFBF2;
+  --background: #f5f0e8;
   --foreground: #393939;
   --accent: #e63946;
   --muted-1: #EBEFC9;
   --muted-2: #EEE0B7;
   --muted-3: #C4CBB7;
-  --navbar-bg: #FFFBF2;
+  --navbar-bg: #f5f0e8;
   --line-color: rgba(0, 0, 0, 0.1);
 }
 
@@ -249,4 +249,52 @@ html.lenis body {
   border-radius: inherit;
   pointer-events: none;
   transition: opacity 0.5s ease;
+}
+
+/* ===== ZERO-FLASH PERSISTENCE FOR HERO LOADER ===== */
+html.hero-seen #hero-loader-overlay {
+  display: none !important;
+}
+
+html.hero-seen #hero-bg-container {
+  opacity: 1 !important;
+}
+
+html.hero-seen #hero-content-container {
+  opacity: 1 !important;
+  transform: translateY(-50%) !important;
+  pointer-events: auto !important;
+}
+
+/* Responsive display for Curved Country List */
+#hero-curved-list {
+  display: none !important;
+}
+
+@media (min-width: 1280px) {
+  #hero-curved-list {
+    display: block !important;
+  }
+
+  html.hero-seen #hero-curved-list {
+    opacity: 1 !important;
+  }
+}
+
+html.hero-seen #hero-globe-container {
+  opacity: 1 !important;
+}
+
+@media (max-width: 767px) {
+  #hero-globe-container,
+  #hero-globe-container * {
+    pointer-events: none !important;
+    touch-action: pan-y !important;
+  }
+}
+
+html.hero-seen #main-navbar {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  pointer-events: auto !important;
 }

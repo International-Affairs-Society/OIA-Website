@@ -1,57 +1,16 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
-import gsap from "gsap";
-import ScrollTrigger from "gsap/ScrollTrigger";
 
 export default function ProgramsFooter() {
-  const footerRef = useRef<HTMLElement>(null);
   const [showDevs, setShowDevs] = useState(false);
-
-  useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
-    
-    if (!footerRef.current) return;
-
-    let mm = gsap.matchMedia();
-
-    mm.add("(min-width: 768px)", () => {
-      const elements = gsap.utils.toArray(".animate-footer-programs");
-      
-      gsap.fromTo(
-        elements,
-        { opacity: 0, y: 50 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          delay: 0.5,
-          stagger: 0.05,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: footerRef.current,
-            start: "top 85%",
-            toggleActions: "play none none reverse"
-          },
-        }
-      );
-    });
-
-    return () => mm.revert();
-  }, []);
 
   return (
     <footer
-      ref={footerRef}
-      className="relative w-full overflow-hidden flex flex-col items-center"
+      className="relative z-20 w-full overflow-hidden flex flex-col items-center"
       style={{
-        backgroundColor: "#FFFBF2",
-        backgroundImage: `
-          linear-gradient(0deg, transparent 24%, #e8e0d0 25%, #e8e0d0 26%, transparent 27%, transparent 74%, #e8e0d0 75%, #e8e0d0 76%, transparent 77%, transparent),
-          linear-gradient(90deg, transparent 24%, #e8e0d0 25%, #e8e0d0 26%, transparent 27%, transparent 74%, #e8e0d0 75%, #e8e0d0 76%, transparent 77%, transparent)
-        `,
-        backgroundSize: "55px 55px",
+        backgroundColor: "transparent",
       }}
     >
       {/* ── Main Content ── */}

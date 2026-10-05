@@ -215,8 +215,11 @@ export default function EventsSection() {
         </div>
 
         <div className="w-full text-center animate-heading" style={{ paddingLeft: "24px", paddingRight: "24px" }}>
-          <h2 className="events-heading font-zodiak font-medium leading-[1.1] tracking-tight text-foreground">
-            Relive our recent <span className="text-[#D12027]">global engagements</span>
+          <h2
+            className="events-heading font-sans font-medium leading-[1.1] tracking-tight text-foreground"
+            style={{ fontFamily: "var(--font-space-grotesk), sans-serif" }}
+          >
+            Our Recent <span className="text-[#D12027]">Global Engagements</span>
           </h2>
         </div>
 
@@ -275,8 +278,8 @@ export default function EventsSection() {
 
               {/* Main Title */}
               <h3
-                className="font-zodiak text-2xl md:text-[1.65rem] font-medium leading-tight text-foreground mb-2"
-                style={{ letterSpacing: "-0.02em" }}
+                className="font-sans text-2xl md:text-[1.65rem] font-medium leading-tight text-foreground mb-2"
+                style={{ fontFamily: "var(--font-space-grotesk), sans-serif", letterSpacing: "-0.02em" }}
               >
                 No recent events
               </h3>

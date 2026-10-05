@@ -12,7 +12,7 @@ export default function ProgramDetailLoading() {
         minHeight: "100vh",
         width: "100%",
         overflow: "hidden",
-        backgroundColor: "#FFFBF2",
+        backgroundColor: "#f5f0e8",
       }}
     >
       <Pattern />

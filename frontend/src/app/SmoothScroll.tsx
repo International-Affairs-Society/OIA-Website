@@ -48,6 +48,11 @@ export default function SmoothScroll({
     // Expose on window so other components (e.g. NotificationPanel) can pause/resume
     (window as any).__lenis = lenis;
 
+    if (typeof window !== "undefined" && (window as any).__scrollLocked) {
+      lenis.stop();
+      lenis.scrollTo(0, { immediate: true });
+    }
+
     lenis.on("scroll", ScrollTrigger.update);
 
     // Mid/High: full GSAP ticker integration for buttery-smooth scrolling
