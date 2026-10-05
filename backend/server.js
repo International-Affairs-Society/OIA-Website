@@ -37,6 +37,10 @@ import errorHandler from './src/middleware/errorHandler.js'
 
 const app = express()
 
+// Trust the first proxy (Coolify's reverse proxy) so express-rate-limit
+// can correctly identify client IPs via X-Forwarded-For header.
+app.set('trust proxy', 1)
+
 // Secure HTTP headers
 app.use(helmet({
   crossOriginResourcePolicy: false,
