@@ -148,7 +148,7 @@ export default function ProgramDetailPage({ params }: { params: Promise<{ id: st
 
       <main style={{ position: "relative", zIndex: 10, maxWidth: "1100px", width: "100%", margin: "0 auto", padding: "160px clamp(24px, 4vw, 64px) 100px", boxSizing: "border-box" }}>
         {/* Back link */}
-        <Link href="/programs/other" style={{ display: "inline-block", marginBottom: "3rem", fontSize: "14px", color: "#6b6b6b", textDecoration: "none", fontFamily: "var(--font-outfit)" }}>
+        <Link href="/programs" style={{ display: "inline-block", marginBottom: "3rem", fontSize: "14px", color: "#6b6b6b", textDecoration: "none", fontFamily: "var(--font-outfit)" }}>
           ← Back to Programs
         </Link>
 
@@ -306,7 +306,7 @@ export default function ProgramDetailPage({ params }: { params: Promise<{ id: st
         {/* Apply Now Button — only for student and editor */}
         {(role === 'student' || role === 'editor') && (
           <div style={{ textAlign: "center", paddingBottom: "2rem" }}>
-            <Link href={`/programs/other/${id}/apply`}>
+            <Link href={`/programs/${id}/apply`}>
               <button
                 style={{ fontFamily: "var(--font-outfit)", fontSize: "16px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", padding: "20px 64px", backgroundColor: "#1a1a1a", color: "#FFFBF2", border: "none", cursor: "pointer", transition: "all 0.3s ease" }}
                 onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#7A8C5E"; }}

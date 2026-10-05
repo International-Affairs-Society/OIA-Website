@@ -11,7 +11,7 @@ interface ProgramCardProps {
 
 export default function ProgramCard({ program }: ProgramCardProps) {
   return (
-    <Link href={`/programs/other/${program.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+    <Link href={`/programs/${program.id}`} style={{ textDecoration: "none", color: "inherit" }}>
       <div className="flex flex-col gap-4 group cursor-pointer">
         {/* Image Slider */}
         <ProgramImageSlider 

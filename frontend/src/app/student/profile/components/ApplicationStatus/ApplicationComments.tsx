@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ApplicationComment } from "../../types";
 import { FileText, X } from "lucide-react";
-import DefaultApplicationForm from "../../../../programs/other/components/DefaultApplicationForm";
+import DefaultApplicationForm from "../../../../programs/components/DefaultApplicationForm";
 
 interface Props {
   comments: ApplicationComment[];
