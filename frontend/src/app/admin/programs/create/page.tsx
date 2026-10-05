@@ -546,10 +546,10 @@ export default function CreateProgramPage() {
           <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#1a1a1a", marginBottom: "1rem", borderBottom: "1px solid rgba(181, 189, 160, 0.5)", paddingBottom: "0.5rem" }}>Basic Details</h3>
           <div className="admin-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
             <FormField label="Program Name" required>
-              <input type="text" placeholder="e.g. HSE Summer School" value={name} onChange={(e) => setName(e.target.value)} required style={{ backgroundColor: "transparent", border: "1px solid #b5bda0", padding: "8px 12px", borderRadius: "4px", width: "100%", fontSize: "14px" }} />
+              <input type="text" placeholder="e.g. HSE Summer School" value={name} onChange={(e) => setName(e.target.value)} required minLength={2} maxLength={200} autoComplete="off" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0", padding: "8px 12px", borderRadius: "4px", width: "100%", fontSize: "14px" }} />
             </FormField>
             <FormField label="Partner University Name">
-              <input type="text" placeholder="e.g. HSE University" value={partner} onChange={(e) => setPartner(e.target.value)} style={{ backgroundColor: "transparent", border: "1px solid #b5bda0", padding: "8px 12px", borderRadius: "4px", width: "100%", fontSize: "14px" }} />
+              <input type="text" placeholder="e.g. HSE University" value={partner} onChange={(e) => setPartner(e.target.value)} minLength={2} maxLength={200} autoComplete="off" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0", padding: "8px 12px", borderRadius: "4px", width: "100%", fontSize: "14px" }} />
             </FormField>
           </div>
           
@@ -571,10 +571,10 @@ export default function CreateProgramPage() {
               />
             </FormField>
             <FormField label="Duration (Weeks/Months)">
-              <input type="text" placeholder="e.g. 4 Weeks" value={duration} onChange={(e) => setDuration(e.target.value)} style={{ backgroundColor: "transparent", border: "1px solid #b5bda0", padding: "8px 12px", borderRadius: "4px", width: "100%", fontSize: "14px" }} />
+              <input type="text" placeholder="e.g. 4 Weeks" value={duration} onChange={(e) => setDuration(e.target.value)} maxLength={50} style={{ backgroundColor: "transparent", border: "1px solid #b5bda0", padding: "8px 12px", borderRadius: "4px", width: "100%", fontSize: "14px" }} />
             </FormField>
             <FormField label="Country" required>
-              <input type="text" placeholder="e.g. Russia" value={country} onChange={(e) => setCountry(e.target.value)} required style={{ backgroundColor: "transparent", border: "1px solid #b5bda0", padding: "8px 12px", borderRadius: "4px", width: "100%", fontSize: "14px" }} />
+              <input type="text" placeholder="e.g. Russia" value={country} onChange={(e) => setCountry(e.target.value)} required minLength={2} maxLength={100} autoComplete="country-name" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0", padding: "8px 12px", borderRadius: "4px", width: "100%", fontSize: "14px" }} />
             </FormField>
           </div>
 
@@ -645,16 +645,16 @@ export default function CreateProgramPage() {
                   </div>
                   <div className="admin-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                     <FormField label="Name">
-                      <input type="text" value={poc.name} onChange={(e) => updatePOC(index, 'name', e.target.value)} placeholder="Enter name" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0" }} />
+                      <input type="text" value={poc.name} onChange={(e) => updatePOC(index, 'name', e.target.value)} placeholder="Enter full name" minLength={2} maxLength={100} autoComplete="name" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0" }} />
                     </FormField>
                     <FormField label="Designation">
-                      <input type="text" value={poc.designation} onChange={(e) => updatePOC(index, 'designation', e.target.value)} placeholder="Enter designation" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0" }} />
+                      <input type="text" value={poc.designation} onChange={(e) => updatePOC(index, 'designation', e.target.value)} placeholder="Enter designation" maxLength={100} style={{ backgroundColor: "transparent", border: "1px solid #b5bda0" }} />
                     </FormField>
                     <FormField label="Email">
-                      <input type="email" value={poc.email} onChange={(e) => updatePOC(index, 'email', e.target.value)} placeholder="Enter email" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0" }} />
+                      <input type="email" value={poc.email} onChange={(e) => updatePOC(index, 'email', e.target.value)} placeholder="name@example.com" maxLength={254} autoComplete="email" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0" }} />
                     </FormField>
                     <FormField label="Contact Number">
-                      <input type="text" value={poc.contactNumber} onChange={(e) => updatePOC(index, 'contactNumber', e.target.value)} placeholder="Enter number" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0" }} />
+                      <input type="tel" inputMode="tel" value={poc.contactNumber} onChange={(e) => updatePOC(index, 'contactNumber', e.target.value.replace(/[^\d\+\-\s\(\)]/g, ''))} placeholder="+91 9876543210" maxLength={20} autoComplete="tel" style={{ backgroundColor: "transparent", border: "1px solid #b5bda0" }} />
                     </FormField>
                   </div>
                 </div>

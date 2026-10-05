@@ -364,7 +364,7 @@ export default function CreateVisitPage() {
           
           <div className="admin-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
             <FormField label="University Visited" required>
-              <input type="text" placeholder="e.g. Harvard University" value={university} onChange={e => setUniversity(e.target.value)} required />
+              <input type="text" placeholder="e.g. Harvard University" value={university} onChange={e => setUniversity(e.target.value)} required minLength={2} maxLength={200} autoComplete="off" />
             </FormField>
             <FormField label="Date of Visit" required>
               <input type="date" value={visitDate} onChange={e => setVisitDate(e.target.value)} required />
@@ -444,10 +444,10 @@ export default function CreateVisitPage() {
                   </button>
                 )}
                 <div className="admin-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                  <FormField label="Full Name"><input type="text" value={del.name} onChange={e => updateDelegation(index, 'name', e.target.value)} /></FormField>
-                  <FormField label="Designation"><input type="text" value={del.designation} onChange={e => updateDelegation(index, 'designation', e.target.value)} /></FormField>
-                  <FormField label="Email"><input type="email" value={del.email} onChange={e => updateDelegation(index, 'email', e.target.value)} /></FormField>
-                  <FormField label="Country"><input type="text" value={del.country} onChange={e => updateDelegation(index, 'country', e.target.value)} /></FormField>
+                  <FormField label="Full Name"><input type="text" value={del.name} onChange={e => updateDelegation(index, 'name', e.target.value)} minLength={2} maxLength={100} autoComplete="name" /></FormField>
+                  <FormField label="Designation"><input type="text" value={del.designation} onChange={e => updateDelegation(index, 'designation', e.target.value)} maxLength={100} /></FormField>
+                  <FormField label="Email"><input type="email" value={del.email} onChange={e => updateDelegation(index, 'email', e.target.value)} maxLength={254} autoComplete="email" /></FormField>
+                  <FormField label="Country"><input type="text" value={del.country} onChange={e => updateDelegation(index, 'country', e.target.value)} maxLength={100} autoComplete="country-name" /></FormField>
                 </div>
               </div>
             ))}
@@ -524,10 +524,10 @@ export default function CreateVisitPage() {
                   </button>
                 )}
                 <div className="admin-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                  <FormField label="Full Name"><input type="text" value={poc.name} onChange={e => updatePOC(index, 'name', e.target.value)} /></FormField>
-                  <FormField label="Designation"><input type="text" value={poc.designation} onChange={e => updatePOC(index, 'designation', e.target.value)} /></FormField>
-                  <FormField label="Email"><input type="email" value={poc.email} onChange={e => updatePOC(index, 'email', e.target.value)} /></FormField>
-                  <FormField label="Contact Number"><input type="text" value={poc.contactNumber} onChange={e => updatePOC(index, 'contactNumber', e.target.value)} /></FormField>
+                  <FormField label="Full Name"><input type="text" value={poc.name} onChange={e => updatePOC(index, 'name', e.target.value)} minLength={2} maxLength={100} autoComplete="name" /></FormField>
+                  <FormField label="Designation"><input type="text" value={poc.designation} onChange={e => updatePOC(index, 'designation', e.target.value)} maxLength={100} /></FormField>
+                  <FormField label="Email"><input type="email" value={poc.email} onChange={e => updatePOC(index, 'email', e.target.value)} maxLength={254} autoComplete="email" /></FormField>
+                  <FormField label="Contact Number"><input type="tel" inputMode="tel" value={poc.contactNumber} onChange={e => updatePOC(index, 'contactNumber', e.target.value.replace(/[^\d\+\-\s\(\)]/g, ''))} placeholder="+91 9876543210" maxLength={20} autoComplete="tel" /></FormField>
                 </div>
               </div>
             ))}
@@ -541,6 +541,7 @@ export default function CreateVisitPage() {
               placeholder="Summarize the core reason for the visit..." 
               value={purpose}
               onChange={e => setPurpose(e.target.value)}
+              maxLength={2000}
             />
           </FormField>
           

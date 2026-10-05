@@ -105,10 +105,6 @@ export default function RootLayout({
         {/* DNS prefetch for external resources — saves 100-200ms of DNS lookup */}
         <link rel="preconnect" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
-        <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-        <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
-        <link rel="preconnect" href="https://raw.githubusercontent.com" />
-        <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
       </head>
       <body className="antialiased" suppressHydrationWarning>
         <AuthWrapper>
