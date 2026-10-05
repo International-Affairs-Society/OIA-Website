@@ -84,8 +84,11 @@ ALTER TABLE students
   ADD COLUMN IF NOT EXISTS erp_synced_at   TIMESTAMPTZ;
 
 -- 5. Soft-delete columns (DATA-02)
-ALTER TABLE programs ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
-ALTER TABLE mous     ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+ALTER TABLE programs     ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+ALTER TABLE mous         ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+ALTER TABLE events       ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+ALTER TABLE visits       ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
 
 -- 6. notification_reads table (NOTIF-01)
 CREATE TABLE IF NOT EXISTS notification_reads (
