@@ -4,6 +4,7 @@ import { useAuth } from "@/app/admin/roles/AuthContext";
 import { apiFetch } from "@/lib/apiFetch";
 import { motion, AnimatePresence } from "framer-motion";
 import { GlobeIcon, ArrowRight } from "lucide-react";
+import { apiFetch } from "@/lib/apiFetch";
 
 export default function LeadCaptureModal() {
   const { isAuthenticated } = useAuth();

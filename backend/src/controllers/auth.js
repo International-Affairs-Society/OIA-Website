@@ -28,7 +28,7 @@ export const setCookie = asyncHandler(async (req, res) => {
   res.cookie('access_token', access_token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'Strict',
+    sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
     maxAge: 3600000 // 1 hour
   })
 
@@ -36,7 +36,7 @@ export const setCookie = asyncHandler(async (req, res) => {
     res.cookie('refresh_token', refresh_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
       maxAge: 30 * 24 * 3600000 // 30 days
     })
   }
@@ -45,7 +45,15 @@ export const setCookie = asyncHandler(async (req, res) => {
 })
 
 export const logout = asyncHandler(async (req, res) => {
-  res.clearCookie('access_token')
-  res.clearCookie('refresh_token')
+  res.clearCookie('access_token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
+  })
+  res.clearCookie('refresh_token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
+  })
   res.json({ message: 'Logged out successfully' })
 })
