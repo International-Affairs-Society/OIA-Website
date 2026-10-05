@@ -418,7 +418,7 @@ export default function PartnersPage() {
           Find your next <span style={{ color: "#d12027" }}>global opportunity</span>
         </h2>
         <a
-          href="/programs/other"
+          href="/programs"
           style={{
             display: "inline-flex",
             alignItems: "center",

@@ -72,7 +72,7 @@ export default function LeadCaptureModal() {
         name: name.trim(),
         phone: number.trim(),
         email: email.trim(),
-        source_page: typeof window !== "undefined" ? window.location.pathname : "/programs/other"
+        source_page: typeof window !== "undefined" ? window.location.pathname : "/programs"
       };
 
       const res = await apiFetch(`/api/v1/program-leads`, {
