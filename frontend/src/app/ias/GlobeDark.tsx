@@ -83,7 +83,7 @@ export default function GlobeDark() {
 
   useEffect(() => {
     fetch(
-      "https://unpkg.com/globe.gl/example/datasets/ne_110m_admin_0_countries.geojson"
+      "/geo-data/ne_110m_admin_0_countries.geojson"
     )
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
