@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { AdminPageHeader, SearchInput } from "@/app/admin/components";
 import CustomDropdown from "@/app/admin/components/CustomDropdown";
 import { AdminPageSkeleton } from "@/app/admin/optemization_component";
+import { apiFetch } from "@/lib/apiFetch";
 import { MOCK_AUDIT_LOGS, AuditAction } from "../data/mockAudit";
 
 const ROLE_OPTIONS = [
@@ -33,7 +34,7 @@ export default function AuditTrailPage() {
         if (startDate) queryParams.append("startDate", startDate);
         if (endDate) queryParams.append("endDate", endDate);
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/audit?${queryParams.toString()}`);
+        const res = await apiFetch(`/api/v1/audit?${queryParams.toString()}`);
         if (res.ok) {
           const json = await res.json();
           const mapped = (json.data || []).map((log: any) => ({

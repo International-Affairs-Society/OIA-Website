@@ -3,6 +3,7 @@ import React, { useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { AdminPageHeader, StatusBadge } from "@/app/admin/components";
 import { AdminFormSkeleton } from "@/app/admin/optemization_component";
+import { apiFetch } from "@/lib/apiFetch";
 
 export default function ViewMOUPage() {
   const router = useRouter();
@@ -15,7 +16,7 @@ export default function ViewMOUPage() {
   React.useEffect(() => {
     const fetchMou = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/mous/${id}`);
+        const res = await apiFetch(`/api/v1/mous/${id}`);
         if (res.ok) {
           const data = await res.json();
           // Map to match the expected format for the page

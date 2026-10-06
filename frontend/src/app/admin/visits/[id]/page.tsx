@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { AdminPageHeader } from "../../components";
 import { AdminFormSkeleton } from "@/app/admin/optemization_component";
+import { apiFetch } from "@/lib/apiFetch";
 
 import { ArrowLeft, ChevronLeft, ChevronRight, Download, CheckCircle, Clock } from "lucide-react";
 import Image from "next/image";
@@ -88,7 +89,7 @@ export default function VisitDetailsPage() {
   useEffect(() => {
     const fetchVisit = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/visits/${id}`);
+        const res = await apiFetch(`/api/v1/visits/${id}`);
         if (res.ok) {
           const data = await res.json();
           const mapped = {

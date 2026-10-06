@@ -57,15 +57,39 @@ const limiter = rateLimit({
 })
 
 // Global middleware
-const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/['"]/g, '')
 const allowedOrigins = [
-  frontendUrl,
+  'https://app.samrai.space',
+  'http://app.samrai.space',
   'http://localhost:3000',
   'http://127.0.0.1:3000'
 ]
+
+if (process.env.FRONTEND_URL) {
+  const clean = process.env.FRONTEND_URL.replace(/['"]/g, '').replace(/\/$/, '')
+  if (!allowedOrigins.includes(clean)) allowedOrigins.push(clean)
+  const httpsClean = clean.replace(/^http:/, 'https:')
+  if (!allowedOrigins.includes(httpsClean)) allowedOrigins.push(httpsClean)
+}
+
 app.use(cors({
-  origin: allowedOrigins,
-  credentials: true
+  origin: (origin, callback) => {
+    // Allow non-browser requests (healthchecks, server-to-server, curl)
+    if (!origin) return callback(null, true)
+
+    if (
+      allowedOrigins.includes(origin) ||
+      /^https?:\/\/([a-z0-9-]+\.)*samrai\.space(:\d+)?$/.test(origin) ||
+      /^https?:\/\/localhost(:\d+)?$/.test(origin) ||
+      /^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)
+    ) {
+      return callback(null, true)
+    }
+
+    return callback(new Error(`CORS blocked for origin: ${origin}`))
+  },
+  credentials: true,
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
 }))
 app.use(limiter)
 app.use(express.json())

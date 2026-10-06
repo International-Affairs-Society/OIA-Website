@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { AdminPageHeader, FilterBar, ProgramReadOnlyForm, UpcomingEventReadOnlyForm, PastEventReadOnlyForm, MOUReadOnlyForm, VisitReadOnlyForm } from "@/app/admin/components";
 import { AdminPageSkeleton } from "@/app/admin/optemization_component";
+import { apiFetch } from "@/lib/apiFetch";
 import { ReviewItem, ReviewType, ReviewComment, ReviewStatus } from "@/app/admin/data/mockReviews";
 
 /* ── Helpers ── */
@@ -194,7 +195,7 @@ function SubmissionsContent() {
   React.useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/reviews`);
+        const res = await apiFetch('/api/v1/reviews');
         if (res.ok) {
           const json = await res.json();
           const mapped = (json.data || []).map((r: any) => ({

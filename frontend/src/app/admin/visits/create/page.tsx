@@ -119,8 +119,8 @@ export default function CreateVisitPage() {
     const fetchData = async () => {
       try {
         const [uRes, eRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/users`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/events?eventType=upcoming`)
+          apiFetch('/api/v1/users'),
+          apiFetch('/api/v1/events?eventType=upcoming')
         ]);
         if (uRes.ok) {
           const uJson = await uRes.json();
