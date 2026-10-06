@@ -247,6 +247,10 @@ export default function CreateMOUPage() {
               placeholder="Enter MOU Name" 
               value={name} 
               onChange={(e) => setName(e.target.value)} 
+              required
+              minLength={2}
+              maxLength={200}
+              autoComplete="off"
               style={{ backgroundColor: "#FFFBF2", width: "100%", padding: "10px", border: "1px solid #b5bda0", borderRadius: "4px" }} 
             />
           </FormField>
@@ -258,6 +262,10 @@ export default function CreateMOUPage() {
                 placeholder="Enter Partner University" 
                 value={partnerUniversity} 
                 onChange={(e) => setPartnerUniversity(e.target.value)} 
+                required
+                minLength={2}
+                maxLength={200}
+                autoComplete="off"
                 style={{ backgroundColor: "#FFFBF2", width: "100%", padding: "10px", border: "1px solid #b5bda0", borderRadius: "4px" }} 
               />
             </FormField>
@@ -267,6 +275,10 @@ export default function CreateMOUPage() {
                 placeholder="Enter country" 
                 value={country} 
                 onChange={(e) => setCountry(e.target.value)} 
+                required
+                minLength={2}
+                maxLength={100}
+                autoComplete="country-name"
                 style={{ backgroundColor: "#FFFBF2", width: "100%", padding: "10px", border: "1px solid #b5bda0", borderRadius: "4px" }} 
               />
             </FormField>
@@ -298,9 +310,10 @@ export default function CreateMOUPage() {
             <FormField label="Duration (e.g., 4 Years)">
               <input 
                 type="text" 
-                placeholder="Enter duration" 
+                placeholder="e.g. 4 Years" 
                 value={duration} 
                 onChange={(e) => setDuration(e.target.value)} 
+                maxLength={50}
                 style={{ backgroundColor: "#FFFBF2", width: "100%", padding: "10px", border: "1px solid #b5bda0", borderRadius: "4px" }} 
               />
             </FormField>
@@ -445,16 +458,16 @@ export default function CreateMOUPage() {
               </div>
               <div className="admin-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <FormField label="Name">
-                  <input type="text" value={poc.name} onChange={(e) => updatePartnerPOC(index, 'name', e.target.value)} placeholder="Enter here" style={{ width: "100%", padding: "8px", border: "1px solid #b5bda0", borderRadius: "4px" }} />
+                  <input type="text" value={poc.name} onChange={(e) => updatePartnerPOC(index, 'name', e.target.value)} placeholder="Enter full name" minLength={2} maxLength={100} autoComplete="name" style={{ width: "100%", padding: "8px", border: "1px solid #b5bda0", borderRadius: "4px" }} />
                 </FormField>
                 <FormField label="Designation">
-                  <input type="text" value={poc.designation} onChange={(e) => updatePartnerPOC(index, 'designation', e.target.value)} placeholder="Enter here" style={{ width: "100%", padding: "8px", border: "1px solid #b5bda0", borderRadius: "4px" }} />
+                  <input type="text" value={poc.designation} onChange={(e) => updatePartnerPOC(index, 'designation', e.target.value)} placeholder="Enter designation" maxLength={100} style={{ width: "100%", padding: "8px", border: "1px solid #b5bda0", borderRadius: "4px" }} />
                 </FormField>
                 <FormField label="Email">
-                  <input type="email" value={poc.email} onChange={(e) => updatePartnerPOC(index, 'email', e.target.value)} placeholder="Enter here" style={{ width: "100%", padding: "8px", border: "1px solid #b5bda0", borderRadius: "4px" }} />
+                  <input type="email" value={poc.email} onChange={(e) => updatePartnerPOC(index, 'email', e.target.value)} placeholder="name@example.com" maxLength={254} autoComplete="email" style={{ width: "100%", padding: "8px", border: "1px solid #b5bda0", borderRadius: "4px" }} />
                 </FormField>
                 <FormField label="Contact Number">
-                  <input type="text" value={poc.contactNumber} onChange={(e) => updatePartnerPOC(index, 'contactNumber', e.target.value)} placeholder="Enter here" style={{ width: "100%", padding: "8px", border: "1px solid #b5bda0", borderRadius: "4px" }} />
+                  <input type="tel" inputMode="tel" value={poc.contactNumber} onChange={(e) => updatePartnerPOC(index, 'contactNumber', e.target.value.replace(/[^\d\+\-\s\(\)]/g, ''))} placeholder="+91 9876543210" maxLength={20} autoComplete="tel" style={{ width: "100%", padding: "8px", border: "1px solid #b5bda0", borderRadius: "4px" }} />
                 </FormField>
               </div>
             </div>
@@ -552,16 +565,16 @@ export default function CreateMOUPage() {
               </div>
               <div className="admin-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <FormField label="Name">
-                  <input type="text" value={poc.name} onChange={(e) => updatePOC(index, 'name', e.target.value)} placeholder="Enter here" style={{ width: "100%", padding: "8px", border: "1px solid #b5bda0", borderRadius: "4px" }} />
+                  <input type="text" value={poc.name} onChange={(e) => updatePOC(index, 'name', e.target.value)} placeholder="Enter full name" minLength={2} maxLength={100} autoComplete="name" style={{ width: "100%", padding: "8px", border: "1px solid #b5bda0", borderRadius: "4px" }} />
                 </FormField>
                 <FormField label="Designation">
-                  <input type="text" value={poc.designation} onChange={(e) => updatePOC(index, 'designation', e.target.value)} placeholder="Enter here" style={{ width: "100%", padding: "8px", border: "1px solid #b5bda0", borderRadius: "4px" }} />
+                  <input type="text" value={poc.designation} onChange={(e) => updatePOC(index, 'designation', e.target.value)} placeholder="Enter designation" maxLength={100} style={{ width: "100%", padding: "8px", border: "1px solid #b5bda0", borderRadius: "4px" }} />
                 </FormField>
                 <FormField label="Email">
-                  <input type="email" value={poc.email} onChange={(e) => updatePOC(index, 'email', e.target.value)} placeholder="Enter here" style={{ width: "100%", padding: "8px", border: "1px solid #b5bda0", borderRadius: "4px" }} />
+                  <input type="email" value={poc.email} onChange={(e) => updatePOC(index, 'email', e.target.value)} placeholder="name@example.com" maxLength={254} autoComplete="email" style={{ width: "100%", padding: "8px", border: "1px solid #b5bda0", borderRadius: "4px" }} />
                 </FormField>
                 <FormField label="Contact Number">
-                  <input type="text" value={poc.contactNumber} onChange={(e) => updatePOC(index, 'contactNumber', e.target.value)} placeholder="Enter here" style={{ width: "100%", padding: "8px", border: "1px solid #b5bda0", borderRadius: "4px" }} />
+                  <input type="tel" inputMode="tel" value={poc.contactNumber} onChange={(e) => updatePOC(index, 'contactNumber', e.target.value.replace(/[^\d\+\-\s\(\)]/g, ''))} placeholder="+91 9876543210" maxLength={20} autoComplete="tel" style={{ width: "100%", padding: "8px", border: "1px solid #b5bda0", borderRadius: "4px" }} />
                 </FormField>
               </div>
             </div>
@@ -570,9 +583,10 @@ export default function CreateMOUPage() {
           <FormField label="Notes">
             <textarea 
               rows={4} 
-              placeholder="Notes..." 
+              placeholder="Additional notes..." 
               value={notes} 
               onChange={(e) => setNotes(e.target.value)}
+              maxLength={2000}
               style={{ width: "100%", padding: "10px", border: "1px solid #b5bda0", borderRadius: "4px" }}
             />
           </FormField>

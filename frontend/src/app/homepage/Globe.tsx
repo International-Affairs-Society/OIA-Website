@@ -155,7 +155,7 @@ export default function Globe({ compact }: GlobeProps = {}) {
   // Load Geographic Data for the globe base
   useEffect(() => {
     fetch(
-      "https://raw.githubusercontent.com/vasturiano/react-globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson"
+      "/geo-data/ne_110m_admin_0_countries.geojson"
     )
       .then((res) => res.json())
       .then((data) => setCountries(data))
