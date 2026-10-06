@@ -329,7 +329,7 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [mousRes, appsRes, progsRes, overviewRes] = await Promise.all([
+        const [overviewRes, mousRes, appsRes, progsRes] = await Promise.all([
           apiFetch(`/api/v1/analytics/overview`),
           apiFetch(`/api/v1/mous`),
           apiFetch(`/api/v1/applications`),

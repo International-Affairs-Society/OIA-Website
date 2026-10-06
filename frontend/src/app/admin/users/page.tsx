@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { AdminPageHeader, AdminTable, ActionButtons, FilterBar, CustomDropdown } from "@/app/admin/components";
 import { AdminPageSkeleton } from "@/app/admin/optemization_component";
 import { useAuth } from "@/app/admin/roles/AuthContext";
+import { apiFetch } from "@/lib/apiFetch";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -29,10 +30,7 @@ export default function UsersPage() {
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem("access_token");
-      const res = await fetch(`${API_URL}/api/v1/users?role=admin,super_admin,editor,viewer`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const res = await apiFetch(`/api/v1/users?role=admin,super_admin,editor,viewer`);
       if (res.ok) {
         const data = await res.json();
         setUsers((data.data || []).map((u: any) => ({
@@ -69,10 +67,8 @@ export default function UsersPage() {
       return;
     }
     try {
-      const token = localStorage.getItem("access_token");
-      const res = await fetch(`${API_URL}/api/v1/users/${id}`, {
+      const res = await apiFetch(`/api/v1/users/${id}`, {
         method: "DELETE",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) {
         setUsers(users.filter(u => u.id !== id));
@@ -118,10 +114,9 @@ export default function UsersPage() {
 
   const handleConfirmAdd = async () => {
     try {
-      const token = localStorage.getItem("access_token");
-      const url = modalMode === "add" 
-        ? `${API_URL}/api/v1/users` 
-        : `${API_URL}/api/v1/users/${newRoleData.id}`;
+      const path = modalMode === "add" 
+        ? `/api/v1/users` 
+        : `/api/v1/users/${newRoleData.id}`;
       const method = modalMode === "add" ? "POST" : "PATCH";
 
       const payload = {
@@ -131,12 +126,8 @@ export default function UsersPage() {
         phoneNumber: newRoleData.phoneNumber
       };
 
-      const res = await fetch(url, {
+      const res = await apiFetch(path, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
         body: JSON.stringify(payload),
       });
 
