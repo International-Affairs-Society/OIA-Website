@@ -16,6 +16,7 @@ const HeroBackground = () => {
     >
       {/* Unified Seamless Pattern Layer — identical to Teams page */}
       <div
+        className="hidden lg:block"
         style={{
           position: "absolute",
           inset: 0,
