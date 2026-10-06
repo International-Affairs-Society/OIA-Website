@@ -186,7 +186,7 @@ export default function PartnersSection() {
       <div
         ref={headingRef}
         className="relative w-full min-h-[50vh] z-20 flex flex-col items-center overflow-hidden"
-        style={{ paddingTop: "30vh" }}
+        style={{ paddingTop: "15vh" }}
       >
         <div className="w-full flex flex-col items-center justify-center text-center">
           <p className="w-full text-center font-sans text-[0.85rem] text-foreground/50 mb-6 font-medium tracking-wide uppercase">

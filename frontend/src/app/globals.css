@@ -298,3 +298,30 @@ html.hero-seen #main-navbar {
   transform: translateY(0) !important;
   pointer-events: auto !important;
 }
+
+/* ===== ADMIN FORM RESPONSIVE STYLES ===== */
+@media (max-width: 768px) {
+  .admin-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .admin-form-container {
+    padding: 1rem !important;
+  }
+
+  .admin-section-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .admin-form-actions {
+    flex-direction: column !important;
+  }
+
+  .admin-form-actions button {
+    width: 100% !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+}
