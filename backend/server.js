@@ -46,13 +46,13 @@ app.use(helmet({
   crossOriginResourcePolicy: false,
 }))
 
-// Global Rate Limiting
-const isDev = process.env.NODE_ENV !== 'production'
+// Global Rate Limiting (Normal Browsing: 10,000 requests per 15 min, exempt health check)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  limit: isDev ? 10000 : 100, // Limit each IP (10000 in dev, 100 in prod)
-  standardHeaders: 'draft-7', // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  limit: 10000, // 10,000 requests per 15 mins for browsing / campus IPs
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  skip: (req) => req.path === '/health' || req.path === '/',
   message: { error: { code: 'TOO_MANY_REQUESTS', message: 'Too many requests from this IP, please try again later.' } }
 })
 

@@ -1,5 +1,6 @@
 import redis from '../lib/redis.js'
 import logger from '../lib/logger.js'
+import rateLimit from 'express-rate-limit'
 /**
  * Dual-Layer Rate Limiting Middleware
  * Limits by User ID and by IP address simultaneously.
@@ -65,3 +66,36 @@ export const dualRateLimiter = (uuidLimit, ipLimit) => async (req, res, next) =>
     next()
   }
 }
+
+/**
+ * Strict limiter for sensitive authentication endpoints (15 req/min)
+ */
+export const authLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 15,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: {
+    error: {
+      code: 'TOO_MANY_REQUESTS',
+      message: 'Too many authentication requests. Please try again in a minute.'
+    }
+  }
+})
+
+/**
+ * Strict limiter for public lead capture submissions (5 req/min)
+ */
+export const leadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: {
+    error: {
+      code: 'TOO_MANY_REQUESTS',
+      message: 'Too many submissions. Please wait a moment before trying again.'
+    }
+  }
+})
+

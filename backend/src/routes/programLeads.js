@@ -5,11 +5,12 @@ import {
 } from '../controllers/programLeads.js'
 import { authenticate } from '../middleware/authenticate.js'
 import { requireRole } from '../middleware/requireRole.js'
+import { leadLimiter } from '../middleware/rateLimiter.js'
 
 const router = Router()
 
-// Public endpoint to capture leads
-router.post('/', createProgramLead)
+// Public endpoint to capture leads (Strictly limited to 5/min to prevent bot spam)
+router.post('/', leadLimiter, createProgramLead)
 
 // Protected endpoint for admin dashboard
 router.get('/', authenticate, requireRole('super_admin', 'admin'), getProgramLeads)

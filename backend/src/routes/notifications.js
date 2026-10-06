@@ -7,12 +7,13 @@ import {
 } from '../controllers/notifications.js'
 import { authenticate } from '../middleware/authenticate.js'
 import { requireRole } from '../middleware/requireRole.js'
+import { dualRateLimiter } from '../middleware/rateLimiter.js'
 
 const router = Router()
 
 router.get('/me', authenticate, getMyNotifications)
 router.get('/', authenticate, requireRole('super_admin', 'admin', 'editor'), getNotifications)
-router.post('/', authenticate, requireRole('super_admin', 'admin', 'editor'), createNotification)
+router.post('/', authenticate, requireRole('super_admin', 'admin', 'editor'), dualRateLimiter(5, 15), createNotification)
 router.patch('/:id/read', authenticate, markNotificationRead)
 
 export default router
