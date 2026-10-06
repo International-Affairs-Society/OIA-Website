@@ -38,30 +38,36 @@ export const processFileUpload = async (job) => {
         Key: r2Key
       }))
 
-      // 2. Mark document as REJECTED in DB
-      await prisma.documents.update({
-        where: { id: documentId },
-        data: { status: 'REJECTED', updated_at: new Date() }
-      })
+      // 2. Mark document as REJECTED in DB (only for documents table records)
+      if (documentId && !documentId.startsWith('media-')) {
+        await prisma.documents.update({
+          where: { id: documentId },
+          data: { status: 'REJECTED', updated_at: new Date() }
+        })
+      }
 
       // 3. Notify user
-      await prisma.notifications.create({
-        data: {
-          type: 'SECURITY_ALERT',
-          recipient_filter: `user:${userId}`,
-          subject: 'Upload Rejected (Malware Detected)',
-          body_html: `Your upload was rejected by our security scanners because it contained malware: ${viruses.join(', ')}`,
-          recipient_count: 1
-        }
-      })
+      if (userId && userId !== 'anonymous') {
+        await prisma.notifications.create({
+          data: {
+            type: 'SECURITY_ALERT',
+            recipient_filter: `user:${userId}`,
+            subject: 'Upload Rejected (Malware Detected)',
+            body_html: `Your upload was rejected by our security scanners because it contained malware: ${viruses.join(', ')}`,
+            recipient_count: 1
+          }
+        })
+      }
     } else {
       logger.info(`File ${logId} is clean.`)
       
-      // Update status to verified/clean (it was quarantined initially, wait, in documents.js it was PENDING)
-      await prisma.documents.update({
-        where: { id: documentId },
-        data: { status: 'VERIFIED', updated_at: new Date() }
-      })
+      // Update status to verified/clean for documents table records
+      if (documentId && !documentId.startsWith('media-')) {
+        await prisma.documents.update({
+          where: { id: documentId },
+          data: { status: 'VERIFIED', updated_at: new Date() }
+        })
+      }
     }
   } catch (error) {
     logger.error(`Failed to scan upload for ${logId}:`, error)
