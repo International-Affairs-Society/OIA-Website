@@ -118,7 +118,7 @@ export const uploadDocument = asyncHandler(async (req, res) => {
   const { category, applicationId } = req.body
 
   // Validate category matching the DB doc_type enum
-  const docTypes = ['PASSPORT', 'TRANSCRIPT', 'SOP', 'BANK_STATEMENT', 'PHOTO', 'VACCINATION']
+  const docTypes = ['PASSPORT', 'TRANSCRIPT', 'SOP', 'BANK_STATEMENT', 'PHOTO', 'VACCINATION', 'VIDEO', 'MEDIA', 'OTHER']
   const upperCategory = (category || '').toUpperCase()
   if (!docTypes.includes(upperCategory)) {
     return res.status(400).json({

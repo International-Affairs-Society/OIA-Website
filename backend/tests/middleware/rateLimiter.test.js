@@ -95,4 +95,63 @@ describe('dualRateLimiter Middleware', () => {
     expect(next).toHaveBeenCalledTimes(10) // Should not be called again
     expect(res.status).toHaveBeenCalledWith(429)
   })
+
+  it('allows multiple users on the same subnet IP without starvating each other', async () => {
+    const middleware = dualRateLimiter(4, 5)
+    
+    // User A makes 3 requests from shared subnet IP 192.168.1.50
+    const reqA = {
+      ip: '192.168.1.50',
+      user: { id: 'user-A' }
+    }
+    await middleware(reqA, res, next)
+    await middleware(reqA, res, next)
+    await middleware(reqA, res, next)
+
+    // User B makes 3 requests from the EXACT SAME subnet IP 192.168.1.50
+    const reqB = {
+      ip: '192.168.1.50',
+      user: { id: 'user-B' }
+    }
+    await middleware(reqB, res, next)
+    await middleware(reqB, res, next)
+    await middleware(reqB, res, next)
+
+    // Total requests from this IP is 6 (which exceeds unauthenticated ipLimit 5).
+    // Both users should succeed because their UUID limit (4 each) has not been exceeded.
+    expect(next).toHaveBeenCalledTimes(6)
+    expect(res.status).not.toHaveBeenCalled()
+  })
+
+  it('bypasses rate limit for admin and staff roles during QA operations', async () => {
+    const middleware = dualRateLimiter(2, 2)
+    const adminReq = {
+      ip: '127.0.0.1',
+      user: { id: 'admin-1', role: 'super_admin' }
+    }
+
+    for (let i = 0; i < 5; i++) {
+      await middleware(adminReq, res, next)
+    }
+
+    expect(next).toHaveBeenCalledTimes(5)
+    expect(res.status).not.toHaveBeenCalled()
+  })
+
+  it('bypasses rate limit when x-qa-bypass header is present with valid token', async () => {
+    process.env.QA_BYPASS_TOKEN = 'secret-qa-token'
+    const middleware = dualRateLimiter(1, 1)
+    const qaReq = {
+      headers: { 'x-qa-bypass': 'secret-qa-token' },
+      ip: '127.0.0.1',
+      user: { id: 'test-user' }
+    }
+
+    for (let i = 0; i < 5; i++) {
+      await middleware(qaReq, res, next)
+    }
+
+    expect(next).toHaveBeenCalledTimes(5)
+    delete process.env.QA_BYPASS_TOKEN
+  })
 })

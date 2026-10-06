@@ -4,7 +4,8 @@ import { fileTypeFromFile } from 'file-type'
 
 // Allowed file extensions (lowercase)
 const ALLOWED_EXTENSIONS = new Set([
-  'pdf', 'jpg', 'jpeg', 'png', 'gif', 'docx', 'xlsx', 'pptx'
+  'pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'docx', 'xlsx', 'pptx',
+  'mp4', 'webm', 'mov', 'avi', 'mkv'
 ])
 
 const ALLOWED_MIME_TYPES = new Set([
@@ -12,13 +13,19 @@ const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',
   'image/png',
   'image/gif',
+  'image/webp',
+  'video/mp4',
+  'video/webm',
+  'video/quicktime',
+  'video/x-msvideo',
+  'video/x-matroska',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   'application/vnd.openxmlformats-officedocument.presentationml.presentation'
 ])
 
-// Maximum allowed file size: 10 MB
-const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024
+// Maximum allowed file size: 50 MB
+const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024
 
 export async function validateFileSignature(filePath, declaredMimetype, originalName) {
   const errors = []

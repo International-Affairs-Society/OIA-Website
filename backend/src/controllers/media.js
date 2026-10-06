@@ -57,21 +57,41 @@ export const uploadMedia = asyncHandler(async (req, res) => {
   })
 })
 
-// GET /media/:filename (Proxy media from R2)
+// GET /media/:filename (Proxy media from R2 with video streaming Range support)
 export const getMedia = asyncHandler(async (req, res) => {
   const { filename } = req.params
   const r2Key = `media/${filename}`
 
   try {
-    const data = await r2.send(new GetObjectCommand({
+    const range = req.headers.range
+    const commandParams = {
       Bucket: process.env.R2_BUCKET_NAME || 'documents',
       Key: r2Key
-    }))
+    }
+    if (range) {
+      commandParams.Range = range
+    }
+
+    const data = await r2.send(new GetObjectCommand(commandParams))
 
     res.setHeader('Content-Type', data.ContentType || 'application/octet-stream')
-    res.setHeader('Cache-Control', 'public, max-age=31536000') // Cache for 1 year
+    res.setHeader('Accept-Ranges', 'bytes')
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
+
+    if (data.ContentRange) {
+      res.status(206)
+      res.setHeader('Content-Range', data.ContentRange)
+      if (data.ContentLength) {
+        res.setHeader('Content-Length', data.ContentLength)
+      }
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=31536000') // Cache for 1 year
+      if (data.ContentLength) {
+        res.setHeader('Content-Length', data.ContentLength)
+      }
+    }
+
     data.Body.pipe(res)
   } catch (err) {
     if (err.name === 'NoSuchKey' || err.$metadata?.httpStatusCode === 404) {

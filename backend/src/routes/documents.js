@@ -15,11 +15,21 @@ const router = Router()
 
 // File filter to restrict allowed MIME types
 const fileFilter = (req, file, cb) => {
-  const allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png']
-  if (allowedMimeTypes.includes(file.mimetype)) {
+  const allowedMimeTypes = [
+    'application/pdf', 
+    'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+    'video/mp4', 'video/webm', 'video/quicktime',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  ]
+  if (
+    allowedMimeTypes.includes(file.mimetype) || 
+    file.mimetype.startsWith('image/') || 
+    file.mimetype.startsWith('video/')
+  ) {
     cb(null, true)
   } else {
-    cb(new Error('Invalid file type. Only PDF, JPEG, and PNG are allowed.'), false)
+    cb(new Error('Invalid file type. Only PDF, Images, Videos, and Word documents are allowed.'), false)
   }
 }
 
@@ -27,7 +37,7 @@ import os from 'os'
 
 const upload = multer({
   dest: os.tmpdir(),
-  limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB max file size
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB max file size
   fileFilter
 })
 
@@ -35,7 +45,8 @@ router.get('/', authenticate, getDocuments)
 router.get('/:id', authenticate, getDocumentById)
 
 // Wrap multer upload to catch and format file size/type errors correctly
-router.post('/', authenticate, dualRateLimiter(4, 10), (req, res, next) => {
+// Rate limit raised to (30, 150) to allow full document & photo suites per user without subnet IP blocking
+router.post('/', authenticate, dualRateLimiter(30, 150), (req, res, next) => {
   const uploader = upload.single('file')
   uploader(req, res, function (err) {
     if (err instanceof multer.MulterError) {

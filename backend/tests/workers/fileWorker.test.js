@@ -19,12 +19,27 @@ vi.mock('../../src/lib/prisma.js', () => ({
   default: {
     notifications: {
       create: vi.fn().mockResolvedValue({})
+    },
+    documents: {
+      update: vi.fn().mockResolvedValue({})
     }
   }
 }))
 
+const mockScanStream = vi.fn().mockResolvedValue({ isInfected: false, viruses: [] })
+vi.mock('clamscan', () => {
+  return {
+    default: class MockNodeClam {
+      async init() {
+        return {
+          scanStream: mockScanStream
+        }
+      }
+    }
+  }
+})
+
 // Import the mocked modules to make assertions
-import fs from 'fs/promises'
 import { r2 } from '../../src/lib/r2.js'
 import prisma from '../../src/lib/prisma.js'
 
@@ -45,44 +60,39 @@ describe('fileWorker - processFileUpload', () => {
     }
   })
 
-  it('processes the file successfully and cleans up', async () => {
-    r2.send.mockResolvedValueOnce({})
+  it('processes the file successfully and updates document status', async () => {
+    r2.send.mockResolvedValueOnce({ Body: 'mock-stream' })
+    mockScanStream.mockResolvedValueOnce({ isInfected: false, viruses: [] })
 
     await processFileUpload(mockJob)
 
-    // Verify fs.readFile was called correctly
-    expect(fs.readFile).toHaveBeenCalledWith('/tmp/fake-file.pdf')
-
-    // Verify r2.send was called
     expect(r2.send).toHaveBeenCalledTimes(1)
-
-    // Verify temporary file was deleted
-    expect(fs.unlink).toHaveBeenCalledWith('/tmp/fake-file.pdf')
-
-    // Verify no error notification was created
-    expect(prisma.notifications.create).not.toHaveBeenCalled()
+    expect(prisma.documents.update).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: 'doc-123' },
+      data: expect.objectContaining({ status: 'VERIFIED' })
+    }))
   })
 
-  it('creates an error notification and re-throws when R2 upload fails', async () => {
-    const fakeError = new Error('R2 Upload Failed')
-    r2.send.mockRejectedValueOnce(fakeError)
+  it('rejects infected files, deletes from R2 and alerts user', async () => {
+    r2.send.mockResolvedValueOnce({ Body: 'mock-stream' }) // for GetObject
+    r2.send.mockResolvedValueOnce({}) // for DeleteObject
+    mockScanStream.mockResolvedValueOnce({ isInfected: true, viruses: ['Eicar-Test-Signature'] })
 
-    // The function should re-throw the error
-    await expect(processFileUpload(mockJob)).rejects.toThrow('R2 Upload Failed')
+    await processFileUpload(mockJob)
 
-    // Verify notification was created
-    expect(prisma.notifications.create).toHaveBeenCalledTimes(1)
-    expect(prisma.notifications.create).toHaveBeenCalledWith({
-      data: {
-        type: 'SYSTEM_ALERT',
-        recipient_filter: 'user:user-456',
-        subject: 'File Upload Failed',
-        body_html: 'Your upload for 123-fake-file.pdf failed to process. Please try again.',
-        recipient_count: 1
-      }
-    })
-
-    // Verify cleanup still happened despite the error
-    expect(fs.unlink).toHaveBeenCalledWith('/tmp/fake-file.pdf')
+    // Delete from R2 called
+    expect(r2.send).toHaveBeenCalledTimes(2)
+    // Document status updated to REJECTED
+    expect(prisma.documents.update).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: 'doc-123' },
+      data: expect.objectContaining({ status: 'REJECTED' })
+    }))
+    // User alerted
+    expect(prisma.notifications.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        type: 'SECURITY_ALERT',
+        recipient_filter: 'user:user-456'
+      })
+    }))
   })
 })

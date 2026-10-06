@@ -238,7 +238,7 @@ export default function CreatePastEventPage() {
               <div className="admin-upload-box" style={{ border: "1px dashed #b5bda0", padding: "2rem", textAlign: "center", backgroundColor: "transparent" }}>
                 <input
                   type="file"
-                  accept="image/png,image/jpeg,image/webp"
+                  accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime,application/pdf"
                   multiple
                   id="media-upload-past"
                   style={{ display: "none" }}

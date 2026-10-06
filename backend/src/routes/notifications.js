@@ -13,7 +13,7 @@ const router = Router()
 
 router.get('/me', authenticate, getMyNotifications)
 router.get('/', authenticate, requireRole('super_admin', 'admin', 'editor'), getNotifications)
-router.post('/', authenticate, requireRole('super_admin', 'admin', 'editor'), dualRateLimiter(5, 15), createNotification)
+router.post('/', authenticate, requireRole('super_admin', 'admin', 'editor'), dualRateLimiter(30, 100), createNotification)
 router.patch('/:id/read', authenticate, markNotificationRead)
 
 export default router

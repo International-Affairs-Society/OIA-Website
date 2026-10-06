@@ -34,25 +34,31 @@ import './src/workers/fileWorker.js'
 import './src/workers/mouExpiryWorker.js'
 // Import error handler middleware
 import errorHandler from './src/middleware/errorHandler.js'
+import { getClientIp } from './src/middleware/rateLimiter.js'
 
 const app = express()
 
-// Trust the first proxy (Coolify's reverse proxy) so express-rate-limit
-// can correctly identify client IPs via X-Forwarded-For header.
-app.set('trust proxy', 1)
+// Trust reverse proxies (Cloudflare, Coolify Traefik, Docker networks) so Express
+// correctly identifies client IPs from headers instead of Docker subnet IPs.
+app.set('trust proxy', true)
 
 // Secure HTTP headers
 app.use(helmet({
   crossOriginResourcePolicy: false,
 }))
 
-// Global Rate Limiting (Normal Browsing: 10,000 requests per 15 min, exempt health check)
+// Global Rate Limiting (Normal Browsing: 10,000 requests per 15 min, exempt health check and QA bypass)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   limit: 10000, // 10,000 requests per 15 mins for browsing / campus IPs
   standardHeaders: 'draft-7',
   legacyHeaders: false,
-  skip: (req) => req.path === '/health' || req.path === '/',
+  keyGenerator: (req) => getClientIp(req),
+  skip: (req) => 
+    req.path === '/health' || 
+    req.path === '/' ||
+    process.env.DISABLE_RATE_LIMIT === 'true' ||
+    (process.env.QA_BYPASS_TOKEN && req.headers['x-qa-bypass'] === process.env.QA_BYPASS_TOKEN),
   message: { error: { code: 'TOO_MANY_REQUESTS', message: 'Too many requests from this IP, please try again later.' } }
 })
 

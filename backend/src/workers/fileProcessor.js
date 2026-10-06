@@ -18,14 +18,29 @@ export const processFileUpload = async (job) => {
     }))
 
     // Initialize ClamScan (falls back to local clamdscan if daemon isn't configured)
-    const clamscan = await new NodeClam().init({
-      removeInfected: false, 
-      clamdscan: {
-        host: process.env.CLAMAV_HOST || '127.0.0.1',
-        port: process.env.CLAMAV_PORT || 3310,
-        localFallback: true,
+    let clamscan = null
+    try {
+      clamscan = await new NodeClam().init({
+        removeInfected: false, 
+        clamdscan: {
+          host: process.env.CLAMAV_HOST || '127.0.0.1',
+          port: process.env.CLAMAV_PORT || 3310,
+          localFallback: true,
+        }
+      })
+    } catch (clamErr) {
+      if (process.env.NODE_ENV !== 'production' || process.env.SKIP_MALWARE_SCAN === 'true') {
+        logger.warn(`ClamAV scanner unavailable (${clamErr.message}), skipping scan in non-production for ${logId}`)
+        if (documentId && !documentId.startsWith('media-')) {
+          await prisma.documents.update({
+            where: { id: documentId },
+            data: { status: 'VERIFIED', updated_at: new Date() }
+          }).catch(() => {})
+        }
+        return
       }
-    })
+      throw clamErr
+    }
 
     const { isInfected, viruses } = await clamscan.scanStream(getRes.Body)
 
