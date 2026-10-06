@@ -73,7 +73,7 @@ export const getStudentRecordById = asyncHandler(async (req, res) => {
 
   const record = await prisma.students.findUnique({
     where: { id },
-    include: { user: true, applications: { include: { program: true, documents: true } } }
+    include: { user: true, applications: { include: { program: true } } }
   })
 
   if (!record) {
