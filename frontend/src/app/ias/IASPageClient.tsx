@@ -418,7 +418,8 @@ function TopographicBackground() {
           opacity: 0.65;
           width: 100%;
           height: 100%;
-          transform: scale(1);
+          transform: scale(1) translateZ(0);
+          will-change: transform;
           background: rgb(52, 65, 73);
           filter: url(#octave1) brightness(20) contrast(1);
         }
@@ -428,7 +429,8 @@ function TopographicBackground() {
           opacity: 0.5;
           width: 100%;
           height: 100%;
-          transform: scale(1);
+          transform: scale(1) translateZ(0);
+          will-change: transform;
           background: rgb(52, 65, 73);
           filter: url(#octave2) brightness(20) contrast(1);
         }
@@ -439,10 +441,10 @@ function TopographicBackground() {
 
       <svg height="0" width="0" style={{ position: "absolute" }}>
         <filter id="octave1">
-          <feTurbulence type="fractalNoise" baseFrequency="0.0004" numOctaves={8} seed={4} result="o1" />
-          <feTurbulence type="fractalNoise" baseFrequency="0.0008" numOctaves={8} seed={4} result="o2" />
-          <feTurbulence type="fractalNoise" baseFrequency="0.0001" numOctaves={8} seed={4} result="o3" />
-          <feTurbulence type="fractalNoise" baseFrequency="0.0018" numOctaves={8} seed={4} result="o4" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.0004" numOctaves={2} seed={4} result="o1" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.0008" numOctaves={2} seed={4} result="o2" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.0001" numOctaves={2} seed={4} result="o3" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.0018" numOctaves={2} seed={4} result="o4" />
 
           <feMerge result="finalIsland">
             <feMergeNode in="o1" />
@@ -453,9 +455,9 @@ function TopographicBackground() {
 
           <feGaussianBlur in="finalIsland" stdDeviation={5} result="noiseo" />
 
-          <feTurbulence type="fractalNoise" baseFrequency="0.0008" numOctaves={8} seed={4} result="o1" />
-          <feTurbulence type="fractalNoise" baseFrequency="0.0016" numOctaves={8} seed={4} result="o2" />
-
+          <feTurbulence type="fractalNoise" baseFrequency="0.0008" numOctaves={1} seed={4} result="o1" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.0016" numOctaves={1} seed={4} result="o2" />
+          
           <feMerge result="noiseo">
             <feMergeNode in="o2" />
             <feMergeNode in="o4" />
@@ -464,9 +466,9 @@ function TopographicBackground() {
 
           <feGaussianBlur in="noiseo" stdDeviation={5} result="noiseo" />
 
-          <feTurbulence type="fractalNoise" baseFrequency="0.0016" numOctaves={8} seed={4} result="o1" />
-          <feTurbulence type="fractalNoise" baseFrequency="0.002" numOctaves={8} seed={4} result="o2" />
-
+          <feTurbulence type="fractalNoise" baseFrequency="0.0016" numOctaves={1} seed={4} result="o1" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.002" numOctaves={1} seed={4} result="o2" />
+          
           <feMerge result="noiseo">
             <feMergeNode in="o1" />
             <feMergeNode in="o1" />
@@ -474,7 +476,7 @@ function TopographicBackground() {
           </feMerge>
 
           <feGaussianBlur in="noiseo" stdDeviation={5} result="noiseo" />
-
+          
           <feDiffuseLighting in="noiseo" surfaceScale={12} diffuseConstant={1} lightingColor="#d7bb98" result="lit">
             <feDistantLight azimuth={90} elevation={0} />
           </feDiffuseLighting>
@@ -483,10 +485,10 @@ function TopographicBackground() {
         </filter>
 
         <filter id="octave2">
-          <feTurbulence type="fractalNoise" baseFrequency="0.0004" numOctaves={8} seed={4} result="o1" />
-          <feTurbulence type="fractalNoise" baseFrequency="0.0008" numOctaves={8} seed={4} result="o2" />
-          <feTurbulence type="fractalNoise" baseFrequency="0.0001" numOctaves={8} seed={4} result="o3" />
-          <feTurbulence type="fractalNoise" baseFrequency="0.0018" numOctaves={8} seed={4} result="o4" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.0004" numOctaves={1} seed={4} result="o1" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.0008" numOctaves={1} seed={4} result="o2" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.0001" numOctaves={1} seed={4} result="o3" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.0018" numOctaves={1} seed={4} result="o4" />
 
           <feMerge result="finalIsland">
             <feMergeNode in="o1" />
@@ -497,8 +499,8 @@ function TopographicBackground() {
 
           <feGaussianBlur in="finalIsland" stdDeviation={5} result="noiseo" />
 
-          <feTurbulence type="fractalNoise" baseFrequency="0.0008" numOctaves={8} seed={4} result="o1" />
-          <feTurbulence type="fractalNoise" baseFrequency="0.0016" numOctaves={8} seed={4} result="o2" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.0008" numOctaves={1} seed={4} result="o1" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.0016" numOctaves={1} seed={4} result="o2" />
 
           <feMerge result="noiseo">
             <feMergeNode in="o2" />
@@ -508,8 +510,8 @@ function TopographicBackground() {
 
           <feGaussianBlur in="noiseo" stdDeviation={5} result="noiseo" />
 
-          <feTurbulence type="fractalNoise" baseFrequency="0.0016" numOctaves={8} seed={4} result="o1" />
-          <feTurbulence type="fractalNoise" baseFrequency="0.002" numOctaves={8} seed={4} result="o2" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.0016" numOctaves={1} seed={4} result="o1" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.002" numOctaves={1} seed={4} result="o2" />
 
           <feMerge result="noiseo">
             <feMergeNode in="o1" />
