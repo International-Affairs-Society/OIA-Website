@@ -29,7 +29,7 @@ export default function AuditTrailPage() {
       try {
         const queryParams = new URLSearchParams();
         if (searchName.trim()) queryParams.append("search", searchName.trim());
-        if (roleFilter) queryParams.append("role", roleFilter); // Note: backend doesn't seem to natively support role filtering, but we can pass it if we add it, or filter on frontend
+        if (roleFilter) queryParams.append("role", roleFilter.toLowerCase().replace(/ /g, "_")); // Note: backend doesn't seem to natively support role filtering, but we can pass it if we add it, or filter on frontend
         if (startDate) queryParams.append("startDate", startDate);
         if (endDate) queryParams.append("endDate", endDate);
 
@@ -53,7 +53,8 @@ export default function AuditTrailPage() {
           // Role filtering since it's not supported in the backend route explicitly
           let filtered = mapped;
           if (roleFilter) {
-            filtered = filtered.filter((l: any) => l.performedBy.role === roleFilter);
+            const normalizedFilter = roleFilter.toUpperCase().replace(/ /g, "_");
+            filtered = filtered.filter((l: any) => (l.performedBy.role || "").toUpperCase().replace(/ /g, "_") === normalizedFilter);
           }
           setLogs(filtered);
         }

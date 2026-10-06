@@ -315,7 +315,7 @@ export default function CreateVisitPage() {
         <form onSubmit={(e) => { e.preventDefault(); setShowConfirmDialog(true); }}>
           
           {/* Basic Info */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", borderBottom: "1px solid rgba(181, 189, 160, 0.5)", paddingBottom: "0.5rem" }}>
+          <div className="admin-section-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", borderBottom: "1px solid rgba(181, 189, 160, 0.5)", paddingBottom: "0.5rem" }}>
             <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#1a1a1a", margin: 0 }}>Visit Overview</h3>
             <div style={{ position: "relative" }}>
               <button 
@@ -428,7 +428,7 @@ export default function CreateVisitPage() {
           </FormField>
 
           {/* Delegations */}
-          <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#1a1a1a", marginTop: "2rem", marginBottom: "1rem", borderBottom: "1px solid rgba(181, 189, 160, 0.5)", paddingBottom: "0.5rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h3 className="admin-section-header" style={{ fontSize: "16px", fontWeight: 600, color: "#1a1a1a", marginTop: "2rem", marginBottom: "1rem", borderBottom: "1px solid rgba(181, 189, 160, 0.5)", paddingBottom: "0.5rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             Delegations (Visitors)
             <button type="button" onClick={addDelegation} style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", background: "none", border: "1px solid #1a1a1a", padding: "4px 8px", borderRadius: "4px", cursor: "pointer" }}>
               <Plus size={12} /> Add Visitor
@@ -454,7 +454,7 @@ export default function CreateVisitPage() {
           </div>
 
           {/* Our POCs */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "2rem", marginBottom: "1rem", borderBottom: "1px solid rgba(181, 189, 160, 0.5)", paddingBottom: "0.5rem" }}>
+          <div className="admin-section-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "2rem", marginBottom: "1rem", borderBottom: "1px solid rgba(181, 189, 160, 0.5)", paddingBottom: "0.5rem" }}>
             <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#1a1a1a", margin: 0 }}>Bennett University POCs</h3>
             <div style={{ position: "relative" }}>
               <button 
@@ -595,7 +595,7 @@ export default function CreateVisitPage() {
              </div>
           </FormField>
 
-          <div style={{ marginTop: "3rem", display: "flex", gap: "1rem" }}>
+          <div className="admin-form-actions" style={{ marginTop: "3rem", display: "flex", gap: "1rem" }}>
             <button
               type="submit"
               style={{
