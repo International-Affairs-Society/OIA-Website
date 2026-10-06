@@ -160,7 +160,7 @@ export default function CompleteProfilePage() {
                     const res = await apiFetch(`/api/v1/media`, {
                       method: "POST",
                       body: formData,
-                      credentials: "include"
+                      isFileUpload: true,
                     });
                     if (res.ok) {
                       const data = await res.json();

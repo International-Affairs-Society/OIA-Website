@@ -37,8 +37,12 @@ export async function apiFetch(
 ): Promise<Response> {
   const { isFileUpload, headers = {}, ...rest } = options
 
-  const defaultHeaders: Record<string, string> = isFileUpload
-    ? {}  // Let browser set Content-Type for multipart
+  // Auto-detect FormData to never force application/json on multipart bodies
+  const isFormData = typeof FormData !== "undefined" && rest.body instanceof FormData
+  const isUpload = isFileUpload || isFormData
+
+  const defaultHeaders: Record<string, string> = isUpload
+    ? {}  // Let browser set multipart/form-data boundary
     : { "Content-Type": "application/json" }
 
   return fetch(`${API_BASE}${path}`, {
