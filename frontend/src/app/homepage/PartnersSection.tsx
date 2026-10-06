@@ -22,8 +22,8 @@ const FLOATING_IMAGES = Array.from({ length: 23 }, (_, i) => ({
 
 // Full circle dimensions — the wrapper is now tall enough to show the entire circle
 function getOrbitDims(w: number) {
-  if (w < 480) return { size: 900, radius: 450, imgW: 80, imgH: 80 };
-  if (w < 768) return { size: 1300, radius: 650, imgW: 100, imgH: 100 };
+  if (w < 480) return { size: 800, radius: 400, imgW: 75, imgH: 75 };
+  if (w < 768) return { size: 1000, radius: 500, imgW: 90, imgH: 90 };
   return { size: 1600, radius: 800, imgW: 140, imgH: 140 };
 }
 
@@ -185,8 +185,8 @@ export default function PartnersSection() {
       {/* ── Heading Block ── */}
       <div
         ref={headingRef}
-        className="relative w-full min-h-[50vh] z-20 flex flex-col items-center overflow-hidden"
-        style={{ paddingTop: "15vh" }}
+        className="relative w-full min-h-[30vh] lg:min-h-[50vh] z-20 flex flex-col items-center overflow-hidden pb-10"
+        style={{ paddingTop: "10vh" }}
       >
         <div className="w-full flex flex-col items-center justify-center text-center">
           <p className="w-full text-center font-sans text-[0.85rem] text-foreground/50 mb-6 font-medium tracking-wide uppercase">
@@ -247,10 +247,9 @@ export default function PartnersSection() {
 
       {/* ── Full Circle Wheel with World Map in Center ── */}
       <div
-        className="relative w-full pointer-events-none flex items-center justify-center"
+        className="relative w-full pointer-events-none flex items-center justify-center lg:mt-[50px] mt-0"
         style={{
           height: `${dims.size + dims.imgH}px`,
-          marginTop: "50px",
         }}
       >
         {/* ── Paragraph Text at the Inner Top of the Circle ── */}
