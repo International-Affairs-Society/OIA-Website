@@ -27,6 +27,7 @@ interface LenisInstance {
 
 const isHeroLoaderSeen = () => {
   if (typeof window === "undefined") return false;
+  if (window.innerWidth < 768) return true; // Bypass loader completely on mobile
   try {
     return sessionStorage.getItem("hero_loader_seen") === "true";
   } catch {
