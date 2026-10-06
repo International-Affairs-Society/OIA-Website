@@ -30,22 +30,21 @@ export async function writeAudit({
   newValue
 }) {
   try {
+    let combinedDetails = details || ''
+    if (previousValue !== undefined || newValue !== undefined) {
+      const diff = ` | Prev: ${JSON.stringify(previousValue || {})} | New: ${JSON.stringify(newValue || {})}`
+      combinedDetails = combinedDetails ? `${combinedDetails}${diff}` : diff
+    }
+
     await prisma.audit_logs.create({
       data: {
         item_id:            itemId,
         action:             action,
         item_title:         itemTitle || 'Unknown',
         item_type:          itemType,
-        performed_by_id:    performedBy?.id   || null,
         performed_by_name:  performedBy?.name || 'Unknown',
         performed_by_role:  performedBy?.role || 'Unknown',
-        details:            details           || null,
-        previous_value:     previousValue !== undefined
-                              ? JSON.stringify(previousValue)
-                              : null,
-        new_value:          newValue !== undefined
-                              ? JSON.stringify(newValue)
-                              : null
+        details:            combinedDetails   || null
       }
     })
   } catch (err) {
